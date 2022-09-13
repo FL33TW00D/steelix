@@ -1,0 +1,26 @@
+[package]
+name = "steelix"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "steelix"
+
+[dependencies]
+anyhow = "1.0.58"
+bytes = "1.1.0"
+clap = { version = "3.2", features = ["derive"] }
+onnx = { path = "../onnx" }
+parser = { path = "../parser" }
+ir = { path = "../ir" }
+plotting = { path = "../plotting" }
+prost = "0.10.4"
+tempfile = "3.3.0"
+ndarray = "0.15.6"
+image = "0.24.3"
+opencv = "0.66.0"
+serde_json = "1.0.85"
+serde = "1.0.144"
+ordered-float = "3.0.0"
+npyz = "0.7.0"
+serde_derive = "1.0.144"
