@@ -4,7 +4,7 @@ use prost::Message;
 use std::collections::{HashMap, HashSet};
 
 ///Parses a valid ONNX model at the provided path
-pub fn parse_model(model_path: std::path::PathBuf) -> Model {
+pub fn parse_model(model_path: std::path::PathBuf) -> Result<Model, anyhow::Error> {
     let r = std::fs::read(model_path).expect("Unable to find model at provided path");
     let b = bytes::Bytes::from(r);
     let pb_model = onnx_pb::ModelProto::decode(b).unwrap();
@@ -23,7 +23,7 @@ pub fn parse_model(model_path: std::path::PathBuf) -> Model {
     create_graph_nodes(&mut model, &pb_graph.node, &op_register);
     let outputs_map = parse_graph_outputs(&pb_graph.output, &mut model);
     link_nodes(&mut model, &pb_graph, inputs_map, outputs_map, init_mappy);
-    model
+    Ok(model)
 }
 
 fn parse_graph_initializers(initializers: &[onnx_pb::TensorProto]) -> HashMap<String, Tensor> {
