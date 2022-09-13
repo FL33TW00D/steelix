@@ -1,5 +1,5 @@
 <div align="center">
-<img width="400px" height="400px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/steelix-logo.png">
+<img width="400px" height="400px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/SteelixLogo.png">
 </div>
 
 Steelix is a fast CLI based visualizer for ONNX machine learning models! Steelix renders your ONNX model to an SVG using DOT.
