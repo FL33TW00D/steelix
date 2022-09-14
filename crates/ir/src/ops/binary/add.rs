@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{BoxOp, Op, OpGroup};
+use crate::{BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct Add;
@@ -14,6 +14,17 @@ impl Op for Add {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Tensor
+    }
+
+    fn cost(&self, inputs: crate::QuadVec) -> anyhow::Result<RealizedOp> {
+        Ok(RealizedOp {
+            cost: OpCost {
+                mac: 0,
+                parameters: 0,
+                flops: 0,
+            },
+            outputs: QuadVec::new(),
+        })
     }
 }
 

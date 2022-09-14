@@ -143,6 +143,7 @@ impl From<Model> for RenderableGraph {
             });
         }
         println!("{}", generate_summary(op_counts));
+        println!("Total model size: ");
         g
     }
 }

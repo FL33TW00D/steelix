@@ -1,4 +1,4 @@
-use crate::{BoxOp, Op, OpNode, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpNode, QuadVec, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -128,16 +128,20 @@ impl Model {
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
-            let _providers: Vec<Arc<Tensor>> = node
+            let providers: QuadVec = node
                 .providers
                 .iter()
                 .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))
                 .collect();
 
-            let result = vec![Arc::new(Tensor::default())];
+            //We need to feed the providers to the cost function
+            //We will also need to generate a tensor of the correct size
+            //So Cost needs to return a tuple, Tensor, and the Cost of that node
+            let result = node.realize(providers);
+            println!("RESULT: {:?}", result);
             traversal_state
                 .intermediates
-                .insert(node_id, Arc::clone(&result[0]));
+                .insert(node_id, Tensor::default().into_arc_tensor());
         }
         let result = traversal_state
             .intermediates
