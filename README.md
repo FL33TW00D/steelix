@@ -2,6 +2,11 @@
 <img width="400px" height="200px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/SteelixLogo.png">
 </div>
 
+[![Build status](https://github.com/FL33TW00D/steelix/workflows/ci/badge.svg)](https://github.com/FL33TW00D/steelix/actions)
+[![Crates.io](https://img.shields.io/crates/v/steelix.svg)](https://crates.io/crates/steelix)
+[![Packaging status](https://repology.org/badge/tiny-repos/steelix.svg)](https://repology.org/project/steelix/badges)
+
+
 Steelix is a fast CLI based visualizer for ONNX machine learning models! Steelix renders your ONNX model to an SVG using DOT.
 
 ## How to use
@@ -23,4 +28,16 @@ straight into your model flow, and view your changes instantly! Steelix is also 
 
 ## Install
 
+### Prerequesties
+Ensure you have DOT installed by following the instructions [here](https://graphviz.org/download/).
+
+### MacOS
+```
+brew install steelix
+```
+
+### Rust Programmers
+```
+cargo install steelix
+```
 
