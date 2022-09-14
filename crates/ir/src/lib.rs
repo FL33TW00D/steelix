@@ -21,13 +21,21 @@ pub use tensor::*;
 pub use tensor_shape::*;
 pub use value_info::*;
 
+pub struct Cost {
+    pub fma: usize,
+    pub parameter: usize,
+}
+
 pub trait Op {
     fn name(&self) -> Cow<str>;
 
     fn op_group(&self) -> OpGroup;
 
-    fn flops(&self) -> u64 {
-        10
+    fn cost(&self) -> Cost {
+        Cost {
+            fma: 0,
+            parameter: 0,
+        }
     }
 }
 

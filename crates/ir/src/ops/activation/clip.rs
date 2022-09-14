@@ -18,10 +18,6 @@ impl Op for Clip {
     fn op_group(&self) -> OpGroup {
         OpGroup::Activation
     }
-
-    fn flops(&self) -> u64 {
-        10
-    }
 }
 
 pub fn build_clip(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {

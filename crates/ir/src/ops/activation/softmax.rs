@@ -17,10 +17,6 @@ impl Op for Softmax {
     fn op_group(&self) -> OpGroup {
         OpGroup::Activation
     }
-
-    fn flops(&self) -> u64 {
-        10
-    }
 }
 
 pub fn build_softmax(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
