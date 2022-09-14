@@ -1,6 +1,4 @@
 //Operator set is defined here: https://github.com/onnx/onnx/blob/main/onnx/defs/operator_sets.h
-#![feature(get_mut_unchecked)]
-extern crate blas_src;
 mod helpers;
 mod model;
 mod op_group;
@@ -12,7 +10,7 @@ mod value_info;
 
 pub mod ops;
 
-use std::{borrow::Cow, sync::Arc};
+use std::borrow::Cow;
 
 pub use helpers::*;
 pub use model::*;
@@ -28,13 +26,9 @@ pub trait Op {
 
     fn op_group(&self) -> OpGroup;
 
-    fn mutator(&self) -> bool {
-        false
+    fn flops(&self) -> u64 {
+        10
     }
-
-    fn realize(&self, providers: Vec<Arc<Tensor>>) -> anyhow::Result<Vec<Arc<Tensor>>>;
-
-    fn update(&mut self, _t: Arc<Tensor>) {}
 }
 
 pub type BoxOp = Box<dyn Op>;

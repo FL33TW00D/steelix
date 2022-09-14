@@ -1,8 +1,8 @@
-use std::{borrow::Cow, sync::Arc};
+use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{BoxOp, Op, OpGroup, Tensor};
+use crate::{BoxOp, Op, OpGroup};
 
 #[derive(Debug, Clone)]
 pub struct Unimplemented;
@@ -14,10 +14,6 @@ impl Op for Unimplemented {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Unimplemented
-    }
-
-    fn realize(&self, _: Vec<Arc<Tensor>>) -> anyhow::Result<Vec<Arc<Tensor>>> {
-        todo!()
     }
 }
 

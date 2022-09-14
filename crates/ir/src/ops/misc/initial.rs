@@ -20,18 +20,6 @@ impl Op for Initial {
     fn op_group(&self) -> OpGroup {
         OpGroup::Data
     }
-
-    fn realize(&self, _: Vec<Arc<Tensor>>) -> anyhow::Result<Vec<Arc<Tensor>>> {
-        if let Some(t) = &self.0 {
-            Ok(vec![Arc::clone(t)])
-        } else {
-            panic!("Uninitialized input tensor found")
-        }
-    }
-
-    fn update(&mut self, t: Arc<Tensor>) {
-        self.set_initial(t)
-    }
 }
 
 pub fn build_initial() -> Result<BoxOp, anyhow::Error> {
