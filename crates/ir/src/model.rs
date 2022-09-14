@@ -10,6 +10,11 @@ impl<T: Op + ?Sized> Op for Box<T> {
     fn op_group(&self) -> crate::OpGroup {
         (**self).op_group()
     }
+
+    #[inline]
+    fn cost(&self, provider: QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        (**self).cost(provider)
+    }
 }
 
 use core::fmt::Debug;
@@ -137,6 +142,7 @@ impl Model {
             //We need to feed the providers to the cost function
             //We will also need to generate a tensor of the correct size
             //So Cost needs to return a tuple, Tensor, and the Cost of that node
+            println!("NODE: {:?}", node);
             let result = node.realize(providers);
             println!("RESULT: {:?}", result);
             traversal_state

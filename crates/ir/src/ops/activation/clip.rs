@@ -24,8 +24,8 @@ impl Op for Clip {
         provider_bounds!(providers, 1, 3, self);
         Ok(RealizedOp {
             cost: OpCost {
-                mac: 0,
-                parameters: 0,
+                mac: 1,
+                parameters: 1000,
                 flops: 0,
             },
             outputs: QuadVec::new(),

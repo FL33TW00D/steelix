@@ -1,10 +1,8 @@
-
+use anyhow::bail;
 use onnx::onnx_pb;
-use std::{borrow::Cow};
+use std::borrow::Cow;
 
-use crate::{
-    BoxOp, Op, OpGroup,
-};
+use crate::{BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
 
 use super::Depthwise;
 
@@ -38,6 +36,38 @@ impl Op for Im2Col {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Layer
+    }
+
+    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+        println!("BINGA");
+        if providers.len() > 3 || providers.len() < 2 {
+            bail!("Conv providers incorrect length: {:?}", providers.len())
+        }
+        let x = providers[0].clone();
+        let (n, cin, h, w) = (x.shape[0], x.shape[1], x.shape[2], x.shape[3]);
+
+        let w = providers[1].clone();
+        let (f, kc, kh, kw) = (w.shape[0], w.shape[1], w.shape[2], w.shape[3]);
+
+        let (h_out, w_out) = self.output_dims(
+            &x.shape
+                .iter()
+                .cloned()
+                .map(|x| x as i64)
+                .collect::<Vec<_>>(),
+        );
+
+        let mac = (cin / self.group as usize) * kh * kw * h_out * w_out * f;
+        let parameters = f * cin * kh * (kw / self.group as usize);
+
+        Ok(RealizedOp {
+            cost: OpCost {
+                mac,
+                parameters,
+                flops: mac * 2,
+            },
+            outputs: QuadVec::new(),
+        })
     }
 }
 

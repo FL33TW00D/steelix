@@ -1,6 +1,6 @@
 use std::{borrow::Cow, sync::Arc};
 
-use crate::{BoxOp, IntoArcTensor, Op, OpGroup, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpGroup, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Constant(pub Arc<Tensor>);
@@ -12,6 +12,9 @@ impl Op for Constant {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Constant
+    }
+    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        Ok(RealizedOp::default())
     }
 }
 

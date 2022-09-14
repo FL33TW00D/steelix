@@ -45,7 +45,8 @@ impl Op for Conv {
         OpGroup::Layer
     }
 
-    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<RealizedOp> {
+    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+        println!("BINGA");
         if providers.len() > 3 || providers.len() < 2 {
             bail!("Conv providers incorrect length: {:?}", providers.len())
         }

@@ -1,8 +1,8 @@
-use std::{borrow::Cow};
+use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{BoxOp, Op, OpGroup};
+use crate::{BoxOp, Op, OpGroup, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct Squeeze {
@@ -16,6 +16,10 @@ impl Op for Squeeze {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Shape
+    }
+
+    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        Ok(RealizedOp::default())
     }
 }
 

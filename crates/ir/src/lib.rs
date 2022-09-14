@@ -22,7 +22,7 @@ pub use tensor::*;
 pub use tensor_shape::*;
 pub use value_info::*;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct OpCost {
     pub mac: usize,        //# Multiply Accumulate Ops
     pub parameters: usize, //# Parameters
@@ -31,7 +31,7 @@ pub struct OpCost {
 
 type QuadVec = SmallVec<[Arc<Tensor>; 4]>;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct RealizedOp {
     cost: OpCost,
     outputs: QuadVec,
@@ -42,16 +42,7 @@ pub trait Op {
 
     fn op_group(&self) -> OpGroup;
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        Ok(RealizedOp {
-            cost: OpCost {
-                mac: 0,
-                parameters: 0,
-                flops: 0,
-            },
-            outputs: QuadVec::new(),
-        })
-    }
+    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp>;
 }
 
 pub type BoxOp = Box<dyn Op>;

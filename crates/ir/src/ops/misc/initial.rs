@@ -1,6 +1,6 @@
 use std::{borrow::Cow, sync::Arc};
 
-use crate::{BoxOp, Op, OpGroup, Tensor};
+use crate::{BoxOp, Op, OpGroup, RealizedOp, Tensor};
 
 //Takes an optional tensor which is initialized by the user inputs
 #[derive(Debug, Clone)]
@@ -19,6 +19,9 @@ impl Op for Initial {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Data
+    }
+    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        Ok(RealizedOp::default())
     }
 }
 
