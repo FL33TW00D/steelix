@@ -1,9 +1,7 @@
-use std::{borrow::Cow, sync::Arc};
-
-use ndarray::Array;
 use onnx::onnx_pb;
+use std::borrow::Cow;
 
-use crate::{as_std, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, Tensor};
+use crate::{BoxOp, Op, OpGroup};
 
 #[derive(Debug, Clone)]
 pub struct Transpose {
@@ -21,19 +19,6 @@ impl Transpose {
         }
         pairs
     }
-    pub fn transpose<D: DataType + ndarray::LinalgScalar>(
-        &self,
-        input: &Tensor,
-    ) -> anyhow::Result<Arc<Tensor>> {
-        let mut tt = input.to_owned();
-        let a_t = tt
-            .to_array_view_mut::<D>()
-            .unwrap()
-            .permuted_axes(self.perm.clone());
-        let mut trans = Array::zeros(a_t.raw_dim());
-        trans.assign(&a_t);
-        Ok(trans.into_arc_tensor())
-    }
 }
 
 impl Op for Transpose {
@@ -43,13 +28,6 @@ impl Op for Transpose {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Shape
-    }
-
-    fn realize(&self, providers: Vec<Arc<Tensor>>) -> anyhow::Result<Vec<Arc<Tensor>>> {
-        Ok(vec![as_std!(Transpose::transpose(providers[0].dt)(
-            self,
-            &providers[0]
-        ))?])
     }
 }
 

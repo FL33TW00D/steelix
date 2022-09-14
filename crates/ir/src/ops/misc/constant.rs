@@ -13,10 +13,6 @@ impl Op for Constant {
     fn op_group(&self) -> OpGroup {
         OpGroup::Constant
     }
-
-    fn realize(&self, _: Vec<Arc<Tensor>>) -> anyhow::Result<Vec<Arc<Tensor>>> {
-        Ok(vec![Arc::clone(&self.0)])
-    }
 }
 
 //We need an OpBuilder trait

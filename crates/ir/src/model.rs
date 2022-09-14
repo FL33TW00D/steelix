@@ -10,16 +10,6 @@ impl<T: Op + ?Sized> Op for Box<T> {
     fn op_group(&self) -> crate::OpGroup {
         (**self).op_group()
     }
-
-    #[inline]
-    fn realize(&self, providers: Vec<Arc<Tensor>>) -> anyhow::Result<Vec<Arc<Tensor>>> {
-        (**self).realize(providers)
-    }
-
-    #[inline]
-    fn update(&mut self, t: Arc<Tensor>) {
-        (**self).update(t)
-    }
 }
 
 use core::fmt::Debug;
@@ -132,19 +122,19 @@ impl Model {
                 ModelError::ValidationError("Failed to get required input.".to_string())
             })?;
 
-            (*input_node.op).update(Arc::clone(input_initial));
+            //(*input_node.op).update(Arc::clone(input_initial));
         }
 
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
-            let providers = node
+            let providers: Vec<Arc<Tensor>> = node
                 .providers
                 .iter()
                 .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))
                 .collect();
 
-            let result = node.realize(providers)?;
+            let result = vec![Arc::new(Tensor::default())];
             traversal_state
                 .intermediates
                 .insert(node_id, Arc::clone(&result[0]));
