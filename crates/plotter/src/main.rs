@@ -1,8 +1,7 @@
 use clap::ArgMatches;
 use parser::parse_model;
-use plotting::{render_to, RenderableGraph};
 use std::process::Command as ProcessCommand;
-use steelix::build_cli;
+use steelix::{build_cli, render_to, RenderableGraph};
 use tempfile::NamedTempFile;
 
 fn main() {
