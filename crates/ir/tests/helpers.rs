@@ -1,8 +1,8 @@
-use std::{path::PathBuf};
+use std::path::PathBuf;
 
 use ir::{IntoTensor, Tensor};
 use ndarray::Array;
-use npyz::{NpyFile};
+use npyz::NpyFile;
 
 //TODO: make generic over dtype
 pub fn npy_as_tensor(fname: &str, shape: Vec<usize>) -> Tensor {

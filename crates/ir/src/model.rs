@@ -118,7 +118,7 @@ impl Model {
 
         for input_id in &self.inputs {
             let input_node = &mut self.nodes[*input_id];
-            let input_initial = initials.get(&input_node.name).ok_or_else(|| {
+            let _input_initial = initials.get(&input_node.name).ok_or_else(|| {
                 ModelError::ValidationError("Failed to get required input.".to_string())
             })?;
 
@@ -128,7 +128,7 @@ impl Model {
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
-            let providers: Vec<Arc<Tensor>> = node
+            let _providers: Vec<Arc<Tensor>> = node
                 .providers
                 .iter()
                 .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))

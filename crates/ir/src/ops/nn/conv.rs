@@ -1,8 +1,8 @@
 use onnx::onnx_pb;
-use std::{borrow::Cow, ops::AddAssign, sync::Arc};
+use std::{borrow::Cow};
 
 use crate::{
-    as_float, ops::shape::Pad, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, Tensor,
+    BoxOp, Op, OpGroup,
 };
 
 use super::Depthwise;

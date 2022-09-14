@@ -1,8 +1,8 @@
-use std::{borrow::Cow, ops::AddAssign, sync::Arc};
+use std::{borrow::Cow};
 
-use ndarray::{Array, Array2, Ix2};
 
-use crate::{as_float, ops::shape::Pad, DType, DataType, IntoArcTensor, Op, OpGroup, Tensor};
+
+use crate::{Op, OpGroup};
 
 #[derive(Debug, Clone, Default)]
 pub struct DepthwiseIm2col {

@@ -1,9 +1,9 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow};
 
-use num::cast::AsPrimitive;
+
 use onnx::onnx_pb;
 
-use crate::{as_float, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, Tensor};
+use crate::{BoxOp, Op, OpGroup};
 
 #[derive(Debug, Clone)]
 pub struct BatchNormalization {

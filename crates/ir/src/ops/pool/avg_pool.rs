@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{as_std, ops::shape::Pad, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, Tensor};
+use crate::{BoxOp, Op, OpGroup};
 
 #[derive(Debug, Clone)]
 pub struct AvgPool {
