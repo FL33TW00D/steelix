@@ -9,7 +9,6 @@ edition = "2021"
 anyhow = "1.0.58"
 bytes = "1.2.0"
 dot = { git = "https://github.com/FL33TW00D/dot-rust", branch = "develop" }
-dyn-clone = "1.0.8"
 lazy_static = "1.4.0"
 ndarray = { version = "0.15.4", features=["approx", "blas", "rayon"]}
 npyz = "0.6.1"
@@ -20,8 +19,6 @@ rayon = "1.5.3"
 strum = "0.24"
 strum_macros = "0.24"
 thiserror = "1.0.32"
-blas-src = { version = "0.8.0", default-features = false, features = ["accelerate"] }
 
 [dev-dependencies]
 criterion = "0.3.6"
-image = "0.24.3"

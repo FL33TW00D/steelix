@@ -1,6 +1,4 @@
 //Operator set is defined here: https://github.com/onnx/onnx/blob/main/onnx/defs/operator_sets.h
-#![feature(get_mut_unchecked)]
-extern crate blas_src;
 mod helpers;
 mod model;
 mod op_group;

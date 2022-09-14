@@ -16,9 +16,6 @@ ir = { path = "../ir" }
 plotting = { path = "../plotting" }
 prost = "0.10.4"
 tempfile = "3.3.0"
-ndarray = "0.15.6"
-image = "0.24.3"
-opencv = "0.66.0"
 serde_json = "1.0.85"
 serde = "1.0.144"
 ordered-float = "3.0.0"
