@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.58"
 bytes = "1.2.0"
-dot = { git = "https://github.com/FL33TW00D/dot-rust", branch = "develop" }
 lazy_static = "1.4.0"
 ndarray = { version = "0.15.4", features=["approx", "blas", "rayon"]}
 npyz = "0.6.1"

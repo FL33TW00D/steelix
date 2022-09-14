@@ -5,6 +5,8 @@ use std::{
 
 use ir::{Model, OpGroup, COLOUR_MAP};
 
+use crate::generate_summary;
+
 type Nd = usize;
 
 #[derive(Default, Debug)]
@@ -117,13 +119,13 @@ impl From<Model> for RenderableGraph {
     fn from(model: Model) -> Self {
         let mut g = RenderableGraph::new();
         let mut offset = 0;
-        let mut unique_ops = HashSet::new();
+        let mut op_counts = HashMap::new();
         for (op_idx, op_node) in model.nodes.iter().enumerate() {
             if op_node.op.op_group() == OpGroup::Constant {
                 offset += 1;
                 continue;
             }
-            unique_ops.insert(op_node.name.clone());
+            *op_counts.entry(op_node.name.to_owned()).or_insert(0) += 1;
 
             let renderable_node = g.create_node(op_node.name.clone());
             renderable_node.add_attribute((
@@ -140,7 +142,7 @@ impl From<Model> for RenderableGraph {
                 }
             });
         }
-        println!("Unique Operations: {:#?}", unique_ops);
+        println!("{}", generate_summary(op_counts));
         g
     }
 }
