@@ -1,11 +1,20 @@
 <div align="center">
 <img width="400px" height="200px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/SteelixLogo.png">
 </div>
-
-[![Build status](https://github.com/FL33TW00D/steelix/workflows/ci/badge.svg)](https://github.com/FL33TW00D/steelix/actions)
-[![Crates.io](https://img.shields.io/crates/v/steelix.svg)](https://crates.io/crates/steelix)
-[![Packaging status](https://repology.org/badge/tiny-repos/steelix.svg)](https://repology.org/project/steelix/badges)
-
+<p align="center">
+    <a href="https://github.com/FL33TW00D/steelix/actions">
+        <img alt="Build" src="https://github.com/FL33TW00D/steelix/workflows/ci/badge.svg">
+    </a>
+    <a href="https://crates.io/crates/steelix">
+        <img alt="GitHub" src="https://img.shields.io/github/license/FL33TW00D/steelix.svg?color=blue">
+    </a>
+    <a href="https://huggingface.co/docs/transformers/index">
+        <img alt="crates.io" src="https://img.shields.io/crates/v/steelix.svg">
+    </a>
+    <a href="https://github.com/FL33TW00D/steelix/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/FL33TW00D/steelix.svg">
+    </a>
+</p>
 
 Steelix is a fast CLI based visualizer for ONNX machine learning models! Steelix renders your ONNX model to an SVG using DOT.
 
