@@ -10,6 +10,7 @@ mod value_info;
 
 pub mod ops;
 
+use anyhow::bail;
 use smallvec::SmallVec;
 use std::{borrow::Cow, sync::Arc};
 
@@ -43,23 +44,27 @@ pub trait Op {
     fn op_group(&self) -> OpGroup;
 
     fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp>;
+
+    fn update(&mut self, _t: Arc<Tensor>) {}
 }
 
 pub type BoxOp = Box<dyn Op>;
 
-#[macro_export]
-macro_rules! provider_bounds {
-    // `()` indicates that the macro takes no argument.
-    ($providers:ident, $lower:expr, $upper:expr, $op:ident) => {
-        // The macro will expand into the contents of this block.
-        if $providers.len() > $upper || $providers.len() < $lower {
-            bail!(
-                "Expected between {} and {} providers, got: {} in operation: {}",
-                $lower,
-                $upper,
-                $providers.len(),
-                $op.name()
-            )
-        }
-    };
+pub fn validate_providers(
+    providers: &QuadVec,
+    lower: usize,
+    upper: usize,
+    name: String,
+) -> anyhow::Result<()> {
+    if providers.len() > upper || providers.len() < lower {
+        bail!(
+            "Expected between {} and {} providers, got: {} in operation: {}",
+            lower,
+            upper,
+            providers.len(),
+            name
+        )
+    } else {
+        Ok(())
+    }
 }

@@ -45,8 +45,10 @@ fn run_summary_command(matches: &ArgMatches) {
         .into();
 
     let mut runnable = parse_model(model_path).expect("Failed to parse model.");
-    let inputs: HashMap<String, Arc<Tensor>> =
-        HashMap::from([("images:0".into(), Tensor::default().into_arc_tensor())]);
+    let inputs: HashMap<String, Arc<Tensor>> = HashMap::from([(
+        "images:0".into(),
+        Tensor::zeros::<f32>(vec![3, 224, 224]).into_arc_tensor(),
+    )]);
 
     let order = runnable.build_traversal_order();
     let run_result = runnable.run(inputs, order).unwrap();

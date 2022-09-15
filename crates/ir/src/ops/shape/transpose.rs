@@ -1,7 +1,7 @@
 use onnx::onnx_pb;
 use std::borrow::Cow;
 
-use crate::{BoxOp, Op, OpGroup, RealizedOp};
+use crate::{BoxOp, Op, OpGroup, QuadVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct Transpose {
@@ -30,7 +30,8 @@ impl Op for Transpose {
         OpGroup::Shape
     }
 
-    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+        //Here we need to return something real, and we need to know how the shape changed
         Ok(RealizedOp::default())
     }
 }

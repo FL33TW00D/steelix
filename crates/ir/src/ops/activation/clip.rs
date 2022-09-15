@@ -1,9 +1,8 @@
 use std::borrow::Cow;
 
-use anyhow::bail;
 use onnx::onnx_pb;
 
-use crate::{provider_bounds, BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
+use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct Clip {
@@ -21,7 +20,7 @@ impl Op for Clip {
     }
 
     fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        provider_bounds!(providers, 1, 3, self);
+        validate_providers(&providers, 1, 3, self.name().to_string())?;
         Ok(RealizedOp {
             cost: OpCost {
                 mac: 1,

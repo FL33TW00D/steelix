@@ -123,11 +123,11 @@ impl Model {
 
         for input_id in &self.inputs {
             let input_node = &mut self.nodes[*input_id];
-            let _input_initial = initials.get(&input_node.name).ok_or_else(|| {
+            let input_initial = initials.get(&input_node.name).ok_or_else(|| {
                 ModelError::ValidationError("Failed to get required input.".to_string())
             })?;
 
-            //(*input_node.op).update(Arc::clone(input_initial));
+            (*input_node.op).update(Arc::clone(input_initial));
         }
 
         for node_id in order {
