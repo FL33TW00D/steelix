@@ -145,6 +145,7 @@ impl Model {
                 .collect();
             println!("NODE: {:?}", node);
             let result = node.realize(providers);
+            println!("RESULT: {:?}", result);
 
             traversal_state.intermediates.insert(
                 node_id,

@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    io::Write,
-};
+use std::{collections::HashMap, io::Write};
 
 use ir::{Model, OpGroup, COLOUR_MAP};
 

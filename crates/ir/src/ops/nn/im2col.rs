@@ -1,8 +1,8 @@
-use anyhow::bail;
 use onnx::onnx_pb;
+use smallvec::smallvec;
 use std::borrow::Cow;
 
-use crate::{BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
+use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, QuadVec, RealizedOp, Tensor};
 
 use super::Depthwise;
 
@@ -39,10 +39,6 @@ impl Op for Im2Col {
     }
 
     fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        println!("BINGA");
-        if providers.len() > 3 || providers.len() < 2 {
-            bail!("Conv providers incorrect length: {:?}", providers.len())
-        }
         let x = providers[0].clone();
         let (n, cin, h, w) = (x.shape[0], x.shape[1], x.shape[2], x.shape[3]);
 
@@ -59,11 +55,11 @@ impl Op for Im2Col {
 
         let mac = (cin / self.group as usize) * kh * kw * h_out * w_out * f;
         let parameters = f * cin * kh * (kw / self.group as usize);
-        println!("MR MACCY: {:?}", mac);
+        let placeholder = Tensor::zeros::<f32>(vec![n, f, h_out, w_out]).into_arc_tensor();
 
         Ok(RealizedOp {
             cost: OpCost { mac, parameters },
-            outputs: QuadVec::new(),
+            outputs: smallvec![placeholder; 4],
         })
     }
 }
