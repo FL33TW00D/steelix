@@ -25,7 +25,6 @@ impl Op for Clip {
             cost: OpCost {
                 mac: 1,
                 parameters: 1000,
-                flops: 0,
             },
             outputs: QuadVec::new(),
         })

@@ -59,13 +59,10 @@ impl Op for Im2Col {
 
         let mac = (cin / self.group as usize) * kh * kw * h_out * w_out * f;
         let parameters = f * cin * kh * (kw / self.group as usize);
+        println!("MR MACCY: {:?}", mac);
 
         Ok(RealizedOp {
-            cost: OpCost {
-                mac,
-                parameters,
-                flops: mac * 2,
-            },
+            cost: OpCost { mac, parameters },
             outputs: QuadVec::new(),
         })
     }

@@ -21,7 +21,6 @@ impl Op for Add {
             cost: OpCost {
                 mac: 0,
                 parameters: 0,
-                flops: 0,
             },
             outputs: QuadVec::new(),
         })

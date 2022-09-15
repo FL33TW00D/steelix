@@ -1,4 +1,5 @@
 //Operator set is defined here: https://github.com/onnx/onnx/blob/main/onnx/defs/operator_sets.h
+#![feature(get_mut_unchecked)]
 mod helpers;
 mod model;
 mod op_group;
@@ -27,7 +28,6 @@ pub use value_info::*;
 pub struct OpCost {
     pub mac: usize,        //# Multiply Accumulate Ops
     pub parameters: usize, //# Parameters
-    pub flops: usize,      //# Floating Point Operations
 }
 
 type QuadVec = SmallVec<[Arc<Tensor>; 4]>;
@@ -36,6 +36,23 @@ type QuadVec = SmallVec<[Arc<Tensor>; 4]>;
 pub struct RealizedOp {
     cost: OpCost,
     outputs: QuadVec,
+}
+
+impl RealizedOp {
+    pub fn zero_cost(outputs: QuadVec) -> RealizedOp {
+        Self {
+            cost: OpCost::default(), //usize defaults to 0
+            outputs,
+        }
+    }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum OpError {
+    #[error("{0}")]
+    ValidationError(String),
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
 }
 
 pub trait Op {

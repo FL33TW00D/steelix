@@ -1,23 +1,30 @@
 use onnx::onnx_pb;
-use std::borrow::Cow;
+use std::{borrow::Cow, sync::Arc};
 
-use crate::{BoxOp, Op, OpGroup, QuadVec, RealizedOp};
+use crate::{validate_providers, BoxOp, Op, OpCost, OpError, OpGroup, QuadVec, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Transpose {
-    pairs: Vec<(usize, usize)>,
     perm: Vec<usize>,
 }
 
 impl Transpose {
-    fn build_pairs(perm: Vec<usize>) -> Vec<(usize, usize)> {
-        let mut pairs = vec![];
-        for (from, to) in (0..4).zip(perm) {
-            if from != to {
-                pairs.push((from, to));
+    fn transpose<D>(&self, input: &Tensor, axes: &[usize]) -> Vec<usize> {
+        let mut usage_counts = [0, 0, 0, 0];
+        for axis in axes {
+            usage_counts[*axis] += 1;
+        }
+        for count in usage_counts {
+            assert_eq!(count, 1, "each axis must be listed exactly once");
+        }
+        let mut new_dim = usage_counts;
+        {
+            let dim = &input.shape;
+            for (new_axis, &axis) in axes.iter().enumerate() {
+                new_dim[new_axis] = dim[axis];
             }
         }
-        pairs
+        new_dim.into()
     }
 }
 
@@ -30,19 +37,30 @@ impl Op for Transpose {
         OpGroup::Shape
     }
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        //Here we need to return something real, and we need to know how the shape changed
-        Ok(RealizedOp::default())
+    fn cost(&self, mut providers: QuadVec) -> anyhow::Result<RealizedOp> {
+        validate_providers(&providers, 1, 1, self.name().to_string())?;
+
+        let new_shape = Self::transpose::<f32>(self, &providers[0], &self.perm);
+        unsafe { Arc::get_mut_unchecked(&mut providers[0]).update_shape(new_shape) };
+
+        let mut result = QuadVec::new();
+        result.push(providers[0].clone());
+        Ok(RealizedOp {
+            cost: OpCost {
+                mac: 42,
+                parameters: 0,
+            },
+            outputs: result,
+        })
     }
 }
 
 pub fn build_transpose(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
     let perm: Vec<usize> = proto
         .extract_named_intv("perm")?
-        .unwrap()
+        .ok_or_else(|| OpError::ValidationError("Expected perm.".to_string()))?
         .iter()
         .map(|&e| e as usize)
         .collect();
-    let pairs = Transpose::build_pairs(perm.clone());
-    Ok(Box::new(Transpose { pairs, perm }) as BoxOp)
+    Ok(Box::new(Transpose { perm }) as BoxOp)
 }

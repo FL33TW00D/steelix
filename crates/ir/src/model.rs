@@ -15,6 +15,11 @@ impl<T: Op + ?Sized> Op for Box<T> {
     fn cost(&self, provider: QuadVec) -> anyhow::Result<crate::RealizedOp> {
         (**self).cost(provider)
     }
+
+    #[inline]
+    fn update(&mut self, t: Arc<Tensor>) {
+        (**self).update(t)
+    }
 }
 
 use core::fmt::Debug;
@@ -138,16 +143,13 @@ impl Model {
                 .iter()
                 .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))
                 .collect();
-
-            //We need to feed the providers to the cost function
-            //We will also need to generate a tensor of the correct size
-            //So Cost needs to return a tuple, Tensor, and the Cost of that node
             println!("NODE: {:?}", node);
             let result = node.realize(providers);
-            println!("RESULT: {:?}", result);
-            traversal_state
-                .intermediates
-                .insert(node_id, Tensor::default().into_arc_tensor());
+
+            traversal_state.intermediates.insert(
+                node_id,
+                result.unwrap().outputs[0].clone().into_arc_tensor(),
+            );
         }
         let result = traversal_state
             .intermediates

@@ -68,11 +68,7 @@ impl Op for Conv {
         let parameters = f * cin * kh * (kw / self.group as usize);
 
         Ok(RealizedOp {
-            cost: OpCost {
-                mac,
-                parameters,
-                flops: mac * 2,
-            },
+            cost: OpCost { mac, parameters },
             outputs: QuadVec::new(),
         })
     }
