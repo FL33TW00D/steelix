@@ -14,12 +14,14 @@ impl Op for Constant {
         OpGroup::Constant
     }
     fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+        let mut qv = QuadVec::new();
+        qv.push(self.0.clone());
         Ok(RealizedOp {
             cost: OpCost {
                 mac: 0,
                 parameters: 0,
             },
-            outputs: providers,
+            outputs: qv,
         })
     }
 }
