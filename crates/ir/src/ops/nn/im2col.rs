@@ -73,21 +73,11 @@ pub fn build_im2col(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> 
     let strides = proto.extract_named_intv("strides")?.unwrap();
     let dilations = proto.extract_named_intv("dilations")?.unwrap();
 
-    if group != 1 {
-        Ok(Box::new(Depthwise {
-            group,
-            pads,
-            kernel_shape,
-            strides,
-            dilations,
-        }) as BoxOp)
-    } else {
-        Ok(Box::new(Im2Col {
-            group,
-            pads,
-            kernel_shape,
-            strides,
-            dilations,
-        }) as BoxOp)
-    }
+    Ok(Box::new(Im2Col {
+        group,
+        pads,
+        kernel_shape,
+        strides,
+        dilations,
+    }) as BoxOp)
 }

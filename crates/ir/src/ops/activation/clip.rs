@@ -21,12 +21,15 @@ impl Op for Clip {
 
     fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 3, self.name().to_string())?;
+        let mut qv = QuadVec::new();
+        qv.push(providers[0].clone());
+
         Ok(RealizedOp {
             cost: OpCost {
                 mac: 1,
                 parameters: 1000,
             },
-            outputs: QuadVec::new(),
+            outputs: qv,
         })
     }
 }

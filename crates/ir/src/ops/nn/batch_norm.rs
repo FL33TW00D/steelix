@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{BoxOp, Op, OpGroup, RealizedOp};
+use crate::{BoxOp, Op, OpGroup, QuadVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct BatchNormalization {
@@ -17,7 +17,8 @@ impl Op for BatchNormalization {
     fn op_group(&self) -> OpGroup {
         OpGroup::Normalization
     }
-    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+
+    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         Ok(RealizedOp::default())
     }
 }
