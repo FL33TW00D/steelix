@@ -12,7 +12,7 @@ mod value_info;
 pub mod ops;
 
 use anyhow::bail;
-use smallvec::SmallVec;
+use smallvec::{smallvec, SmallVec};
 use std::{borrow::Cow, sync::Arc};
 
 pub use helpers::*;
@@ -37,6 +37,8 @@ impl OpCost {
 }
 
 type QuadVec = SmallVec<[Arc<Tensor>; 4]>;
+
+type Shape = SmallVec<[usize; 4]>;
 
 #[derive(Debug, Default)]
 pub struct RealizedOp {
@@ -69,6 +71,18 @@ pub trait Op {
     fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp>;
 
     fn update(&mut self, _t: Arc<Tensor>) {}
+
+    fn param_count(&self, providers: QuadVec) -> anyhow::Result<usize> {
+        Ok(0)
+    }
+
+    fn mac_count(&self, providers: QuadVec) -> anyhow::Result<usize> {
+        Ok(0)
+    }
+
+    fn output_shape(&self, providers: QuadVec) -> anyhow::Result<Shape> {
+        Ok(smallvec![0, 0, 0, 0])
+    }
 }
 
 pub type BoxOp = Box<dyn Op>;
@@ -91,3 +105,15 @@ pub fn validate_providers(
         Ok(())
     }
 }
+
+//What do we want the macro to do? To implement our Op trait for us. We will still need to define
+//structs for everyone because they have different fields.
+//
+
+/*
+#[macro_export]
+macro_rules! op_cost {
+    ($name:ident, $group:ident, $( [$($typ:ident),*] => $cab:expr),*)
+
+}
+*/
