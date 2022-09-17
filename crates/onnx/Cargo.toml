@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.61"
 prost = "0.11"
+thiserror = "1.0.35"
 
 [build-dependencies]
 prost-build = "0.11"
