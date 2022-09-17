@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use onnx::onnx_pb;
+use smallvec::smallvec;
 
 use crate::{BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
 
@@ -16,13 +17,13 @@ impl Op for Add {
         OpGroup::Tensor
     }
 
-    fn cost(&self, inputs: crate::QuadVec) -> anyhow::Result<RealizedOp> {
+    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         Ok(RealizedOp {
             cost: OpCost {
-                mac: 0,
+                mac: providers[0].numel(),
                 parameters: 0,
             },
-            outputs: QuadVec::new(),
+            outputs: smallvec![providers[0].clone(); 4],
         })
     }
 }

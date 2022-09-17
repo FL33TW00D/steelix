@@ -30,6 +30,12 @@ pub struct OpCost {
     pub parameters: usize, //# Parameters
 }
 
+impl OpCost {
+    pub fn zero_cost() -> OpCost {
+        OpCost::default()
+    }
+}
+
 type QuadVec = SmallVec<[Arc<Tensor>; 4]>;
 
 #[derive(Debug, Default)]

@@ -18,5 +18,5 @@ dot = { git = "https://github.com/FL33TW00D/dot-rust", branch = "develop" }
 tempfile = "3.3.0"
 ordered-float = "3.0.0"
 npyz = "0.7.0"
-tabled = "0.8.0"
+tabled = { version = "0.8.0", features = ["color"] }
 smallvec = "1.9.0"
