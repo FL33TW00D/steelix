@@ -37,6 +37,6 @@ impl Op for BatchNormalization {
 }
 
 pub fn build_batchnorm(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let epsilon = proto.extract_named_float("epsilon")?.unwrap_or(1e-5);
+    let epsilon = proto.get_attribute("epsilon", Some(1e-5), proto)?;
     Ok(Box::new(BatchNormalization { epsilon }) as BoxOp)
 }

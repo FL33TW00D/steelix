@@ -13,23 +13,23 @@ use super::Depthwise;
 pub struct Conv {
     pub group: i64,
     pub pads: Vec<i64>,
-    pub kernel_shape: Option<Vec<i64>>,
+    pub kernel_shape: Vec<i64>,
     pub strides: Vec<i64>,
     pub dilations: Vec<i64>,
 }
 
 impl Conv {
     fn output_dims(&self, input_shape: &[i64]) -> (usize, usize) {
-        let kernel_shape = self.kernel_shape.clone().unwrap();
+        let kernel_shape = self.kernel_shape.clone();
         let out_height = ((((input_shape[2] + (2 * self.pads[2])
-            - self.dilations[0] * (self.kernel_shape.clone().unwrap()[0] - 1)
+            - self.dilations[0] * (self.kernel_shape.clone()[0] - 1)
             - 1)
             / self.strides[0])
             + 1) as f32)
             .floor();
 
         let out_width = ((((input_shape[3] + (2 * self.pads[3])
-            - self.dilations[1] * (self.kernel_shape.clone().unwrap()[1] - 1)
+            - self.dilations[1] * (self.kernel_shape.clone()[1] - 1)
             - 1)
             / self.strides[1])
             + 1) as f32)
@@ -80,13 +80,11 @@ impl Op for Conv {
 }
 
 pub fn build_conv(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let group = proto.extract_named_int("group")?.unwrap_or(1);
-    let pads = proto
-        .extract_named_intv("pads")?
-        .unwrap_or_else(|| vec![0, 0, 0, 0]);
-    let kernel_shape = proto.extract_named_intv("kernel_shape")?;
-    let strides = proto.extract_named_intv("strides")?.unwrap();
-    let dilations = proto.extract_named_intv("dilations")?.unwrap();
+    let group = proto.get_attribute("group", Some(1), proto)?;
+    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]), proto)?;
+    let kernel_shape = proto.get_attribute("kernel_shape", None, proto)?;
+    let strides = proto.get_attribute("strides", None, proto)?;
+    let dilations = proto.get_attribute("dilations", None, proto)?;
 
     if group != 1 {
         Ok(Box::new(Depthwise {

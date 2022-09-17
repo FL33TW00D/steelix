@@ -6,7 +6,7 @@ use crate::{Op, OpGroup, RealizedOp};
 pub struct Depthwise {
     pub group: i64,
     pub pads: Vec<i64>,
-    pub kernel_shape: Option<Vec<i64>>,
+    pub kernel_shape: Vec<i64>,
     pub strides: Vec<i64>,
     pub dilations: Vec<i64>,
 }
@@ -17,14 +17,14 @@ impl Depthwise {
     ///     |_             s             _|
     fn output_dims(&self, input_shape: &[i64]) -> (usize, usize) {
         let out_height = ((((input_shape[2] + (2 * self.pads[2])
-            - self.dilations[0] * (self.kernel_shape.clone().unwrap()[0] - 1)
+            - self.dilations[0] * (self.kernel_shape.clone()[0] - 1)
             - 1)
             / self.strides[0])
             + 1) as f32)
             .floor();
 
         let out_width = ((((input_shape[3] + (2 * self.pads[3])
-            - self.dilations[1] * (self.kernel_shape.clone().unwrap()[1] - 1)
+            - self.dilations[1] * (self.kernel_shape.clone()[1] - 1)
             - 1)
             / self.strides[1])
             + 1) as f32)

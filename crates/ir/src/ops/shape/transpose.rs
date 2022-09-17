@@ -57,10 +57,10 @@ impl Op for Transpose {
 
 pub fn build_transpose(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
     let perm: Vec<usize> = proto
-        .extract_named_intv("perm")?
-        .ok_or_else(|| OpError::ValidationError("Expected perm.".to_string()))?
+        .get_attribute::<Vec<i64>>("perm", None, proto)?
         .iter()
-        .map(|&e| e as usize)
+        .cloned()
+        .map(|x| x as usize)
         .collect();
     Ok(Box::new(Transpose { perm }) as BoxOp)
 }

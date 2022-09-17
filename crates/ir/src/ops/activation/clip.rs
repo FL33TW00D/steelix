@@ -6,8 +6,8 @@ use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp}
 
 #[derive(Debug, Clone)]
 pub struct Clip {
-    pub min: Option<i64>,
-    pub max: Option<i64>,
+    pub min: i64,
+    pub max: i64,
 }
 
 impl Op for Clip {
@@ -35,10 +35,7 @@ impl Op for Clip {
 }
 
 pub fn build_clip(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let _min = proto.extract_named_attr("min")?;
-    let _max = proto.extract_named_attr("max")?;
-    Ok(Box::new(Clip {
-        min: Some(0),
-        max: Some(0),
-    }) as BoxOp)
+    let min = proto.get_attribute("min", Some(i64::MIN), proto)?;
+    let max = proto.get_attribute("max", Some(i64::MAX), proto)?;
+    Ok(Box::new(Clip { min, max }) as BoxOp)
 }

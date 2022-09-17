@@ -4,20 +4,18 @@ use std::borrow::Cow;
 
 use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, QuadVec, RealizedOp, Tensor};
 
-use super::Depthwise;
-
 #[derive(Debug, Clone, Default)]
 pub struct Im2Col {
     pub group: i64,
     pub pads: Vec<i64>,
-    pub kernel_shape: Option<Vec<i64>>,
+    pub kernel_shape: Vec<i64>,
     pub strides: Vec<i64>,
     pub dilations: Vec<i64>,
 }
 
 impl Im2Col {
     fn output_dims(&self, input_shape: &[i64]) -> (usize, usize) {
-        let kernel_shape = self.kernel_shape.clone().unwrap();
+        let kernel_shape = self.kernel_shape.clone();
         let (kr, kc) = (kernel_shape[0], kernel_shape[1]);
         let out_height =
             ((((input_shape[2] + (2 * self.pads[2]) - kr) / self.strides[0]) + 1) as f32).floor();
@@ -65,13 +63,11 @@ impl Op for Im2Col {
 }
 
 pub fn build_im2col(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let group = proto.extract_named_int("group")?.unwrap_or(1);
-    let pads = proto
-        .extract_named_intv("pads")?
-        .unwrap_or_else(|| vec![0, 0, 0, 0]);
-    let kernel_shape = proto.extract_named_intv("kernel_shape")?;
-    let strides = proto.extract_named_intv("strides")?.unwrap();
-    let dilations = proto.extract_named_intv("dilations")?.unwrap();
+    let group = proto.get_attribute("group", Some(1), proto)?;
+    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]), proto)?;
+    let kernel_shape = proto.get_attribute("kernel_shape", None, proto)?;
+    let strides = proto.get_attribute("strides", None, proto)?;
+    let dilations = proto.get_attribute("dilations", None, proto)?;
 
     Ok(Box::new(Im2Col {
         group,

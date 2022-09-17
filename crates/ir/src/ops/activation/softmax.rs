@@ -50,6 +50,6 @@ impl Op for Softmax {
 }
 
 pub fn build_softmax(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let axis = proto.extract_named_int("axis")?.unwrap_or(-1);
+    let axis = proto.get_attribute("axis", Some(-1), proto)?;
     Ok(Box::new(Softmax { axis }) as BoxOp)
 }
