@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "crates/cli",
+    "crates/display",
     "crates/onnx",
     "crates/ir",
     "crates/parser",

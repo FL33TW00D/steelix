@@ -21,8 +21,8 @@ pub fn build_cli() -> Command<'static> {
                 .required(true),
         );
 
-    let infer_subcommand = Command::new("infer")
-        .about("CPU only ONNX inference")
+    let summary_command = Command::new("summary")
+        .about("Summary of model operations and their cost")
         .arg_required_else_help(true)
         .arg(
             Arg::new("MODEL_PATH")
@@ -30,26 +30,11 @@ pub fn build_cli() -> Command<'static> {
                 .help("Path to ONNX file for inference.")
                 .takes_value(true)
                 .required(true),
-        )
-        .arg(
-            Arg::new("IMAGE_PATH")
-                .long("image-path")
-                .help("Path to image to perform inference on.")
-                .takes_value(true)
-                .conflicts_with("WEBCAM")
-                .required(false),
-        )
-        .arg(
-            Arg::new("WEBCAM")
-                .long("webcam")
-                .help("Launch webcam and perform inference on image stream.")
-                .conflicts_with("IMAGE_PATH")
-                .required(false),
         );
 
     Command::new("steelix")
         .subcommand(plot_subcommand)
-        .subcommand(infer_subcommand)
+        .subcommand(summary_command)
         .subcommand_required(true)
         .arg_required_else_help(true)
 }

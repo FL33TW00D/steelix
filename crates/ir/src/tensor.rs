@@ -106,6 +106,10 @@ impl Tensor {
             .into()
     }
 
+    pub fn numel(&self) -> usize {
+        self.shape.iter().cloned().product::<usize>()
+    }
+
     pub fn update_shape(&mut self, new_shape: Vec<usize>) {
         //todo: err check
         self.shape = new_shape;

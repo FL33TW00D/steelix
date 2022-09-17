@@ -5,24 +5,38 @@ use std::collections::{HashMap, HashSet};
 
 ///Parses a valid ONNX model at the provided path
 pub fn parse_model(model_path: std::path::PathBuf) -> Result<Model, anyhow::Error> {
-    let r = std::fs::read(model_path).expect("Unable to find model at provided path");
+    let r = std::fs::read(model_path)?;
     let b = bytes::Bytes::from(r);
-    let pb_model = onnx_pb::ModelProto::decode(b).unwrap();
+    let pb_model = onnx_pb::ModelProto::decode(b)?;
     let pb_graph = pb_model.graph.expect("No model graph found.");
 
     let mut model = Model::new();
-    let op_register = OpRegister::default();
 
     let mut initializers_map = parse_graph_initializers(&pb_graph.initializer);
     let inputs_map = parse_graph_inputs(&*pb_graph.input, &mut initializers_map, &mut model);
-    let mut init_mappy = HashMap::new();
-    initializers_map.into_iter().for_each(|(name, tensor)| {
-        let nid = model.add_node(name.clone(), ops::misc::build_constant(tensor).unwrap());
-        init_mappy.insert(name, nid);
-    });
+
+    let initializer_ids =
+        initializers_map
+            .into_iter()
+            .fold(HashMap::new(), |mut acc, (name, tensor)| {
+                acc.insert(
+                    name.clone(),
+                    model.add_node(name, ops::misc::build_constant(tensor).unwrap()),
+                );
+                acc
+            });
+
+    let op_register = OpRegister::default();
     create_graph_nodes(&mut model, &pb_graph.node, &op_register);
+
     let outputs_map = parse_graph_outputs(&pb_graph.output, &mut model);
-    link_nodes(&mut model, &pb_graph, inputs_map, outputs_map, init_mappy);
+    link_nodes(
+        &mut model,
+        &pb_graph,
+        inputs_map,
+        outputs_map,
+        initializer_ids,
+    );
     Ok(model)
 }
 
@@ -41,15 +55,13 @@ fn parse_graph_inputs(
     let mut inputs_map = HashMap::new();
     for (input_idx, input) in inputs.iter().enumerate() {
         if let Some(init) = initializers_map.remove(&*input.name) {
-            //static constants (e.g weight matrix);
             model.add_node(
                 input.name.to_owned(),
-                ops::misc::build_constant(init).unwrap(),
+                ops::misc::build_constant(init).unwrap(), //static constants
             );
         } else {
-            //user inputs to be updated at run time.
             let input_node_id =
-                model.add_node(input.name.to_owned(), ops::misc::build_initial().unwrap());
+                model.add_node(input.name.to_owned(), ops::misc::build_initial().unwrap()); //user inputs provided at run time.
             model.inputs.push(input_node_id);
             inputs_map.insert(input.name.to_owned(), input_idx);
         }

@@ -1,4 +1,4 @@
-use crate::{BoxOp, Op, OpNode, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpNode, QuadVec, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -9,6 +9,16 @@ impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
     fn op_group(&self) -> crate::OpGroup {
         (**self).op_group()
+    }
+
+    #[inline]
+    fn cost(&self, provider: QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        (**self).cost(provider)
+    }
+
+    #[inline]
+    fn update(&mut self, t: Arc<Tensor>) {
+        (**self).update(t)
     }
 }
 
@@ -118,32 +128,39 @@ impl Model {
 
         for input_id in &self.inputs {
             let input_node = &mut self.nodes[*input_id];
-            let _input_initial = initials.get(&input_node.name).ok_or_else(|| {
+            let input_initial = initials.get(&input_node.name).ok_or_else(|| {
                 ModelError::ValidationError("Failed to get required input.".to_string())
             })?;
 
-            //(*input_node.op).update(Arc::clone(input_initial));
+            (*input_node.op).update(Arc::clone(input_initial));
         }
+
+        let mut total_mac = 0;
+        let mut total_param = 0;
 
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
-            let _providers: Vec<Arc<Tensor>> = node
+            let providers: QuadVec = node
                 .providers
                 .iter()
                 .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))
                 .collect();
+            let result = node.realize(providers)?;
+            total_mac += result.cost.mac;
+            total_param += result.cost.parameters;
 
-            let result = vec![Arc::new(Tensor::default())];
             traversal_state
                 .intermediates
-                .insert(node_id, Arc::clone(&result[0]));
+                .insert(node_id, result.outputs[0].clone().into_arc_tensor());
         }
         let result = traversal_state
             .intermediates
             .get(&(self.outputs[0] - 1))
             .unwrap()
             .clone();
+        println!("TOTAL MAC: {:?}", total_mac);
+        println!("TOTAL PARAM: {:?}", total_param);
         Ok(result)
     }
 

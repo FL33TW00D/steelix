@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{BoxOp, Op, OpGroup};
+use crate::{BoxOp, Op, OpGroup, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct Unimplemented;
@@ -14,6 +14,9 @@ impl Op for Unimplemented {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Unimplemented
+    }
+    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        Ok(RealizedOp::default())
     }
 }
 

@@ -1,6 +1,6 @@
-use std::{borrow::Cow};
+use std::borrow::Cow;
 
-use crate::{Op, OpGroup};
+use crate::{Op, OpGroup, RealizedOp};
 
 #[derive(Debug, Clone, Default)]
 pub struct Depthwise {
@@ -41,5 +41,8 @@ impl Op for Depthwise {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Layer
+    }
+    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        Ok(RealizedOp::default())
     }
 }

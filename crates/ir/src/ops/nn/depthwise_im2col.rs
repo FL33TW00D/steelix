@@ -1,8 +1,6 @@
-use std::{borrow::Cow};
+use std::borrow::Cow;
 
-
-
-use crate::{Op, OpGroup};
+use crate::{Op, OpGroup, RealizedOp};
 
 #[derive(Debug, Clone, Default)]
 pub struct DepthwiseIm2col {
@@ -34,5 +32,9 @@ impl Op for DepthwiseIm2col {
 
     fn op_group(&self) -> OpGroup {
         OpGroup::Layer
+    }
+
+    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        Ok(RealizedOp::default())
     }
 }

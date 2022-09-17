@@ -1,5 +1,4 @@
-use crate::{Op};
-
+use crate::{Op, QuadVec, RealizedOp};
 
 #[derive(Debug, Clone, Default, Hash)]
 pub struct OpNode<O: Op> {
@@ -10,4 +9,9 @@ pub struct OpNode<O: Op> {
     pub op: O,
 }
 
-impl<O: Op> OpNode<O> {}
+impl<O: Op> OpNode<O> {
+    #[inline]
+    pub fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+        self.op.cost(providers)
+    }
+}

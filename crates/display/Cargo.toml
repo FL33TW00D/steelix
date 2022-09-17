@@ -13,11 +13,10 @@ clap = { version = "3.2", features = ["derive"] }
 onnx = { path = "../onnx" }
 parser = { path = "../parser" }
 ir = { path = "../ir" }
-plotting = { path = "../plotting" }
 prost = "0.10.4"
+dot = { git = "https://github.com/FL33TW00D/dot-rust", branch = "develop" }
 tempfile = "3.3.0"
-serde_json = "1.0.85"
-serde = "1.0.144"
 ordered-float = "3.0.0"
 npyz = "0.7.0"
-serde_derive = "1.0.144"
+tabled = { version = "0.8.0", features = ["color"] }
+smallvec = "1.9.0"

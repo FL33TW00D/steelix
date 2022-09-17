@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.58"
 bytes = "1.2.0"
-dot = { git = "https://github.com/FL33TW00D/dot-rust", branch = "develop" }
 lazy_static = "1.4.0"
 ndarray = { version = "0.15.4", features=["approx", "blas", "rayon"]}
 npyz = "0.6.1"
@@ -16,6 +15,7 @@ num = "0.4.0"
 num-traits = "0.2.15"
 onnx = { path = "../onnx" }
 rayon = "1.5.3"
+smallvec = "1.9.0"
 strum = "0.24"
 strum_macros = "0.24"
 thiserror = "1.0.32"
