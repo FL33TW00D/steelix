@@ -135,6 +135,9 @@ impl Model {
             (*input_node.op).update(Arc::clone(input_initial));
         }
 
+        let mut total_mac = 0;
+        let mut total_param = 0;
+
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
@@ -143,20 +146,21 @@ impl Model {
                 .iter()
                 .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))
                 .collect();
-            println!("NODE: {:?}", node);
-            let result = node.realize(providers);
-            println!("RESULT: {:?}", result);
+            let result = node.realize(providers)?;
+            total_mac += result.cost.mac;
+            total_param += result.cost.parameters;
 
-            traversal_state.intermediates.insert(
-                node_id,
-                result.unwrap().outputs[0].clone().into_arc_tensor(),
-            );
+            traversal_state
+                .intermediates
+                .insert(node_id, result.outputs[0].clone().into_arc_tensor());
         }
         let result = traversal_state
             .intermediates
             .get(&(self.outputs[0] - 1))
             .unwrap()
             .clone();
+        println!("TOTAL MAC: {:?}", total_mac);
+        println!("TOTAL PARAM: {:?}", total_param);
         Ok(result)
     }
 
