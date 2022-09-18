@@ -91,8 +91,7 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .with(Panel::header("Model Summary"))
         .with(Disable::row(Rows::single(1)))
         .with(Style::modern())
-        .with(Modify::new(Rows::first()).with(Alignment::center()))
-        .with(Modify::new(Rows::new(1..)).with(Alignment::left()));
+        .with(Modify::new(Rows::new(1..)).with(Alignment::center()));
 
     println!("{}", res);
 
