@@ -19,14 +19,14 @@ impl Conv {
     fn output_dims(&self, input_shape: &[i64]) -> (usize, usize) {
         let kernel_shape = self.kernel_shape.clone();
         let out_height = ((((input_shape[2] + (2 * self.pads[2])
-            - self.dilations[0] * (self.kernel_shape.clone()[0] - 1)
+            - self.dilations[0] * (kernel_shape[0] - 1)
             - 1)
             / self.strides[0])
             + 1) as f32)
             .floor();
 
         let out_width = ((((input_shape[3] + (2 * self.pads[3])
-            - self.dilations[1] * (self.kernel_shape.clone()[1] - 1)
+            - self.dilations[1] * (kernel_shape[1] - 1)
             - 1)
             / self.strides[1])
             + 1) as f32)

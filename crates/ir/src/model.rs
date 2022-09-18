@@ -1,4 +1,4 @@
-use crate::{BoxOp, IntoArcTensor, Op, OpGroup, OpNode, PVec, Tensor};
+use crate::{BoxOp, Op, OpGroup, OpNode, PVec, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]

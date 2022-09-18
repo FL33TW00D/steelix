@@ -2,8 +2,6 @@ use std::{collections::HashMap, io::Write};
 
 use ir::{Model, OpGroup, COLOUR_MAP};
 
-use crate::opcount_table;
-
 type Nd = usize;
 
 #[derive(Default, Debug)]

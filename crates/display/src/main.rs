@@ -6,10 +6,7 @@ use std::{collections::HashMap, process::Command as ProcessCommand, sync::Arc};
 use steelix::{
     build_cli, hardware_table, metrics_table, opcount_table, render_to, RenderableGraph,
 };
-use tabled::{
-    builder::Builder, col, object::Rows, row, Alignment, Disable, Modify, Panel, Style, Table,
-    Tabled,
-};
+use tabled::{object::Rows, Alignment, Disable, Modify, Panel, Style, Table, Tabled};
 use tempfile::NamedTempFile;
 
 fn main() {

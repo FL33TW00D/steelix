@@ -1,4 +1,4 @@
-use std::{fmt, mem::size_of, sync::Arc};
+use std::{fmt, sync::Arc};
 
 use ndarray::Array;
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
@@ -53,7 +53,6 @@ impl std::fmt::Debug for Tensor {
 impl Tensor {
     pub fn new(dt: DType, shape: Shape) -> Self {
         let len = shape.iter().cloned().product::<usize>();
-        let byte_count = len * dt.size_of();
         Self { dt, shape, len }
     }
 
@@ -205,8 +204,6 @@ impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
         let shape = nda.shape().to_vec();
         let vec = nda.into_raw_vec().into_boxed_slice();
         let len = vec.len();
-        let byte_count = len * size_of::<A>();
-        let data = unsafe { std::slice::from_raw_parts(Box::into_raw(vec) as *mut u8, byte_count) };
         Tensor {
             dt: A::to_internal(),
             shape: shape.into(),
