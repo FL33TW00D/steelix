@@ -69,7 +69,7 @@ impl Op for Conv {
 
         Ok(RealizedOp {
             cost: OpCost {
-                flops: mac,
+                flops: mac * 2,
                 parameters,
             },
             outputs: smallvec![placeholder; 4],
@@ -82,7 +82,7 @@ pub fn build_conv(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
     let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]), proto)?;
     let kernel_shape = proto.get_attribute("kernel_shape", None, proto)?;
     let strides = proto.get_attribute("strides", None, proto)?;
-    let dilations = proto.get_attribute("dilations", None, proto)?;
+    let dilations = proto.get_attribute("dilations", Some(vec![1, 1, 1, 1]), proto)?;
 
     Ok(Box::new(Conv {
         group,

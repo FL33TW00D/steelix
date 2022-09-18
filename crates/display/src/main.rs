@@ -57,14 +57,7 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .expect("Failed to find model at path.")
         .into();
 
-    let inputs: HashMap<String, Arc<Tensor>> = HashMap::from([(
-        "images:0".into(),
-        Tensor::new(ir::DType::F32, smallvec![1, 3, 224, 224]).into_arc_tensor(),
-    )]);
-
-    let summary = parse_model(model_path)?
-        .build_traversal_order()
-        .run(inputs)?;
+    let summary = parse_model(model_path)?.build_traversal_order().run()?;
 
     let op_counts = summary.op_counts.clone();
     let flops = summary.total_flops;
@@ -88,7 +81,7 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .with(Panel::header("Model Summary"))
         .with(Disable::row(Rows::single(1)))
         .with(Style::modern())
-        .with(Modify::new(Rows::new(1..)).with(Alignment::center()));
+        .with(Modify::new(Rows::new(0..)).with(Alignment::center()));
 
     println!("{}", res);
 

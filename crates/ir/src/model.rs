@@ -131,32 +131,29 @@ impl Model {
         self
     }
 
-    fn insert_user_inputs(
-        &mut self,
-        initials: HashMap<String, Arc<Tensor>>,
-    ) -> Result<(), ModelError> {
+    fn insert_user_inputs(&mut self) -> Result<(), ModelError> {
         for input_id in &self.inputs {
             let input_node = &mut self.nodes[*input_id];
+            println!("INPUT NODE: {:?}", input_node);
+            /*
             let input_initial = initials.get(&input_node.name).ok_or_else(|| {
                 ModelError::ValidationError("Failed to get required input.".to_string())
             })?;
 
             (*input_node.op).update(Arc::clone(input_initial));
+            */
         }
         Ok(())
     }
 
-    pub fn run(
-        &mut self,
-        initials: HashMap<String, Arc<Tensor>>,
-    ) -> Result<ModelSummary, ModelError> {
+    pub fn run(&mut self) -> Result<ModelSummary, ModelError> {
         let mut order = self.traversal_order.clone().unwrap();
         order.pop(); //remove the final node
         let mut traversal_state = TraversalState {
             intermediates: HashMap::new(),
         };
 
-        self.insert_user_inputs(initials)?;
+        self.insert_user_inputs()?;
 
         let mut total_flops = 0;
         let mut total_params = 0;
