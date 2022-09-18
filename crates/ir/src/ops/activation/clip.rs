@@ -19,7 +19,7 @@ impl Op for Clip {
         OpGroup::Activation
     }
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 3, self.name().to_string())?;
         let mut qv = QuadVec::new();
         qv.push(providers[0].clone());

@@ -17,7 +17,7 @@ impl Op for Add {
         OpGroup::Tensor
     }
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         Ok(RealizedOp {
             cost: OpCost {
                 mac: providers[0].numel(),

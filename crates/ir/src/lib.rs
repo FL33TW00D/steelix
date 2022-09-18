@@ -1,6 +1,5 @@
 //Operator set is defined here: https://github.com/onnx/onnx/blob/main/onnx/defs/operator_sets.h
 #![feature(get_mut_unchecked)]
-mod helpers;
 mod model;
 mod op_group;
 mod op_node;
@@ -15,7 +14,6 @@ use anyhow::bail;
 use smallvec::{smallvec, SmallVec};
 use std::{borrow::Cow, sync::Arc};
 
-pub use helpers::*;
 pub use model::*;
 pub use op_group::*;
 pub use op_node::*;
@@ -39,6 +37,8 @@ impl OpCost {
 type QuadVec = SmallVec<[Arc<Tensor>; 4]>;
 
 type Shape = SmallVec<[usize; 4]>;
+
+type StResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Default)]
 pub struct RealizedOp {
@@ -68,7 +68,9 @@ pub trait Op {
 
     fn op_group(&self) -> OpGroup;
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp>;
+    ///Computes the cost of the operation and propagates the tensors forward
+    ///with the appropriate shape updates
+    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp>;
 
     fn update(&mut self, _t: Arc<Tensor>) {}
 
@@ -108,12 +110,29 @@ pub fn validate_providers(
 
 //What do we want the macro to do? To implement our Op trait for us. We will still need to define
 //structs for everyone because they have different fields.
-//
 
-/*
+pub struct Abs;
+
 #[macro_export]
-macro_rules! op_cost {
-    ($name:ident, $group:ident, $( [$($typ:ident),*] => $cab:expr),*)
+macro_rules! elementwise {
+    ($name:ident, $group:ident, $( [$($typ:ident),*] => $cab:expr),*) => {
+        impl $crate::Op for $name {
+            fn name(&self) -> Cow<str> {
+                $name.into()
+            }
 
+            fn op_group(&self) -> OpGroup {
+                OpGroup::$group
+            }
+
+            fn realize(&self, providers: QuadVec) -> StResult {
+                validate_providers(&providers, 1, 1, $name)?;
+
+                //validate providers
+                //calculate costs
+                //calculate output shape
+                //create output tensor
+            }
+        }
+    };
 }
-*/

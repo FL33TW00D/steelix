@@ -17,13 +17,13 @@ impl Op for Matmul {
         OpGroup::Transform
     }
 
-    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
         let p0_shape = &providers[0].shape;
         let p1_shape = &providers[1].shape;
 
         let output_shape = vec![p0_shape[0], p1_shape[1]];
 
-        let res = Tensor::zeros::<f32>(output_shape);
+        let res = Tensor::new(providers[0].dt, output_shape.into());
 
         Ok(RealizedOp {
             cost: OpCost {

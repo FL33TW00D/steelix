@@ -13,7 +13,7 @@ impl Op for Constant {
     fn op_group(&self) -> OpGroup {
         OpGroup::Constant
     }
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         let mut qv = QuadVec::new();
         qv.push(self.0.clone());
         Ok(RealizedOp {

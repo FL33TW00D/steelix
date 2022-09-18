@@ -13,7 +13,7 @@ impl Op for Concat {
     fn op_group(&self) -> OpGroup {
         OpGroup::Tensor
     }
-    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
         Ok(RealizedOp::default())
     }
 }

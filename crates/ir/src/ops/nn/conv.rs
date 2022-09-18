@@ -1,4 +1,3 @@
-use anyhow::bail;
 use onnx::onnx_pb;
 use smallvec::smallvec;
 use std::borrow::Cow;
@@ -6,8 +5,6 @@ use std::borrow::Cow;
 use crate::{
     validate_providers, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, QuadVec, RealizedOp, Tensor,
 };
-
-use super::Depthwise;
 
 #[derive(Debug, Clone, Default)]
 pub struct Conv {
@@ -48,11 +45,8 @@ impl Op for Conv {
         OpGroup::Layer
     }
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 2, 3, self.name().to_string())?;
-        if providers.len() > 3 || providers.len() < 2 {
-            bail!("Conv providers incorrect length: {:?}", providers.len())
-        }
         let x = providers[0].clone();
         let (n, cin, h, w) = (x.shape[0], x.shape[1], x.shape[2], x.shape[3]);
 
@@ -70,7 +64,8 @@ impl Op for Conv {
         let mac = (cin / self.group as usize) * kh * kw * h_out * w_out * f;
         let parameters = f * cin * kh * (kw / self.group as usize);
 
-        let placeholder = Tensor::zeros::<f32>(vec![n, f, h_out, w_out]).into_arc_tensor();
+        let placeholder =
+            Tensor::new(providers[0].dt, smallvec![n, f, h_out, w_out].into()).into_arc_tensor();
 
         Ok(RealizedOp {
             cost: OpCost { mac, parameters },
@@ -86,21 +81,11 @@ pub fn build_conv(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
     let strides = proto.get_attribute("strides", None, proto)?;
     let dilations = proto.get_attribute("dilations", None, proto)?;
 
-    if group != 1 {
-        Ok(Box::new(Depthwise {
-            group,
-            pads,
-            kernel_shape,
-            strides,
-            dilations,
-        }) as BoxOp)
-    } else {
-        Ok(Box::new(Conv {
-            group,
-            pads,
-            kernel_shape,
-            strides,
-            dilations,
-        }) as BoxOp)
-    }
+    Ok(Box::new(Conv {
+        group,
+        pads,
+        kernel_shape,
+        strides,
+        dilations,
+    }) as BoxOp)
 }

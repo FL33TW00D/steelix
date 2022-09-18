@@ -21,7 +21,7 @@ impl Op for Initial {
         OpGroup::Data
     }
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         if let Some(t) = &self.0 {
             let mut qv = QuadVec::new();
             qv.push(t.clone());

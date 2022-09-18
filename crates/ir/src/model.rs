@@ -12,8 +12,8 @@ impl<T: Op + ?Sized> Op for Box<T> {
     }
 
     #[inline]
-    fn cost(&self, provider: QuadVec) -> anyhow::Result<crate::RealizedOp> {
-        (**self).cost(provider)
+    fn realize(&self, provider: QuadVec) -> anyhow::Result<crate::RealizedOp> {
+        (**self).realize(provider)
     }
 
     #[inline]

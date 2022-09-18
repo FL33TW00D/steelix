@@ -21,7 +21,7 @@ impl Op for BatchNormalization {
     }
 
     //[gamma weights, beta weights, moving_mean(non-trainable), moving_variance(non-trainable)]
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 5, 5, self.name().into())?;
         let mac = providers[0].numel();
         let parameters = providers[1..4]

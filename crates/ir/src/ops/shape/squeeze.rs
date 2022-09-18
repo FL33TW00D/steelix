@@ -37,9 +37,9 @@ impl Op for Squeeze {
         OpGroup::Shape
     }
 
-    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
         let new_shape = self.squeeze(&providers[0]);
-        let output = Tensor::zeros::<f32>(new_shape);
+        let output = Tensor::new(providers[0].dt, new_shape.into());
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
             outputs: smallvec![output.into_arc_tensor(); 4],

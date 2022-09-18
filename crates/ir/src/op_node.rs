@@ -12,6 +12,6 @@ pub struct OpNode<O: Op> {
 impl<O: Op> OpNode<O> {
     #[inline]
     pub fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        self.op.cost(providers)
+        self.op.realize(providers)
     }
 }

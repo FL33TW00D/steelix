@@ -1,7 +1,7 @@
 use onnx::onnx_pb;
 use std::{borrow::Cow, sync::Arc};
 
-use crate::{validate_providers, BoxOp, Op, OpCost, OpError, OpGroup, QuadVec, RealizedOp, Tensor};
+use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Transpose {
@@ -37,11 +37,11 @@ impl Op for Transpose {
         OpGroup::Shape
     }
 
-    fn cost(&self, mut providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, mut providers: QuadVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 1, self.name().to_string())?;
 
         let new_shape = Self::transpose::<f32>(self, &providers[0], &self.perm);
-        unsafe { Arc::get_mut_unchecked(&mut providers[0]).update_shape(new_shape) };
+        unsafe { Arc::get_mut_unchecked(&mut providers[0]).update_shape(new_shape.into()) };
 
         let mut result = QuadVec::new();
         result.push(providers[0].clone());

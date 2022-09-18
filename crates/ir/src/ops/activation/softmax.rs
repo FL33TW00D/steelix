@@ -32,13 +32,13 @@ impl Op for Softmax {
     //   2*n          -- compute shifted logits
     //   n            -- exp of shifted logits
     //   2*n          -- compute softmax from exp of shifted logits
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
         let output_shape = if self.axis == -1 {
             providers[0].shape[providers[0].shape.len()]
         } else {
             providers[0].shape[self.axis as usize]
         };
-        let out = Tensor::zeros::<f32>(vec![output_shape]);
+        let out = Tensor::new(providers[0].dt, vec![output_shape].into());
         Ok(RealizedOp {
             cost: OpCost {
                 mac: 0,

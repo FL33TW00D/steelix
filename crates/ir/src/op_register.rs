@@ -17,7 +17,7 @@ pub struct OpRegister(Register);
 impl Default for OpRegister {
     fn default() -> Self {
         let mut reg = Self(HashMap::new());
-        reg.insert("Conv", nn::build_im2col);
+        reg.insert("Conv", nn::build_conv);
         reg.insert("Softmax", activation::build_softmax);
         reg.insert("Clip", activation::build_clip);
         reg.insert("Transpose", shape::build_transpose);
