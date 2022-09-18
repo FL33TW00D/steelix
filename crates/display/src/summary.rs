@@ -60,10 +60,16 @@ struct HardwareEntry {
 
 //A100 19.5 TFLOPS FP32
 pub fn hardware_table(total_flops: usize) -> Table {
-    let hardware = vec![HardwareEntry {
-        name: "A100".to_string(),
-        its: format!("{} it/s", 19.5e12 / total_flops as f32),
-    }];
+    let hardware = vec![
+        HardwareEntry {
+            name: "A100".to_string(),
+            its: format!("{} it/s", 19.5e12 / total_flops as f32),
+        },
+        HardwareEntry {
+            name: "Raspberry Pi 4B".to_string(),
+            its: format!("{} it/s", 13.5e9 / total_flops as f32),
+        },
+    ];
     Table::new(hardware)
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))

@@ -27,7 +27,7 @@ impl Op for Clip {
         Ok(RealizedOp {
             cost: OpCost {
                 flops: providers[0].numel(),
-                parameters: 1000,
+                parameters: 0,
             },
             outputs: qv,
         })

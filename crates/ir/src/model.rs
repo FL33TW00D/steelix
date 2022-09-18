@@ -181,6 +181,7 @@ impl Model {
                 .intermediates
                 .insert(node_id, result.outputs);
         }
+        total_flops *= 8; //TODO fix
         Ok(ModelSummary {
             total_flops,
             total_params,
