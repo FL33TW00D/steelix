@@ -1,4 +1,4 @@
-use crate::{BoxOp, IntoArcTensor, Op, OpNode, QuadVec, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpNode, PVec, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -12,7 +12,7 @@ impl<T: Op + ?Sized> Op for Box<T> {
     }
 
     #[inline]
-    fn realize(&self, provider: QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, provider: PVec) -> anyhow::Result<crate::RealizedOp> {
         (**self).realize(provider)
     }
 
@@ -141,13 +141,13 @@ impl Model {
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
-            let providers: QuadVec = node
+            let providers: PVec = node
                 .providers
                 .iter()
                 .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))
                 .collect();
             let result = node.realize(providers)?;
-            total_mac += result.cost.mac;
+            total_mac += result.cost.flops;
             total_param += result.cost.parameters;
 
             traversal_state

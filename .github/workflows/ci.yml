@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: arduino/setup-protoc@v1
+      - uses: dtolnay/rust-toolchain
         with:
           profile: minimal
-          toolchain: nightly
           override: true
       - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
@@ -23,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: arduino/setup-protoc@v1
+      - uses: dtolnay/rust-toolchain
         with:
           profile: minimal
-          toolchain: nightly
           override: true
       - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
@@ -38,10 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: arduino/setup-protoc@v1
+      - uses: dtolnay/rust-toolchain
         with:
           profile: minimal
-          toolchain: nightly
           override: true
       - uses: Swatinem/rust-cache@v2
       - run: rustup component add rustfmt
@@ -55,10 +55,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: arduino/setup-protoc@v1
+      - uses: dtolnay/rust-toolchain
         with:
           profile: minimal
-          toolchain: nightly
           override: true
       - uses: Swatinem/rust-cache@v2
       - run: rustup component add clippy

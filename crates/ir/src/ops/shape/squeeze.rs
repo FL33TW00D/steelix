@@ -37,7 +37,7 @@ impl Op for Squeeze {
         OpGroup::Shape
     }
 
-    fn realize(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
         let new_shape = self.squeeze(&providers[0]);
         let output = Tensor::new(providers[0].dt, new_shape.into());
         Ok(RealizedOp {

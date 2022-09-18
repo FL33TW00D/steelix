@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
+use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
 
 use smallvec::smallvec;
 
@@ -21,14 +21,17 @@ impl Op for BatchNormalization {
     }
 
     //[gamma weights, beta weights, moving_mean(non-trainable), moving_variance(non-trainable)]
-    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        validate_providers(&providers, 5, 5, self.name().into())?;
+    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        validate_providers(&providers, 5, 5, &self.name())?;
         let mac = providers[0].numel();
         let parameters = providers[1..4]
             .iter()
             .fold(0, |total, current| total + current.numel());
         Ok(RealizedOp {
-            cost: OpCost { mac, parameters },
+            cost: OpCost {
+                flops: mac,
+                parameters,
+            },
             outputs: smallvec![providers[0].clone(); 4],
         })
     }

@@ -24,7 +24,7 @@ pub use value_info::*;
 
 #[derive(Debug, Default)]
 pub struct OpCost {
-    pub mac: usize,        //# Multiply Accumulate Ops
+    pub flops: usize,      //# Floating Point Operations
     pub parameters: usize, //# Parameters
 }
 
@@ -32,9 +32,16 @@ impl OpCost {
     pub fn zero_cost() -> OpCost {
         OpCost::default()
     }
+
+    pub fn unary_op_flops(input: &Tensor, flops_per_elem: usize) -> OpCost {
+        OpCost {
+            flops: input.numel() * flops_per_elem,
+            parameters: 0,
+        }
+    }
 }
 
-type QuadVec = SmallVec<[Arc<Tensor>; 4]>;
+type PVec = SmallVec<[Arc<Tensor>; 4]>;
 
 type Shape = SmallVec<[usize; 4]>;
 
@@ -43,11 +50,11 @@ type StResult<T> = anyhow::Result<T>;
 #[derive(Debug, Default)]
 pub struct RealizedOp {
     cost: OpCost,
-    outputs: QuadVec,
+    outputs: PVec,
 }
 
 impl RealizedOp {
-    pub fn zero_cost(outputs: QuadVec) -> RealizedOp {
+    pub fn zero_cost(outputs: PVec) -> RealizedOp {
         Self {
             cost: OpCost::default(), //usize defaults to 0
             outputs,
@@ -70,19 +77,19 @@ pub trait Op {
 
     ///Computes the cost of the operation and propagates the tensors forward
     ///with the appropriate shape updates
-    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp>;
+    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp>;
 
     fn update(&mut self, _t: Arc<Tensor>) {}
 
-    fn param_count(&self, providers: QuadVec) -> anyhow::Result<usize> {
+    fn param_count(&self, providers: PVec) -> anyhow::Result<usize> {
         Ok(0)
     }
 
-    fn mac_count(&self, providers: QuadVec) -> anyhow::Result<usize> {
+    fn mac_count(&self, providers: PVec) -> anyhow::Result<usize> {
         Ok(0)
     }
 
-    fn output_shape(&self, providers: QuadVec) -> anyhow::Result<Shape> {
+    fn output_shape(&self, providers: PVec) -> anyhow::Result<Shape> {
         Ok(smallvec![0, 0, 0, 0])
     }
 }
@@ -90,10 +97,10 @@ pub trait Op {
 pub type BoxOp = Box<dyn Op>;
 
 pub fn validate_providers(
-    providers: &QuadVec,
+    providers: &PVec,
     lower: usize,
     upper: usize,
-    name: String,
+    name: &str,
 ) -> anyhow::Result<()> {
     if providers.len() > upper || providers.len() < lower {
         bail!(
@@ -108,30 +115,29 @@ pub fn validate_providers(
     }
 }
 
-//What do we want the macro to do? To implement our Op trait for us. We will still need to define
-//structs for everyone because they have different fields.
-
-pub struct Abs;
+elementwise!(Abs, Logic, 1);
 
 #[macro_export]
 macro_rules! elementwise {
-    ($name:ident, $group:ident, $( [$($typ:ident),*] => $cab:expr),*) => {
-        impl $crate::Op for $name {
+    ($Op:ident, $group:ident, $flop:literal) => {
+        #[derive(Debug, Clone)]
+        pub struct $Op;
+
+        impl $crate::Op for $Op {
             fn name(&self) -> Cow<str> {
-                $name.into()
+                stringify!($Op).into()
             }
 
             fn op_group(&self) -> OpGroup {
                 OpGroup::$group
             }
 
-            fn realize(&self, providers: QuadVec) -> StResult {
-                validate_providers(&providers, 1, 1, $name)?;
-
-                //validate providers
-                //calculate costs
-                //calculate output shape
-                //create output tensor
+            fn realize(&self, providers: PVec) -> StResult<RealizedOp> {
+                validate_providers(&providers, 1, 1, stringify!($Op))?;
+                Ok(RealizedOp {
+                    cost: OpCost::unary_op_flops(&providers[0], $flop),
+                    outputs: smallvec![providers[0].clone()],
+                })
             }
         }
     };

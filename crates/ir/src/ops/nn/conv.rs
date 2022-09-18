@@ -3,7 +3,7 @@ use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    validate_providers, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, QuadVec, RealizedOp, Tensor,
+    validate_providers, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -45,8 +45,8 @@ impl Op for Conv {
         OpGroup::Layer
     }
 
-    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        validate_providers(&providers, 2, 3, self.name().to_string())?;
+    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        validate_providers(&providers, 2, 3, &self.name())?;
         let x = providers[0].clone();
         let (n, cin, h, w) = (x.shape[0], x.shape[1], x.shape[2], x.shape[3]);
 
@@ -65,10 +65,13 @@ impl Op for Conv {
         let parameters = f * cin * kh * (kw / self.group as usize);
 
         let placeholder =
-            Tensor::new(providers[0].dt, smallvec![n, f, h_out, w_out].into()).into_arc_tensor();
+            Tensor::new(providers[0].dt, smallvec![n, f, h_out, w_out]).into_arc_tensor();
 
         Ok(RealizedOp {
-            cost: OpCost { mac, parameters },
+            cost: OpCost {
+                flops: mac,
+                parameters,
+            },
             outputs: smallvec![placeholder; 4],
         })
     }

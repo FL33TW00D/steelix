@@ -17,7 +17,7 @@ impl Op for Matmul {
         OpGroup::Transform
     }
 
-    fn realize(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
         let p0_shape = &providers[0].shape;
         let p1_shape = &providers[1].shape;
 
@@ -27,7 +27,7 @@ impl Op for Matmul {
 
         Ok(RealizedOp {
             cost: OpCost {
-                mac: providers[0].numel(),
+                flops: providers[0].numel(),
                 parameters: 0,
             },
             outputs: smallvec![res.into_arc_tensor(); 4],

@@ -40,14 +40,14 @@ impl Op for AvgPool {
         OpGroup::Pool
     }
 
-    fn realize(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
         let input_shape = &providers[0].shape;
         let (h_out, w_out) = self.output_dims(input_shape[2] as i64, input_shape[3] as i64);
         let out_shape = vec![input_shape[0], input_shape[1], h_out, w_out];
         let out = Tensor::new(providers[0].dt, out_shape.into());
         Ok(RealizedOp {
             cost: OpCost {
-                mac: providers[0].numel(),
+                flops: providers[0].numel(),
                 parameters: 0,
             },
             outputs: smallvec![out.into_arc_tensor(); 4],

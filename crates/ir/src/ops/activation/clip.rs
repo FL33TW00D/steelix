@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
+use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct Clip {
@@ -19,14 +19,14 @@ impl Op for Clip {
         OpGroup::Activation
     }
 
-    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        validate_providers(&providers, 1, 3, self.name().to_string())?;
-        let mut qv = QuadVec::new();
+    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        validate_providers(&providers, 1, 3, &self.name())?;
+        let mut qv = PVec::new();
         qv.push(providers[0].clone());
 
         Ok(RealizedOp {
             cost: OpCost {
-                mac: 1,
+                flops: 1,
                 parameters: 1000,
             },
             outputs: qv,

@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use onnx::onnx_pb;
 use smallvec::smallvec;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, QuadVec, RealizedOp, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Softmax {
@@ -32,7 +32,7 @@ impl Op for Softmax {
     //   2*n          -- compute shifted logits
     //   n            -- exp of shifted logits
     //   2*n          -- compute softmax from exp of shifted logits
-    fn realize(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         let output_shape = if self.axis == -1 {
             providers[0].shape[providers[0].shape.len()]
         } else {
@@ -41,7 +41,7 @@ impl Op for Softmax {
         let out = Tensor::new(providers[0].dt, vec![output_shape].into());
         Ok(RealizedOp {
             cost: OpCost {
-                mac: 0,
+                flops: 0,
                 parameters: 0,
             },
             outputs: smallvec![out.into_arc_tensor(); 4],
