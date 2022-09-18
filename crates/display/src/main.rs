@@ -3,7 +3,7 @@ use ir::{IntoArcTensor, Tensor};
 use parser::parse_model;
 use smallvec::smallvec;
 use std::{collections::HashMap, process::Command as ProcessCommand, sync::Arc};
-use steelix::{build_cli, render_to, RenderableGraph};
+use steelix::{build_cli, opcount_table, render_to, RenderableGraph};
 use tempfile::NamedTempFile;
 
 fn main() {
@@ -51,7 +51,11 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
         Tensor::new(ir::DType::F32, smallvec![1, 3, 224, 224]).into_arc_tensor(),
     )]);
 
-    let run_result = parse_model(model_path)?.build_traversal_order().run(inputs);
+    let summary = parse_model(model_path)?
+        .build_traversal_order()
+        .run(inputs)?;
+
+    println!("{}", opcount_table(summary.op_counts));
 
     Ok(())
 }

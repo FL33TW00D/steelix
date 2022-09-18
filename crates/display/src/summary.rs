@@ -7,9 +7,9 @@ use tabled::{object::Rows, Alignment, Modify, Style, Table, Tabled};
 struct CostSummary {
     op_name: String,
     count: usize,
-    #[tabled(rename = "# Fused Multiply Add")]
-    fma: usize,
-    #[tabled(rename = "# Parameters")]
+    #[tabled(rename = "Total #FLOPS")]
+    flops: usize,
+    #[tabled(rename = "Total #Parameters")]
     params: usize,
 }
 
@@ -19,7 +19,7 @@ pub fn opcount_table(op_counts: HashMap<String, usize>) -> Table {
         .map(|(k, v)| CostSummary {
             op_name: k.to_string(),
             count: *v,
-            fma: 0,
+            flops: 0,
             params: 0,
         })
         .collect::<Vec<CostSummary>>();

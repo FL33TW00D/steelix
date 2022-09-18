@@ -1,4 +1,4 @@
-use crate::{BoxOp, IntoArcTensor, Op, OpNode, PVec, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpGroup, OpNode, PVec, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -53,15 +53,18 @@ pub struct Model {
     pub traversal_order: Option<Vec<usize>>,
 }
 
+#[derive(Debug, Default)]
 pub struct TraversalState {
     pub intermediates: HashMap<usize, PVec>,
     //eviction_state
 }
 
+#[derive(Debug, Default)]
 pub struct ModelSummary {
     //what do we need here?
     pub total_flops: usize,
     pub total_params: usize,
+    pub op_counts: HashMap<String, usize>,
 }
 
 impl Model {
@@ -158,9 +161,13 @@ impl Model {
         let mut total_flops = 0;
         let mut total_params = 0;
 
+        let mut op_counts = HashMap::new();
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
+            if node.op.op_group() != OpGroup::Constant {
+                *op_counts.entry(node.name.to_owned()).or_insert(0) += 1;
+            }
             let providers: PVec = node
                 .providers
                 .iter()
@@ -174,12 +181,10 @@ impl Model {
                 .intermediates
                 .insert(node_id, result.outputs);
         }
-        println!("# FLOPS: {:?}", total_flops);
-        println!("# PARAM: {:?}", total_params);
-
         Ok(ModelSummary {
             total_flops,
             total_params,
+            op_counts,
         })
     }
 }
