@@ -50,6 +50,7 @@ pub struct Model {
     pub nodes: Vec<OpNode<BoxOp>>,
     pub inputs: Vec<usize>,  //IDs of input nodes
     pub outputs: Vec<usize>, //IDs of output nodes
+    pub traversal_order: Option<Vec<usize>>,
 }
 
 pub struct TraversalState {
@@ -60,6 +61,10 @@ pub struct TraversalState {
 impl Model {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn update_traversal_order(&mut self, order: Vec<usize>) {
+        self.traversal_order = Some(order);
     }
 
     pub fn add_node(&mut self, name: String, op: BoxOp) -> usize {
@@ -83,7 +88,7 @@ impl Model {
     }
 
     ///Performs a DFS from each target node
-    pub fn build_traversal_order(&self) -> Vec<usize> {
+    pub fn build_traversal_order(mut self) -> Self {
         let mut visited = HashSet::with_capacity(self.nodes.len());
         let mut order: Vec<usize> = vec![];
         for target in self.outputs.clone() {
@@ -113,14 +118,15 @@ impl Model {
                 }
             }
         }
-        order
+        self.update_traversal_order(order);
+        self
     }
 
     pub fn traverse(
         &mut self,
         initials: HashMap<String, Arc<Tensor>>,
-        mut order: Vec<usize>,
     ) -> Result<Arc<Tensor>, ModelError> {
+        let mut order = self.traversal_order.clone().unwrap();
         order.pop(); //remove the final node
         let mut traversal_state = TraversalState {
             intermediates: HashMap::new(),
@@ -159,7 +165,7 @@ impl Model {
             .get(&(self.outputs[0] - 1))
             .unwrap()
             .clone();
-        println!("TOTAL MAC: {:?}", total_mac);
+        println!("TOTAL Flops: {:?}", total_mac);
         println!("TOTAL PARAM: {:?}", total_param);
         Ok(result)
     }
@@ -167,8 +173,7 @@ impl Model {
     pub fn run(
         &mut self,
         initials: HashMap<String, Arc<Tensor>>,
-        order: Vec<usize>,
     ) -> Result<Arc<Tensor>, ModelError> {
-        Self::traverse(self, initials, order)
+        Self::traverse(self, initials)
     }
 }

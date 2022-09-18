@@ -32,7 +32,6 @@ impl Op for Initial {
     }
 
     fn update(&mut self, t: Arc<Tensor>) {
-        println!("Setting initial");
         self.set_initial(t);
     }
 }

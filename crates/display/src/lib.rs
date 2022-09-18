@@ -1,7 +1,7 @@
 mod build_cli;
 mod plotter;
-mod table;
+mod summary;
 
 pub use build_cli::*;
 pub use plotter::*;
-pub use table::*;
+pub use summary::*;

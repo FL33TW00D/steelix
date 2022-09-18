@@ -2,7 +2,7 @@ use std::{collections::HashMap, io::Write};
 
 use ir::{Model, OpGroup, COLOUR_MAP};
 
-use crate::generate_summary;
+use crate::opcount_table;
 
 type Nd = usize;
 
@@ -139,7 +139,7 @@ impl From<Model> for RenderableGraph {
                 }
             });
         }
-        println!("{}", generate_summary(op_counts));
+        println!("{}", opcount_table(op_counts));
         println!("Total model size: ");
         g
     }

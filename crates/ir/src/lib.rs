@@ -56,7 +56,7 @@ pub struct RealizedOp {
 impl RealizedOp {
     pub fn zero_cost(outputs: PVec) -> RealizedOp {
         Self {
-            cost: OpCost::default(), //usize defaults to 0
+            cost: OpCost::default(),
             outputs,
         }
     }
@@ -80,18 +80,6 @@ pub trait Op {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp>;
 
     fn update(&mut self, _t: Arc<Tensor>) {}
-
-    fn param_count(&self, providers: PVec) -> anyhow::Result<usize> {
-        Ok(0)
-    }
-
-    fn mac_count(&self, providers: PVec) -> anyhow::Result<usize> {
-        Ok(0)
-    }
-
-    fn output_shape(&self, providers: PVec) -> anyhow::Result<Shape> {
-        Ok(smallvec![0, 0, 0, 0])
-    }
 }
 
 pub type BoxOp = Box<dyn Op>;
@@ -116,6 +104,10 @@ pub fn validate_providers(
 }
 
 elementwise!(Abs, Logic, 1);
+elementwise!(Erf, Logic, 2);
+elementwise!(Sigmoid, Logic, 4);
+elementwise!(LeakyRelu, Activation, 2);
+elementwise!(Not, Logic, 1);
 
 #[macro_export]
 macro_rules! elementwise {

@@ -11,7 +11,7 @@ pub fn parse_model(model_path: std::path::PathBuf) -> Result<Model, anyhow::Erro
     let mut model = Model::new();
 
     let mut initializers_map = parse_graph_initializers(&pb_graph.initializer);
-    let inputs_map = parse_graph_inputs(&*pb_graph.input, &mut initializers_map, &mut model);
+    let inputs_map = parse_graph_inputs(&pb_graph.input, &mut initializers_map, &mut model);
 
     let initializer_ids =
         initializers_map
