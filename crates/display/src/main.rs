@@ -6,7 +6,10 @@ use std::{collections::HashMap, process::Command as ProcessCommand, sync::Arc};
 use steelix::{
     build_cli, hardware_table, metrics_table, opcount_table, render_to, RenderableGraph,
 };
-use tabled::builder::Builder;
+use tabled::{
+    builder::Builder, col, object::Rows, row, Alignment, Disable, Modify, Panel, Style, Table,
+    Tabled,
+};
 use tempfile::NamedTempFile;
 
 fn main() {
@@ -43,6 +46,14 @@ fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[derive(Tabled)]
+struct SummaryTable {
+    #[tabled(rename = "")]
+    table: String,
+    #[tabled(rename = "")]
+    subtable: Table,
+}
+
 fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
     let model_path = matches
         .get_one::<String>("MODEL_PATH")
@@ -59,16 +70,31 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .run(inputs)?;
 
     let op_counts = summary.op_counts.clone();
-    let flops = summary.total_flops.clone();
+    let flops = summary.total_flops;
 
-    let summary = Builder::from_iter([
-        [opcount_table(op_counts)],
-        [metrics_table(summary)],
-        [hardware_table(flops)],
-    ])
-    .build();
+    let summary = vec![
+        SummaryTable {
+            table: "Operations".to_string(),
+            subtable: opcount_table(op_counts),
+        },
+        SummaryTable {
+            table: "Metrics".to_string(),
+            subtable: metrics_table(summary),
+        },
+        SummaryTable {
+            table: "Hardware".to_string(),
+            subtable: hardware_table(flops),
+        },
+    ];
 
-    println!("{}", summary);
+    let res = Table::new(summary)
+        .with(Panel::header("Model Summary"))
+        .with(Disable::row(Rows::single(1)))
+        .with(Style::modern())
+        .with(Modify::new(Rows::first()).with(Alignment::center()))
+        .with(Modify::new(Rows::new(1..)).with(Alignment::left()));
+
+    println!("{}", res);
 
     Ok(())
 }
