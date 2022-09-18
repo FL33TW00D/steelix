@@ -13,7 +13,7 @@ struct CostSummary {
     params: usize,
 }
 
-pub fn generate_summary(op_counts: HashMap<String, usize>) -> String {
+pub fn opcount_table(op_counts: HashMap<String, usize>) -> Table {
     let mut costs = op_counts
         .iter()
         .map(|(k, v)| CostSummary {
@@ -25,9 +25,8 @@ pub fn generate_summary(op_counts: HashMap<String, usize>) -> String {
         .collect::<Vec<CostSummary>>();
     costs.sort_by(|a, b| b.count.cmp(&a.count));
 
-    let table = Table::new(&costs)
+    Table::new(&costs)
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))
-        .with(Modify::new(Rows::new(1..)).with(Alignment::left()));
-    table.to_string()
+        .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
 }

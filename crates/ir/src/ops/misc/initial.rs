@@ -1,6 +1,6 @@
 use std::{borrow::Cow, sync::Arc};
 
-use crate::{BoxOp, Op, OpGroup, QuadVec, RealizedOp, Tensor};
+use crate::{BoxOp, Op, OpGroup, PVec, RealizedOp, Tensor};
 
 //Takes an optional tensor which is initialized by the user inputs
 #[derive(Debug, Clone)]
@@ -21,9 +21,9 @@ impl Op for Initial {
         OpGroup::Data
     }
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         if let Some(t) = &self.0 {
-            let mut qv = QuadVec::new();
+            let mut qv = PVec::new();
             qv.push(t.clone());
             Ok(RealizedOp::zero_cost(qv))
         } else {
@@ -32,7 +32,6 @@ impl Op for Initial {
     }
 
     fn update(&mut self, t: Arc<Tensor>) {
-        println!("Setting initial");
         self.set_initial(t);
     }
 }

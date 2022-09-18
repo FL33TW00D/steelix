@@ -37,9 +37,9 @@ impl Op for Squeeze {
         OpGroup::Shape
     }
 
-    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
         let new_shape = self.squeeze(&providers[0]);
-        let output = Tensor::zeros::<f32>(new_shape);
+        let output = Tensor::new(providers[0].dt, new_shape.into());
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
             outputs: smallvec![output.into_arc_tensor(); 4],
@@ -48,8 +48,8 @@ impl Op for Squeeze {
 }
 
 pub fn build_squeeze(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let axes = proto.extract_named_attr("axes")?.unwrap();
+    let axes: Vec<i64> = proto.get_attribute("axes", None, proto)?;
     Ok(Box::new(Squeeze {
-        axes: Some(axes.ints.clone().iter().map(|&i| i as usize).collect()),
+        axes: Some(axes.iter().cloned().map(|i| i as usize).collect()),
     }) as BoxOp)
 }

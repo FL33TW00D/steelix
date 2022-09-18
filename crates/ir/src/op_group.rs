@@ -1,6 +1,6 @@
+use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-use lazy_static::lazy_static;
 /// OpGroup defines subsets of operations. This is used for colorizing output
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum OpGroup {

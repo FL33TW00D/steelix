@@ -1,7 +1,7 @@
 use onnx::onnx_pb;
 use std::{borrow::Cow, sync::Arc};
 
-use crate::{validate_providers, BoxOp, Op, OpCost, OpError, OpGroup, QuadVec, RealizedOp, Tensor};
+use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Transpose {
@@ -37,17 +37,17 @@ impl Op for Transpose {
         OpGroup::Shape
     }
 
-    fn cost(&self, mut providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        validate_providers(&providers, 1, 1, self.name().to_string())?;
+    fn realize(&self, mut providers: PVec) -> anyhow::Result<RealizedOp> {
+        validate_providers(&providers, 1, 1, &self.name())?;
 
         let new_shape = Self::transpose::<f32>(self, &providers[0], &self.perm);
-        unsafe { Arc::get_mut_unchecked(&mut providers[0]).update_shape(new_shape) };
+        unsafe { Arc::get_mut_unchecked(&mut providers[0]).update_shape(new_shape.into()) };
 
-        let mut result = QuadVec::new();
+        let mut result = PVec::new();
         result.push(providers[0].clone());
         Ok(RealizedOp {
             cost: OpCost {
-                mac: 42,
+                flops: 42,
                 parameters: 0,
             },
             outputs: result,
@@ -57,10 +57,10 @@ impl Op for Transpose {
 
 pub fn build_transpose(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
     let perm: Vec<usize> = proto
-        .extract_named_intv("perm")?
-        .ok_or_else(|| OpError::ValidationError("Expected perm.".to_string()))?
+        .get_attribute::<Vec<i64>>("perm", None, proto)?
         .iter()
-        .map(|&e| e as usize)
+        .cloned()
+        .map(|x| x as usize)
         .collect();
     Ok(Box::new(Transpose { perm }) as BoxOp)
 }

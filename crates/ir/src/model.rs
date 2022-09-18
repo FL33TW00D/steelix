@@ -1,4 +1,4 @@
-use crate::{BoxOp, IntoArcTensor, Op, OpNode, QuadVec, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpNode, PVec, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -12,8 +12,8 @@ impl<T: Op + ?Sized> Op for Box<T> {
     }
 
     #[inline]
-    fn cost(&self, provider: QuadVec) -> anyhow::Result<crate::RealizedOp> {
-        (**self).cost(provider)
+    fn realize(&self, provider: PVec) -> anyhow::Result<crate::RealizedOp> {
+        (**self).realize(provider)
     }
 
     #[inline]
@@ -50,16 +50,27 @@ pub struct Model {
     pub nodes: Vec<OpNode<BoxOp>>,
     pub inputs: Vec<usize>,  //IDs of input nodes
     pub outputs: Vec<usize>, //IDs of output nodes
+    pub traversal_order: Option<Vec<usize>>,
 }
 
 pub struct TraversalState {
-    pub intermediates: HashMap<usize, Arc<Tensor>>,
+    pub intermediates: HashMap<usize, PVec>,
     //eviction_state
+}
+
+pub struct ModelSummary {
+    //what do we need here?
+    pub total_flops: usize,
+    pub total_params: usize,
 }
 
 impl Model {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn update_traversal_order(&mut self, order: Vec<usize>) {
+        self.traversal_order = Some(order);
     }
 
     pub fn add_node(&mut self, name: String, op: BoxOp) -> usize {
@@ -83,7 +94,7 @@ impl Model {
     }
 
     ///Performs a DFS from each target node
-    pub fn build_traversal_order(&self) -> Vec<usize> {
+    pub fn build_traversal_order(mut self) -> Self {
         let mut visited = HashSet::with_capacity(self.nodes.len());
         let mut order: Vec<usize> = vec![];
         for target in self.outputs.clone() {
@@ -113,19 +124,14 @@ impl Model {
                 }
             }
         }
-        order
+        self.update_traversal_order(order);
+        self
     }
 
-    pub fn traverse(
+    fn insert_user_inputs(
         &mut self,
         initials: HashMap<String, Arc<Tensor>>,
-        mut order: Vec<usize>,
-    ) -> Result<Arc<Tensor>, ModelError> {
-        order.pop(); //remove the final node
-        let mut traversal_state = TraversalState {
-            intermediates: HashMap::new(),
-        };
-
+    ) -> Result<(), ModelError> {
         for input_id in &self.inputs {
             let input_node = &mut self.nodes[*input_id];
             let input_initial = initials.get(&input_node.name).ok_or_else(|| {
@@ -134,41 +140,46 @@ impl Model {
 
             (*input_node.op).update(Arc::clone(input_initial));
         }
-
-        let mut total_mac = 0;
-        let mut total_param = 0;
-
-        for node_id in order {
-            let node = &mut self.nodes[node_id];
-
-            let providers: QuadVec = node
-                .providers
-                .iter()
-                .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))
-                .collect();
-            let result = node.realize(providers)?;
-            total_mac += result.cost.mac;
-            total_param += result.cost.parameters;
-
-            traversal_state
-                .intermediates
-                .insert(node_id, result.outputs[0].clone().into_arc_tensor());
-        }
-        let result = traversal_state
-            .intermediates
-            .get(&(self.outputs[0] - 1))
-            .unwrap()
-            .clone();
-        println!("TOTAL MAC: {:?}", total_mac);
-        println!("TOTAL PARAM: {:?}", total_param);
-        Ok(result)
+        Ok(())
     }
 
     pub fn run(
         &mut self,
         initials: HashMap<String, Arc<Tensor>>,
-        order: Vec<usize>,
-    ) -> Result<Arc<Tensor>, ModelError> {
-        Self::traverse(self, initials, order)
+    ) -> Result<ModelSummary, ModelError> {
+        let mut order = self.traversal_order.clone().unwrap();
+        order.pop(); //remove the final node
+        let mut traversal_state = TraversalState {
+            intermediates: HashMap::new(),
+        };
+
+        self.insert_user_inputs(initials)?;
+
+        let mut total_flops = 0;
+        let mut total_params = 0;
+
+        for node_id in order {
+            let node = &mut self.nodes[node_id];
+
+            let providers: PVec = node
+                .providers
+                .iter()
+                .map(|id| Arc::clone(&traversal_state.intermediates.get(id).unwrap()[0]))
+                .collect();
+            let result = node.realize(providers)?;
+            total_flops += result.cost.flops;
+            total_params += result.cost.parameters;
+
+            traversal_state
+                .intermediates
+                .insert(node_id, result.outputs);
+        }
+        println!("# FLOPS: {:?}", total_flops);
+        println!("# PARAM: {:?}", total_params);
+
+        Ok(ModelSummary {
+            total_flops,
+            total_params,
+        })
     }
 }

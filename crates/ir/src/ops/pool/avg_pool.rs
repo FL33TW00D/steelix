@@ -8,8 +8,8 @@ use smallvec::smallvec;
 
 #[derive(Debug, Clone)]
 pub struct AvgPool {
-    pub ceil_mode: Option<i64>,
-    pub count_include_pad: Option<i64>,
+    pub ceil_mode: i64,
+    pub count_include_pad: i64,
     pub pads: Vec<i64>,
     pub strides: Vec<i64>,
     pub kernel_shape: Vec<i64>,
@@ -40,14 +40,14 @@ impl Op for AvgPool {
         OpGroup::Pool
     }
 
-    fn cost(&self, providers: crate::QuadVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
         let input_shape = &providers[0].shape;
         let (h_out, w_out) = self.output_dims(input_shape[2] as i64, input_shape[3] as i64);
         let out_shape = vec![input_shape[0], input_shape[1], h_out, w_out];
-        let out = Tensor::zeros::<f32>(out_shape);
+        let out = Tensor::new(providers[0].dt, out_shape.into());
         Ok(RealizedOp {
             cost: OpCost {
-                mac: providers[0].numel(),
+                flops: providers[0].numel(),
                 parameters: 0,
             },
             outputs: smallvec![out.into_arc_tensor(); 4],
@@ -56,15 +56,12 @@ impl Op for AvgPool {
 }
 
 pub fn build_avgpool(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let ceil_mode = proto.extract_named_int("ceil_mode")?;
-    let count_include_pad = proto.extract_named_int("count_include_pad")?;
-    let pads = proto
-        .extract_named_intv("pads")?
-        .unwrap_or_else(|| vec![0, 0, 0, 0]);
-    let kernel_shape = proto.extract_named_intv("kernel_shape")?.unwrap();
-    let strides = proto
-        .extract_named_intv("strides")?
-        .unwrap_or_else(|| vec![1, 1]);
+    let ceil_mode = proto.get_attribute("ceil_mode", Some(0), proto)?;
+    let count_include_pad = proto.get_attribute("count_include_pad", Some(0), proto)?;
+    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]), proto)?;
+    let kernel_shape = proto.get_attribute("kernel_shape", None, proto)?; //TODO: fix
+    let strides = proto.get_attribute("strides", Some(vec![1, 1]), proto)?;
+
     Ok(Box::new(AvgPool {
         ceil_mode,
         count_include_pad,

@@ -1,9 +1,9 @@
 use std::{fmt, mem::size_of, sync::Arc};
 
-use bytes::BytesMut;
-use ndarray::{Array, ArrayViewD, ArrayViewMutD, Zip};
-use num::FromPrimitive;
+use ndarray::Array;
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
+
+use crate::Shape;
 
 #[macro_export]
 macro_rules! as_std {
@@ -36,194 +36,34 @@ macro_rules! as_float {
 #[derive(Clone, Default)]
 pub struct Tensor {
     pub dt: DType,
-    pub shape: Vec<usize>,
+    pub shape: Shape,
     pub len: usize, //actual entry count
-    pub data: BytesMut,
-}
-
-impl PartialEq for Tensor {
-    fn eq(&self, other: &Self) -> bool {
-        unsafe fn eq_t<D: DataType>(cur: &Tensor, other: &Tensor) -> bool {
-            cur.as_slice_unchecked::<D>() == other.as_slice_unchecked::<D>()
-        }
-
-        self.dt == other.dt
-            && self.shape == other.shape
-            && self.len == other.len
-            && unsafe { as_float!(eq_t(self.dt)(self, other)) }
-    }
 }
 
 impl std::fmt::Debug for Tensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}, \n{}}}",
-            self.dt,
-            self.shape,
-            self.len,
-            self.stringify_data()
+            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}}}",
+            self.dt, self.shape, self.len,
         )
     }
 }
 
 impl Tensor {
-    pub fn new(dt: DType, shape: Vec<usize>) -> Self {
+    pub fn new(dt: DType, shape: Shape) -> Self {
         let len = shape.iter().cloned().product::<usize>();
         let byte_count = len * dt.size_of();
-        Self {
-            dt,
-            shape,
-            len,
-            data: BytesMut::with_capacity(byte_count),
-        }
-    }
-
-    pub fn uninitialized<T: DataType>(shape: Vec<usize>) -> Self {
-        Self::new(T::to_internal(), shape)
-    }
-
-    pub fn zeros<T: DataType>(shape: Vec<usize>) -> Self {
-        let len = shape.iter().cloned().product::<usize>();
-        let byte_count = len * T::to_internal().size_of();
-        Self {
-            dt: T::to_internal(),
-            shape,
-            len,
-            data: BytesMut::zeroed(byte_count),
-        }
-    }
-
-    pub fn arange<F: DataType + num_traits::Float>(
-        shape: Vec<usize>,
-        start: F,
-        stop: F,
-        step: F,
-    ) -> Tensor {
-        Array::range(start, stop, step)
-            .into_shape(shape)
-            .unwrap()
-            .into()
+        Self { dt, shape, len }
     }
 
     pub fn numel(&self) -> usize {
         self.shape.iter().cloned().product::<usize>()
     }
 
-    pub fn update_shape(&mut self, new_shape: Vec<usize>) {
+    pub fn update_shape(&mut self, new_shape: Shape) {
         //todo: err check
         self.shape = new_shape;
-    }
-
-    /// Access the data as a pointer.
-    pub fn as_ptr<A: DataType>(&self) -> anyhow::Result<*const A> {
-        Ok(self.data.as_ptr() as *const A)
-    }
-
-    /// Access the data as a pointer.
-    pub fn as_mut_ptr<A: DataType>(&mut self) -> anyhow::Result<*mut A> {
-        Ok(self.data.as_mut_ptr() as *mut A)
-    }
-
-    /// Transform the data as a `ndarray::Array`.
-    pub fn to_array_view<A: DataType>(&self) -> anyhow::Result<ArrayViewD<A>> {
-        //TODO: error checking
-        unsafe { Ok(self.to_array_view_unchecked()) }
-    }
-
-    #[inline(always)]
-    pub fn get_value<A: DataType + Copy>(&self, ptr: &*const A, index: usize) -> anyhow::Result<A> {
-        if index > self.len {
-            anyhow::bail!("Index out of bounds: {}|{}", index, self.len);
-        }
-        Ok(unsafe { *ptr.add(index) })
-    }
-
-    /// Transform the data as a `ndarray::Array`.
-    pub fn to_array_view_mut<A: DataType>(&mut self) -> anyhow::Result<ArrayViewMutD<A>> {
-        //TODO: error checking
-        unsafe { Ok(self.to_array_view_mut_unchecked()) }
-    }
-
-    pub unsafe fn to_array_view_unchecked<A: DataType>(&self) -> ArrayViewD<A> {
-        if self.len != 0 {
-            ArrayViewD::from_shape_ptr(&*self.shape, self.data.as_ptr() as *const A)
-        } else {
-            ArrayViewD::from_shape(&*self.shape, &[]).unwrap()
-        }
-    }
-
-    unsafe fn to_array_view_mut_unchecked<A: DataType>(&mut self) -> ArrayViewMutD<A> {
-        if self.len != 0 {
-            ArrayViewMutD::from_shape_ptr(&*self.shape, self.data.as_mut_ptr() as *mut A)
-        } else {
-            ArrayViewMutD::from_shape(&*self.shape, &mut []).unwrap()
-        }
-    }
-
-    pub fn permute_axes(self, axes: &[usize]) -> Tensor {
-        #[inline]
-        unsafe fn permute<T: DataType>(axes: &[usize], input: Tensor) -> Tensor {
-            input
-                .to_array_view_unchecked::<T>()
-                .permuted_axes(axes)
-                .to_owned() //I don't like this to_owned here
-                .into()
-        }
-        unsafe { as_float!(permute(self.dt)(axes, self)) }
-    }
-
-    pub fn move_axis(self, from: usize, to: usize) -> Tensor {
-        let mut permutation: Vec<usize> = (0..4).collect();
-        permutation.remove(from);
-        permutation.insert(to, from);
-        self.permute_axes(&permutation)
-    }
-
-    pub unsafe fn as_slice_unchecked<D: DataType>(&self) -> &[D] {
-        std::slice::from_raw_parts::<D>(self.data.as_ptr() as *const D, self.len)
-    }
-
-    pub fn stringify_data(&self) -> String {
-        unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
-            //TODO: write decent pretty printer here: https://docs.rs/ndarray/latest/src/ndarray/arrayformat.rs.html#196-199
-            input.as_slice_unchecked::<D>()[0..input.len]
-                .iter()
-                .take(1024)
-                .enumerate()
-                .map(|(idx, d)| {
-                    let mut out = format!("{:>10.6},", d);
-                    if (input.shape.len() > 1)
-                        && (idx + 1).rem_euclid(input.shape[input.shape.len() - 1]) == 0
-                    {
-                        out.push('\n')
-                    }
-                    out
-                })
-                .collect::<String>()
-        }
-        unsafe { as_float!(pretty_print(self.dt)(self)) }
-    }
-
-    pub fn all_close(self, b: &Tensor, tol: f32) -> bool {
-        fn all_close_t<D>(a: Tensor, b: &Tensor, tol: D) -> bool
-        where
-            D: DataType + num_traits::float::Float,
-        {
-            let a = a.to_array_view::<D>().unwrap();
-            let b = b.to_array_view::<D>().unwrap();
-            Zip::from(a).and(b).all(move |a, b| {
-                (a.is_nan() && b.is_nan())
-                    || (a.is_infinite() && b.is_infinite() && a.signum() == b.signum())
-                    || (*a - *b).abs() <= tol
-            })
-        }
-
-        as_float!(all_close_t(self.dt)(
-            self,
-            b,
-            FromPrimitive::from_f32(tol).unwrap()
-        ))
     }
 }
 
@@ -306,16 +146,10 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
 
     fn try_from(tproto: onnx_pb::TensorProto) -> Result<Self, Self::Error> {
         let dt = ProtoDType::from_i32(tproto.data_type).unwrap().try_into()?;
-        let shape: Vec<usize> = tproto.dims.iter().map(|&i| i as usize).collect();
+        let shape: Shape = tproto.dims.iter().map(|&i| i as usize).collect();
         let len = shape.iter().cloned().product::<usize>();
-        let bytes: BytesMut = (*tproto.raw_data).into();
 
-        Ok(Tensor {
-            dt,
-            shape,
-            len,
-            data: bytes,
-        })
+        Ok(Tensor { dt, shape, len })
     }
 }
 
@@ -375,9 +209,8 @@ impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
         let data = unsafe { std::slice::from_raw_parts(Box::into_raw(vec) as *mut u8, byte_count) };
         Tensor {
             dt: A::to_internal(),
-            shape,
+            shape: shape.into(),
             len,
-            data: data.into(),
         }
     }
 }

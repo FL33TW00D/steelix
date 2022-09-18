@@ -2,12 +2,12 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, QuadVec, RealizedOp};
+use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct Clip {
-    pub min: Option<i64>,
-    pub max: Option<i64>,
+    pub min: i64,
+    pub max: i64,
 }
 
 impl Op for Clip {
@@ -19,14 +19,14 @@ impl Op for Clip {
         OpGroup::Activation
     }
 
-    fn cost(&self, providers: QuadVec) -> anyhow::Result<RealizedOp> {
-        validate_providers(&providers, 1, 3, self.name().to_string())?;
-        let mut qv = QuadVec::new();
+    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        validate_providers(&providers, 1, 3, &self.name())?;
+        let mut qv = PVec::new();
         qv.push(providers[0].clone());
 
         Ok(RealizedOp {
             cost: OpCost {
-                mac: 1,
+                flops: 1,
                 parameters: 1000,
             },
             outputs: qv,
@@ -35,10 +35,7 @@ impl Op for Clip {
 }
 
 pub fn build_clip(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let _min = proto.extract_named_attr("min")?;
-    let _max = proto.extract_named_attr("max")?;
-    Ok(Box::new(Clip {
-        min: Some(0),
-        max: Some(0),
-    }) as BoxOp)
+    let min = proto.get_attribute("min", Some(i64::MIN), proto)?;
+    let max = proto.get_attribute("max", Some(i64::MAX), proto)?;
+    Ok(Box::new(Clip { min, max }) as BoxOp)
 }

@@ -1,38 +1,61 @@
+use std::str::from_utf8;
+
 use crate::onnx_pb::{AttributeProto, NodeProto};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+#[error("did not find attribute '{attribute}' for node '{node_name}'")]
+pub struct AttributeNotFoundError {
+    attribute: String,
+    node_name: String,
+}
 
 impl NodeProto {
-    pub fn extract_named_attr(
+    pub fn get_attribute<T: From<AttributeProto>>(
         &self,
-        attr_name: &str,
-    ) -> Result<Option<&AttributeProto>, anyhow::Error> {
-        let attr = match self.attribute.iter().find(|a| a.name == attr_name) {
-            Some(attr) => attr,
-            _ => return Ok(None),
-        };
-        Ok(Some(attr))
+        attribute: &str,
+        default: Option<T>,
+        node: &NodeProto,
+    ) -> Result<T, AttributeNotFoundError> {
+        match (
+            self.attribute.iter().find(|attr| attr.name == attribute),
+            default,
+        ) {
+            (Some(attr), _) => Ok(attr.clone().into()),
+            (None, Some(default_attr)) => Ok(default_attr),
+            (None, None) => Err(AttributeNotFoundError {
+                attribute: attribute.to_string(),
+                node_name: node.name.to_string(),
+            }),
+        }
     }
-
-    pub fn extract_named_float(&self, attr_name: &str) -> Result<Option<f32>, anyhow::Error> {
-        let float = match self.attribute.iter().find(|a| a.name == attr_name) {
-            Some(attr) => Some(attr.f),
-            _ => return Ok(None),
-        };
-        Ok(float)
+}
+impl From<AttributeProto> for Vec<i64> {
+    fn from(value: AttributeProto) -> Self {
+        value.ints
     }
+}
 
-    pub fn extract_named_int(&self, attr_name: &str) -> Result<Option<i64>, anyhow::Error> {
-        let int = match self.attribute.iter().find(|a| a.name == attr_name) {
-            Some(attr) => Some(attr.i),
-            _ => return Ok(None),
-        };
-        Ok(int)
+impl From<AttributeProto> for Vec<f32> {
+    fn from(value: AttributeProto) -> Self {
+        value.floats
     }
+}
 
-    pub fn extract_named_intv(&self, attr_name: &str) -> Result<Option<Vec<i64>>, anyhow::Error> {
-        let attr = match self.attribute.iter().find(|a| a.name == attr_name) {
-            Some(attr) => attr.ints.clone(),
-            _ => return Ok(None),
-        };
-        Ok(Some(attr))
+impl From<AttributeProto> for f32 {
+    fn from(value: AttributeProto) -> Self {
+        value.f
+    }
+}
+
+impl From<AttributeProto> for i64 {
+    fn from(value: AttributeProto) -> Self {
+        value.i
+    }
+}
+
+impl From<AttributeProto> for String {
+    fn from(value: AttributeProto) -> Self {
+        from_utf8(&value.s).unwrap().to_string()
     }
 }
