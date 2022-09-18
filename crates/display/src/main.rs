@@ -3,7 +3,10 @@ use ir::{IntoArcTensor, Tensor};
 use parser::parse_model;
 use smallvec::smallvec;
 use std::{collections::HashMap, process::Command as ProcessCommand, sync::Arc};
-use steelix::{build_cli, opcount_table, render_to, RenderableGraph};
+use steelix::{
+    build_cli, hardware_table, metrics_table, opcount_table, render_to, RenderableGraph,
+};
+use tabled::builder::Builder;
 use tempfile::NamedTempFile;
 
 fn main() {
@@ -55,7 +58,17 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .build_traversal_order()
         .run(inputs)?;
 
-    println!("{}", opcount_table(summary.op_counts));
+    let op_counts = summary.op_counts.clone();
+    let flops = summary.total_flops.clone();
+
+    let summary = Builder::from_iter([
+        [opcount_table(op_counts)],
+        [metrics_table(summary)],
+        [hardware_table(flops)],
+    ])
+    .build();
+
+    println!("{}", summary);
 
     Ok(())
 }
