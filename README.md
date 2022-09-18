@@ -26,14 +26,26 @@ steelix plot --model-path ./my-model.onnx --output-path ./my-svg.svg
 
 ## Why not Netron?
 
-Netron is a great model visualizer, but it isn't **composeable**. With Steelix, you can add a simple command like below:
+Netron is a great model visualizer and supports a much wider range of formats that we do. However, there are a few usecases where Steelix excels:
+
+1. Composition: As a CLI tool Steelix is perfect for inclusion inside your workflow/pipelines. Now every time you make an alteration to your model, you can generate a new SVG and embed it!
 ```
 import subprocess
 result = subprocess.run(
     ["steelix", "steelix plot --model-path ./my-model.onnx --output-path ./my-svg.svg"], capture_output=True, text=True
 ) 
 ```
-straight into your model flow, and view your changes instantly! Steelix is also fast, able to render large models like DEIT in under a second.
+2. Speed: Steelix is very very fast, check out our benchmarks for more info.
+3. Metrics
+
+Steelix not only allows you to visualize your model, but can give you handy stats like:
+- Total Memory Usage
+- Peak Memory Usage, 
+- Total FLOPs
+- Total Parameters
+
+4. Guaranteed Shapes
+When working with neural nets, the most common problem is mismatched sizes between operations. As Steelix runs a shape pass through the model - we will always have shapes available - even if they aren't included in the ONNX file.
 
 ## Install
 
