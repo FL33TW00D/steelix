@@ -9,13 +9,13 @@ use tempfile::NamedTempFile;
 fn main() {
     let matches = build_cli().get_matches();
     match matches.subcommand().unwrap() {
-        ("plot", matches) => run_plot_command(matches),
-        ("summary", matches) => run_summary_command(matches),
+        ("plot", matches) => run_plot_command(matches).unwrap(),
+        ("summary", matches) => run_summary_command(matches).unwrap(),
         _ => unreachable!("Invalid command provided."),
     }
 }
 
-fn run_plot_command(matches: &ArgMatches) {
+fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
     let model_path = matches
         .get_one::<String>("MODEL_PATH")
         .expect("Failed to find model at path.")
@@ -37,9 +37,10 @@ fn run_plot_command(matches: &ArgMatches) {
         .arg(output_path)
         .output()
         .expect("Failed to call Dot, is it installed?");
+    Ok(())
 }
 
-fn run_summary_command(matches: &ArgMatches) {
+fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
     let model_path = matches
         .get_one::<String>("MODEL_PATH")
         .expect("Failed to find model at path.")
@@ -50,8 +51,7 @@ fn run_summary_command(matches: &ArgMatches) {
         Tensor::new(ir::DType::F32, smallvec![1, 3, 224, 224]).into_arc_tensor(),
     )]);
 
-    let run_result = parse_model(model_path)
-        .expect("Failed to parse model.")
-        .build_traversal_order()
-        .run(inputs);
+    let run_result = parse_model(model_path)?.build_traversal_order().run(inputs);
+
+    Ok(())
 }

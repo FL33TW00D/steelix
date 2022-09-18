@@ -54,8 +54,14 @@ pub struct Model {
 }
 
 pub struct TraversalState {
-    pub intermediates: HashMap<usize, Arc<Tensor>>,
+    pub intermediates: HashMap<usize, PVec>,
     //eviction_state
+}
+
+pub struct ModelSummary {
+    //what do we need here?
+    pub total_flops: usize,
+    pub total_params: usize,
 }
 
 impl Model {
@@ -122,16 +128,10 @@ impl Model {
         self
     }
 
-    pub fn traverse(
+    fn insert_user_inputs(
         &mut self,
         initials: HashMap<String, Arc<Tensor>>,
-    ) -> Result<Arc<Tensor>, ModelError> {
-        let mut order = self.traversal_order.clone().unwrap();
-        order.pop(); //remove the final node
-        let mut traversal_state = TraversalState {
-            intermediates: HashMap::new(),
-        };
-
+    ) -> Result<(), ModelError> {
         for input_id in &self.inputs {
             let input_node = &mut self.nodes[*input_id];
             let input_initial = initials.get(&input_node.name).ok_or_else(|| {
@@ -140,9 +140,23 @@ impl Model {
 
             (*input_node.op).update(Arc::clone(input_initial));
         }
+        Ok(())
+    }
 
-        let mut total_mac = 0;
-        let mut total_param = 0;
+    pub fn run(
+        &mut self,
+        initials: HashMap<String, Arc<Tensor>>,
+    ) -> Result<ModelSummary, ModelError> {
+        let mut order = self.traversal_order.clone().unwrap();
+        order.pop(); //remove the final node
+        let mut traversal_state = TraversalState {
+            intermediates: HashMap::new(),
+        };
+
+        self.insert_user_inputs(initials)?;
+
+        let mut total_flops = 0;
+        let mut total_params = 0;
 
         for node_id in order {
             let node = &mut self.nodes[node_id];
@@ -150,30 +164,22 @@ impl Model {
             let providers: PVec = node
                 .providers
                 .iter()
-                .map(|id| Arc::clone(traversal_state.intermediates.get(id).unwrap()))
+                .map(|id| Arc::clone(&traversal_state.intermediates.get(id).unwrap()[0]))
                 .collect();
             let result = node.realize(providers)?;
-            total_mac += result.cost.flops;
-            total_param += result.cost.parameters;
+            total_flops += result.cost.flops;
+            total_params += result.cost.parameters;
 
             traversal_state
                 .intermediates
-                .insert(node_id, result.outputs[0].clone().into_arc_tensor());
+                .insert(node_id, result.outputs);
         }
-        let result = traversal_state
-            .intermediates
-            .get(&(self.outputs[0] - 1))
-            .unwrap()
-            .clone();
-        println!("TOTAL Flops: {:?}", total_mac);
-        println!("TOTAL PARAM: {:?}", total_param);
-        Ok(result)
-    }
+        println!("# FLOPS: {:?}", total_flops);
+        println!("# PARAM: {:?}", total_params);
 
-    pub fn run(
-        &mut self,
-        initials: HashMap<String, Arc<Tensor>>,
-    ) -> Result<Arc<Tensor>, ModelError> {
-        Self::traverse(self, initials)
+        Ok(ModelSummary {
+            total_flops,
+            total_params,
+        })
     }
 }
