@@ -4,7 +4,7 @@ use bytes::BytesMut;
 use ndarray::Array;
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
 
-use crate::Shape;
+use crate::{OpError, Shape, StResult};
 
 #[macro_export]
 macro_rules! as_std {
@@ -70,6 +70,44 @@ impl Tensor {
     pub fn update_shape(&mut self, new_shape: Shape) {
         //todo: err check
         self.shape = new_shape;
+    }
+
+    ///# Safety
+    /// This shit is straight unsafe dog
+    pub unsafe fn as_slice_unchecked<D: DataType>(&self) -> &[D] {
+        std::slice::from_raw_parts::<D>(self.data.as_ref().unwrap().as_ptr() as *const D, self.len)
+    }
+
+    pub fn as_slice<D: DataType>(&self) -> Result<&[D], OpError> {
+        if self.data.is_none() {
+            Err(OpError::ValidationError(
+                "Tried to take slice of non existent data!".to_string(),
+            ))
+        } else {
+            //todo check len too
+            unsafe { Ok(self.as_slice_unchecked()) }
+        }
+    }
+
+    pub fn stringify_data(&self) -> String {
+        unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
+            //TODO: write decent pretty printer here: https://docs.rs/ndarray/latest/src/ndarray/arrayformat.rs.html#196-199
+            input.as_slice_unchecked::<D>()[0..input.len]
+                .iter()
+                .take(1024)
+                .enumerate()
+                .map(|(idx, d)| {
+                    let mut out = format!("{:>10.6},", d);
+                    if (input.shape.len() > 1)
+                        && (idx + 1).rem_euclid(input.shape[input.shape.len() - 1]) == 0
+                    {
+                        out.push('\n')
+                    }
+                    out
+                })
+                .collect::<String>()
+        }
+        unsafe { as_float!(pretty_print(self.dt)(self)) }
     }
 }
 
