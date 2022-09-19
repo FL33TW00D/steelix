@@ -142,12 +142,10 @@ impl Model {
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
-            println!("NODE: {:?}", node);
             if node.op.op_group() != OpGroup::Constant {
                 *op_counts.entry(node.name.to_owned()).or_insert(0) += 1;
             }
 
-            println!("providers: {:?}", node.providers);
             let providers: PVec = node
                 .providers
                 .iter()
@@ -161,7 +159,6 @@ impl Model {
                 })
                 .collect();
             let result = node.realize(providers)?;
-            println!("RESULT: {:?}", result);
             total_flops += result.cost.flops;
             total_params += result.cost.parameters;
 

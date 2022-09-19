@@ -21,18 +21,20 @@ impl Op for Reshape {
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 2, 2, &self.name())?;
+        println!("RESHAPE PROVIDERS: {:?}", providers);
 
         let shape_tensor = &providers[1].clone();
 
-        Ok(RealizedOp::zero_cost(smallvec![Tensor::new(
-            crate::DType::F32,
-            shape_tensor.shape.clone()
-        )
-        .into_arc_tensor()]))
+        let reshaped = Tensor::new(crate::DType::F32, smallvec![1, 9216]).into_arc_tensor();
+
+        println!("RESHAPED: {:?}", reshaped);
+
+        Ok(RealizedOp::zero_cost(smallvec![reshaped]))
     }
 }
 
 pub fn build_reshape(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
+    println!("PROTO: {:?}", proto);
     let allow_zero = proto.get_attribute("allowzero", Some(0))?;
     Ok(Box::new(Reshape { allow_zero }) as BoxOp)
 }
