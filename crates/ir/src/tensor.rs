@@ -4,7 +4,7 @@ use bytes::BytesMut;
 use ndarray::Array;
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
 
-use crate::{OpError, Shape, StResult};
+use crate::{OpError, Shape};
 
 #[macro_export]
 macro_rules! as_std {
@@ -46,8 +46,11 @@ impl std::fmt::Debug for Tensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}}}",
-            self.dt, self.shape, self.len,
+            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}, \n {}}}",
+            self.dt,
+            self.shape,
+            self.len,
+            self.stringify_data()
         )
     }
 }
@@ -89,12 +92,15 @@ impl Tensor {
         }
     }
 
+    //Rust generics fucking suck or I'd extract this to a function
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
-            //TODO: write decent pretty printer here: https://docs.rs/ndarray/latest/src/ndarray/arrayformat.rs.html#196-199
-            input.as_slice_unchecked::<D>()[0..input.len]
+            let chunk_size = 64;
+            let start_chunk = &input.as_slice::<D>().unwrap()[0..chunk_size];
+            let end_chunk = &input.as_slice::<D>().unwrap()[input.len - chunk_size..input.len];
+
+            let start_str = start_chunk
                 .iter()
-                .take(1024)
                 .enumerate()
                 .map(|(idx, d)| {
                     let mut out = format!("{:>10.6},", d);
@@ -105,7 +111,22 @@ impl Tensor {
                     }
                     out
                 })
-                .collect::<String>()
+                .collect::<String>();
+            let end_str = end_chunk
+                .iter()
+                .enumerate()
+                .map(|(idx, d)| {
+                    let mut out = format!("{:>10.6},", d);
+                    if (input.shape.len() > 1)
+                        && (idx + 1).rem_euclid(input.shape[input.shape.len() - 1]) == 0
+                    {
+                        out.push('\n')
+                    }
+                    out
+                })
+                .collect::<String>();
+
+            format!("{}\n...\n{}", start_str, end_str)
         }
         unsafe { as_float!(pretty_print(self.dt)(self)) }
     }
