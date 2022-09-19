@@ -1,11 +1,9 @@
 //Operator set is defined here: https://github.com/onnx/onnx/blob/main/onnx/defs/operator_sets.h
-#![feature(get_mut_unchecked)]
 mod model;
 mod op_group;
 mod op_node;
 mod op_register;
 mod tensor;
-mod tensor_shape;
 mod value_info;
 
 pub mod ops;
@@ -19,7 +17,6 @@ pub use op_group::*;
 pub use op_node::*;
 pub use op_register::*;
 pub use tensor::*;
-pub use tensor_shape::*;
 pub use value_info::*;
 
 #[derive(Debug, Default)]
@@ -42,7 +39,6 @@ impl OpCost {
 }
 
 type PVec = SmallVec<[Arc<Tensor>; 4]>;
-
 type Shape = SmallVec<[usize; 4]>;
 
 type StResult<T> = anyhow::Result<T>;
@@ -78,8 +74,6 @@ pub trait Op {
     ///Computes the cost of the operation and propagates the tensors forward
     ///with the appropriate shape updates
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp>;
-
-    fn update(&mut self, _t: Arc<Tensor>) {}
 }
 
 pub type BoxOp = Box<dyn Op>;
@@ -107,6 +101,7 @@ elementwise!(Abs, Logic, 1);
 elementwise!(Erf, Logic, 2);
 elementwise!(Sigmoid, Logic, 4);
 elementwise!(LeakyRelu, Activation, 2);
+elementwise!(Relu, Activation, 1);
 elementwise!(Not, Logic, 1);
 
 #[macro_export]

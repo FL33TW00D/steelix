@@ -35,8 +35,6 @@ impl Op for BatchNormalization {
             outputs: smallvec![providers[0].clone(); 4],
         })
     }
-
-    fn update(&mut self, _t: std::sync::Arc<crate::Tensor>) {}
 }
 
 pub fn build_batchnorm(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {

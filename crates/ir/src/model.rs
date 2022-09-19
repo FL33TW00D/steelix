@@ -1,4 +1,6 @@
-use crate::{BoxOp, Op, OpGroup, OpNode, PVec, Tensor};
+use smallvec::smallvec;
+
+use crate::{BoxOp, IntoArcTensor, Op, OpGroup, OpNode, PVec, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -14,11 +16,6 @@ impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
     fn realize(&self, provider: PVec) -> anyhow::Result<crate::RealizedOp> {
         (**self).realize(provider)
-    }
-
-    #[inline]
-    fn update(&mut self, t: Arc<Tensor>) {
-        (**self).update(t)
     }
 }
 
@@ -131,29 +128,12 @@ impl Model {
         self
     }
 
-    fn insert_user_inputs(&mut self) -> Result<(), ModelError> {
-        for input_id in &self.inputs {
-            let input_node = &mut self.nodes[*input_id];
-            println!("INPUT NODE: {:?}", input_node);
-            /*
-            let input_initial = initials.get(&input_node.name).ok_or_else(|| {
-                ModelError::ValidationError("Failed to get required input.".to_string())
-            })?;
-
-            (*input_node.op).update(Arc::clone(input_initial));
-            */
-        }
-        Ok(())
-    }
-
     pub fn run(&mut self) -> Result<ModelSummary, ModelError> {
         let mut order = self.traversal_order.clone().unwrap();
         order.pop(); //remove the final node
         let mut traversal_state = TraversalState {
             intermediates: HashMap::new(),
         };
-
-        self.insert_user_inputs()?;
 
         let mut total_flops = 0;
         let mut total_params = 0;
@@ -162,13 +142,23 @@ impl Model {
         for node_id in order {
             let node = &mut self.nodes[node_id];
 
+            println!("NODE: {:?}", node);
             if node.op.op_group() != OpGroup::Constant {
                 *op_counts.entry(node.name.to_owned()).or_insert(0) += 1;
             }
+
+            println!("providers: {:?}", node.providers);
             let providers: PVec = node
                 .providers
                 .iter()
-                .map(|id| Arc::clone(&traversal_state.intermediates.get(id).unwrap()[0]))
+                .map(|id| {
+                    Arc::clone(
+                        &traversal_state
+                            .intermediates
+                            .get(id)
+                            .unwrap_or(&smallvec![Tensor::default().into_arc_tensor();4])[0],
+                    )
+                })
                 .collect();
             let result = node.realize(providers)?;
             total_flops += result.cost.flops;

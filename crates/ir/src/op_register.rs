@@ -6,7 +6,7 @@ use onnx::onnx_pb;
 
 use crate::{
     ops::{activation, binary, nn, pool, shape},
-    BoxOp,
+    Abs, BoxOp, Relu,
 };
 
 pub type OpBuilder = fn(node: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error>;
@@ -25,7 +25,11 @@ impl Default for OpRegister {
         reg.insert("Add", binary::build_add);
         reg.insert("Squeeze", shape::build_squeeze);
         reg.insert("MatMul", binary::build_matmul);
+        reg.insert("LRN", nn::build_lrn);
         reg.insert("AveragePool", pool::build_avgpool);
+        reg.insert("MaxPool", pool::build_maxpool);
+        reg.insert("Abs", |_| Ok(Box::new(Abs)));
+        reg.insert("Relu", |_| Ok(Box::new(Relu)));
         reg
     }
 }

@@ -1,16 +1,10 @@
+use smallvec::smallvec;
 use std::{borrow::Cow, sync::Arc};
 
-use crate::{BoxOp, Op, OpGroup, PVec, RealizedOp, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Tensor, ValueInfo};
 
-//Takes an optional tensor which is initialized by the user inputs
 #[derive(Debug, Clone)]
-pub struct Initial(Option<Arc<Tensor>>);
-
-impl Initial {
-    pub fn set_initial(&mut self, t: Arc<Tensor>) {
-        self.0 = Some(t);
-    }
-}
+pub struct Initial(Arc<Tensor>);
 
 impl Op for Initial {
     fn name(&self) -> Cow<str> {
@@ -21,21 +15,12 @@ impl Op for Initial {
         OpGroup::Data
     }
 
-    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        if let Some(t) = &self.0 {
-            let mut qv = PVec::new();
-            qv.push(t.clone());
-            Ok(RealizedOp::zero_cost(qv))
-        } else {
-            panic!("Uninitialized input tensor found")
-        }
-    }
-
-    fn update(&mut self, t: Arc<Tensor>) {
-        self.set_initial(t);
+    fn realize(&self, _: PVec) -> anyhow::Result<RealizedOp> {
+        Ok(RealizedOp::zero_cost(smallvec![self.0.clone(); 4]))
     }
 }
 
-pub fn build_initial() -> Result<BoxOp, anyhow::Error> {
-    Ok(Box::new(Initial(None)) as BoxOp)
+pub fn build_initial(value_info: ValueInfo) -> Result<BoxOp, anyhow::Error> {
+    let initial = Tensor::new(crate::DType::F32, value_info.dimensions);
+    Ok(Box::new(Initial(initial.into_arc_tensor())) as BoxOp)
 }
