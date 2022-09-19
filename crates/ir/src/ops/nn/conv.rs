@@ -19,14 +19,14 @@ impl Conv {
     fn output_dims(&self, input_shape: &[i64]) -> (usize, usize) {
         let kernel_shape = self.kernel_shape.clone();
         let out_height = ((((input_shape[2] + (2 * self.pads[2])
-            - self.dilations[0] * (self.kernel_shape.clone()[0] - 1)
+            - self.dilations[0] * (kernel_shape[0] - 1)
             - 1)
             / self.strides[0])
             + 1) as f32)
             .floor();
 
         let out_width = ((((input_shape[3] + (2 * self.pads[3])
-            - self.dilations[1] * (self.kernel_shape.clone()[1] - 1)
+            - self.dilations[1] * (kernel_shape[1] - 1)
             - 1)
             / self.strides[1])
             + 1) as f32)
@@ -69,20 +69,20 @@ impl Op for Conv {
 
         Ok(RealizedOp {
             cost: OpCost {
-                flops: mac,
+                flops: mac * 2,
                 parameters,
             },
-            outputs: smallvec![placeholder; 4],
+            outputs: smallvec![placeholder],
         })
     }
 }
 
 pub fn build_conv(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let group = proto.get_attribute("group", Some(1), proto)?;
-    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]), proto)?;
-    let kernel_shape = proto.get_attribute("kernel_shape", None, proto)?;
-    let strides = proto.get_attribute("strides", None, proto)?;
-    let dilations = proto.get_attribute("dilations", None, proto)?;
+    let group = proto.get_attribute("group", Some(1))?;
+    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]))?;
+    let kernel_shape = proto.get_attribute("kernel_shape", None)?;
+    let strides = proto.get_attribute("strides", None)?;
+    let dilations = proto.get_attribute("dilations", Some(vec![1, 1, 1, 1]))?;
 
     Ok(Box::new(Conv {
         group,

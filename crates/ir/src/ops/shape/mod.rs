@@ -1,7 +1,7 @@
-mod pad;
+mod reshape;
 mod squeeze;
 mod transpose;
 
-pub use pad::*;
+pub use reshape::*;
 pub use squeeze::*;
 pub use transpose::*;

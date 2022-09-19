@@ -15,7 +15,6 @@ impl NodeProto {
         &self,
         attribute: &str,
         default: Option<T>,
-        node: &NodeProto,
     ) -> Result<T, AttributeNotFoundError> {
         match (
             self.attribute.iter().find(|attr| attr.name == attribute),
@@ -25,7 +24,7 @@ impl NodeProto {
             (None, Some(default_attr)) => Ok(default_attr),
             (None, None) => Err(AttributeNotFoundError {
                 attribute: attribute.to_string(),
-                node_name: node.name.to_string(),
+                node_name: self.name.to_string(),
             }),
         }
     }

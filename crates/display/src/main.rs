@@ -1,9 +1,10 @@
 use clap::ArgMatches;
-use ir::{IntoArcTensor, Tensor};
 use parser::parse_model;
-use smallvec::smallvec;
-use std::{collections::HashMap, process::Command as ProcessCommand, sync::Arc};
-use steelix::{build_cli, render_to, RenderableGraph};
+use std::process::Command as ProcessCommand;
+use steelix::{
+    build_cli, hardware_table, metrics_table, opcount_table, render_to, RenderableGraph,
+};
+use tabled::{object::Rows, Alignment, Disable, Modify, Panel, Style, Table, Tabled};
 use tempfile::NamedTempFile;
 
 fn main() {
@@ -16,7 +17,7 @@ fn main() {
 }
 
 fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
-    let model_path = matches
+    let model_path = &matches
         .get_one::<String>("MODEL_PATH")
         .expect("Failed to find model at path.")
         .into();
@@ -40,18 +41,50 @@ fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[derive(Tabled)]
+struct SummaryTable {
+    #[tabled(rename = "")]
+    table: String,
+    #[tabled(rename = "")]
+    subtable: Table,
+}
+
 fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
-    let model_path = matches
+    let mut model_path = matches
         .get_one::<String>("MODEL_PATH")
         .expect("Failed to find model at path.")
         .into();
 
-    let inputs: HashMap<String, Arc<Tensor>> = HashMap::from([(
-        "images:0".into(),
-        Tensor::new(ir::DType::F32, smallvec![1, 3, 224, 224]).into_arc_tensor(),
-    )]);
+    let summary = parse_model(&model_path)?.build_traversal_order().run()?;
 
-    let run_result = parse_model(model_path)?.build_traversal_order().run(inputs);
+    let op_counts = summary.op_counts.clone();
+    let flops = summary.total_flops;
+
+    let summary = vec![
+        SummaryTable {
+            table: "Operations".to_string(),
+            subtable: opcount_table(op_counts),
+        },
+        SummaryTable {
+            table: "Metrics".to_string(),
+            subtable: metrics_table(summary),
+        },
+        SummaryTable {
+            table: "Hardware".to_string(),
+            subtable: hardware_table(flops),
+        },
+    ];
+
+    let res = Table::new(summary)
+        .with(Panel::header(format!(
+            "{} Model Summary",
+            model_path.file_stem().unwrap().to_str().unwrap()
+        )))
+        .with(Disable::row(Rows::single(1)))
+        .with(Style::modern())
+        .with(Modify::new(Rows::new(0..)).with(Alignment::center()));
+
+    println!("{}", res);
 
     Ok(())
 }

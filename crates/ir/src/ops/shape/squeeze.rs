@@ -42,13 +42,13 @@ impl Op for Squeeze {
         let output = Tensor::new(providers[0].dt, new_shape.into());
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
-            outputs: smallvec![output.into_arc_tensor(); 4],
+            outputs: smallvec![output.into_arc_tensor()],
         })
     }
 }
 
 pub fn build_squeeze(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let axes: Vec<i64> = proto.get_attribute("axes", None, proto)?;
+    let axes: Vec<i64> = proto.get_attribute("axes", None)?;
     Ok(Box::new(Squeeze {
         axes: Some(axes.iter().cloned().map(|i| i as usize).collect()),
     }) as BoxOp)

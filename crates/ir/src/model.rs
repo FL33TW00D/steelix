@@ -1,4 +1,6 @@
-use crate::{BoxOp, IntoArcTensor, Op, OpNode, PVec, Tensor};
+use smallvec::smallvec;
+
+use crate::{BoxOp, IntoArcTensor, Op, OpGroup, OpNode, PVec, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -14,11 +16,6 @@ impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
     fn realize(&self, provider: PVec) -> anyhow::Result<crate::RealizedOp> {
         (**self).realize(provider)
-    }
-
-    #[inline]
-    fn update(&mut self, t: Arc<Tensor>) {
-        (**self).update(t)
     }
 }
 
@@ -53,15 +50,18 @@ pub struct Model {
     pub traversal_order: Option<Vec<usize>>,
 }
 
+#[derive(Debug, Default)]
 pub struct TraversalState {
     pub intermediates: HashMap<usize, PVec>,
     //eviction_state
 }
 
+#[derive(Debug, Default)]
 pub struct ModelSummary {
     //what do we need here?
     pub total_flops: usize,
     pub total_params: usize,
+    pub op_counts: HashMap<String, usize>,
 }
 
 impl Model {
@@ -128,43 +128,35 @@ impl Model {
         self
     }
 
-    fn insert_user_inputs(
-        &mut self,
-        initials: HashMap<String, Arc<Tensor>>,
-    ) -> Result<(), ModelError> {
-        for input_id in &self.inputs {
-            let input_node = &mut self.nodes[*input_id];
-            let input_initial = initials.get(&input_node.name).ok_or_else(|| {
-                ModelError::ValidationError("Failed to get required input.".to_string())
-            })?;
-
-            (*input_node.op).update(Arc::clone(input_initial));
-        }
-        Ok(())
-    }
-
-    pub fn run(
-        &mut self,
-        initials: HashMap<String, Arc<Tensor>>,
-    ) -> Result<ModelSummary, ModelError> {
+    pub fn run(&mut self) -> Result<ModelSummary, ModelError> {
         let mut order = self.traversal_order.clone().unwrap();
         order.pop(); //remove the final node
         let mut traversal_state = TraversalState {
             intermediates: HashMap::new(),
         };
 
-        self.insert_user_inputs(initials)?;
-
         let mut total_flops = 0;
         let mut total_params = 0;
 
+        let mut op_counts = HashMap::new();
         for node_id in order {
             let node = &mut self.nodes[node_id];
+
+            if node.op.op_group() != OpGroup::Constant {
+                *op_counts.entry(node.name.to_owned()).or_insert(0) += 1;
+            }
 
             let providers: PVec = node
                 .providers
                 .iter()
-                .map(|id| Arc::clone(&traversal_state.intermediates.get(id).unwrap()[0]))
+                .map(|id| {
+                    Arc::clone(
+                        &traversal_state
+                            .intermediates
+                            .get(id)
+                            .unwrap_or(&smallvec![Tensor::default().into_arc_tensor()])[0],
+                    )
+                })
                 .collect();
             let result = node.realize(providers)?;
             total_flops += result.cost.flops;
@@ -174,12 +166,10 @@ impl Model {
                 .intermediates
                 .insert(node_id, result.outputs);
         }
-        println!("# FLOPS: {:?}", total_flops);
-        println!("# PARAM: {:?}", total_params);
-
         Ok(ModelSummary {
             total_flops,
             total_params,
+            op_counts,
         })
     }
 }

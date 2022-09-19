@@ -2,8 +2,6 @@ use std::{collections::HashMap, io::Write};
 
 use ir::{Model, OpGroup, COLOUR_MAP};
 
-use crate::opcount_table;
-
 type Nd = usize;
 
 #[derive(Default, Debug)]
@@ -116,13 +114,11 @@ impl From<Model> for RenderableGraph {
     fn from(model: Model) -> Self {
         let mut g = RenderableGraph::new();
         let mut offset = 0;
-        let mut op_counts = HashMap::new();
         for (op_idx, op_node) in model.nodes.iter().enumerate() {
             if op_node.op.op_group() == OpGroup::Constant {
                 offset += 1;
                 continue;
             }
-            *op_counts.entry(op_node.name.to_owned()).or_insert(0) += 1;
 
             let renderable_node = g.create_node(op_node.name.clone());
             renderable_node.add_attribute((
@@ -139,8 +135,6 @@ impl From<Model> for RenderableGraph {
                 }
             });
         }
-        println!("{}", opcount_table(op_counts));
-        println!("Total model size: ");
         g
     }
 }

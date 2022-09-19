@@ -4,7 +4,7 @@ use prost::Message;
 use std::collections::{HashMap, HashSet};
 
 ///Parses a valid ONNX model at the provided path
-pub fn parse_model(model_path: std::path::PathBuf) -> Result<Model, anyhow::Error> {
+pub fn parse_model(model_path: &std::path::PathBuf) -> Result<Model, anyhow::Error> {
     let pb_model = onnx_pb::ModelProto::decode(bytes::Bytes::from(std::fs::read(model_path)?))?;
     let pb_graph = pb_model.graph.expect("No model graph found.");
 
@@ -12,6 +12,7 @@ pub fn parse_model(model_path: std::path::PathBuf) -> Result<Model, anyhow::Erro
 
     let mut initializers_map = parse_graph_initializers(&pb_graph.initializer);
     let inputs_map = parse_graph_inputs(&pb_graph.input, &mut initializers_map, &mut model);
+    println!("Inputs map :{:?}", inputs_map);
 
     let initializer_ids =
         initializers_map
@@ -57,8 +58,11 @@ fn parse_graph_inputs(
                 ops::misc::build_constant(init).unwrap(), //static constants
             );
         } else {
-            let input_node_id =
-                model.add_node(input.name.to_owned(), ops::misc::build_initial().unwrap()); //user inputs provided at run time.
+            let vip: ValueInfo = (*input).clone().try_into().unwrap();
+            let input_node_id = model.add_node(
+                input.name.to_owned(),
+                ops::misc::build_initial(vip).unwrap(),
+            );
             model.inputs.push(input_node_id);
             inputs_map.insert(input.name.to_owned(), input_idx);
         }
