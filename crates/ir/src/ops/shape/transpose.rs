@@ -44,9 +44,11 @@ impl Op for Transpose {
         validate_providers(&providers, 1, 1, &self.name())?;
 
         let new_shape = Self::transpose::<f32>(self, &providers[0], &self.perm);
-        Ok(RealizedOp::zero_cost(
-            smallvec![Tensor::new(crate::DType::F32, new_shape.into()).into_arc_tensor();4],
-        ))
+        Ok(RealizedOp::zero_cost(smallvec![Tensor::new(
+            crate::DType::F32,
+            new_shape.into()
+        )
+        .into_arc_tensor()]))
     }
 }
 

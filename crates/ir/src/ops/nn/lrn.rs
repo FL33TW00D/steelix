@@ -31,7 +31,7 @@ impl Op for LRN {
                 flops: providers[0].numel(),
                 parameters: 0,
             },
-            outputs: smallvec![providers[0].clone(); 4],
+            outputs: smallvec![providers[0].clone()],
         })
     }
 }

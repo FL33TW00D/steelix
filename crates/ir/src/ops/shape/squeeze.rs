@@ -42,7 +42,7 @@ impl Op for Squeeze {
         let output = Tensor::new(providers[0].dt, new_shape.into());
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
-            outputs: smallvec![output.into_arc_tensor(); 4],
+            outputs: smallvec![output.into_arc_tensor()],
         })
     }
 }

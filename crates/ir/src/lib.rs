@@ -129,3 +129,16 @@ macro_rules! elementwise {
         }
     };
 }
+
+#[macro_export]
+macro_rules! pvec {
+    ($($x:expr),*$(,)*) => ({
+        let mut vec = $crate::TVec::new();
+        if count <= vec.inline_size() {
+            $(vec.push($x);)*
+            vec
+        } else {
+            $crate::TVec::from_vec(vec![$($x,)*])
+        }
+    });
+}

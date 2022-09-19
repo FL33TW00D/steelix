@@ -30,7 +30,7 @@ impl Op for Matmul {
                 flops: providers[0].numel(),
                 parameters: 0,
             },
-            outputs: smallvec![res.into_arc_tensor(); 4],
+            outputs: smallvec![res.into_arc_tensor()],
         })
     }
 }

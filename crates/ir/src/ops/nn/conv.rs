@@ -72,7 +72,7 @@ impl Op for Conv {
                 flops: mac * 2,
                 parameters,
             },
-            outputs: smallvec![placeholder; 4],
+            outputs: smallvec![placeholder],
         })
     }
 }

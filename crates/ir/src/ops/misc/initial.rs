@@ -16,7 +16,7 @@ impl Op for Initial {
     }
 
     fn realize(&self, _: PVec) -> anyhow::Result<RealizedOp> {
-        Ok(RealizedOp::zero_cost(smallvec![self.0.clone(); 4]))
+        Ok(RealizedOp::zero_cost(smallvec![self.0.clone()]))
     }
 }
 

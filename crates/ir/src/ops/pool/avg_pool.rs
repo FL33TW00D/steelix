@@ -50,7 +50,7 @@ impl Op for AvgPool {
                 flops: providers[0].numel(),
                 parameters: 0,
             },
-            outputs: smallvec![out.into_arc_tensor(); 4],
+            outputs: smallvec![out.into_arc_tensor()],
         })
     }
 }

@@ -44,7 +44,7 @@ impl Op for Softmax {
                 flops: 5 * out.numel(),
                 parameters: 0,
             },
-            outputs: smallvec![out.into_arc_tensor(); 4],
+            outputs: smallvec![out.into_arc_tensor()],
         })
     }
 }

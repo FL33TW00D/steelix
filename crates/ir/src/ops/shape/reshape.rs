@@ -24,9 +24,11 @@ impl Op for Reshape {
 
         let shape_tensor = &providers[1].clone();
 
-        Ok(RealizedOp::zero_cost(
-            smallvec![Tensor::new(crate::DType::F32, shape_tensor.shape.clone()).into_arc_tensor();4],
-        ))
+        Ok(RealizedOp::zero_cost(smallvec![Tensor::new(
+            crate::DType::F32,
+            shape_tensor.shape.clone()
+        )
+        .into_arc_tensor()]))
     }
 }
 

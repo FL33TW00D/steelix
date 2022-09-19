@@ -52,7 +52,7 @@ impl Op for MaxPool {
                 flops: kernel_area * out.numel(),
                 parameters: 0,
             },
-            outputs: smallvec![out.into_arc_tensor(); 4],
+            outputs: smallvec![out.into_arc_tensor()],
         })
     }
 }

@@ -24,7 +24,7 @@ impl Op for Dropout {
 
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
-            outputs: smallvec![placeholder;4],
+            outputs: smallvec![placeholder],
         })
     }
 }

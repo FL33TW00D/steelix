@@ -32,7 +32,7 @@ impl Op for BatchNormalization {
                 flops: mac,
                 parameters,
             },
-            outputs: smallvec![providers[0].clone(); 4],
+            outputs: smallvec![providers[0].clone()],
         })
     }
 }

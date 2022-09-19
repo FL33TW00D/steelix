@@ -156,7 +156,7 @@ impl Model {
                         &traversal_state
                             .intermediates
                             .get(id)
-                            .unwrap_or(&smallvec![Tensor::default().into_arc_tensor();4])[0],
+                            .unwrap_or(&smallvec![Tensor::default().into_arc_tensor()])[0],
                     )
                 })
                 .collect();
