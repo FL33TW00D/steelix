@@ -17,7 +17,7 @@ fn main() {
 }
 
 fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
-    let model_path = matches
+    let model_path = &matches
         .get_one::<String>("MODEL_PATH")
         .expect("Failed to find model at path.")
         .into();
@@ -50,12 +50,12 @@ struct SummaryTable {
 }
 
 fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
-    let model_path = matches
+    let mut model_path = matches
         .get_one::<String>("MODEL_PATH")
         .expect("Failed to find model at path.")
         .into();
 
-    let summary = parse_model(model_path)?.build_traversal_order().run()?;
+    let summary = parse_model(&model_path)?.build_traversal_order().run()?;
 
     let op_counts = summary.op_counts.clone();
     let flops = summary.total_flops;
@@ -76,7 +76,10 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
     ];
 
     let res = Table::new(summary)
-        .with(Panel::header("Model Summary"))
+        .with(Panel::header(format!(
+            "{} Model Summary",
+            model_path.file_stem().unwrap().to_str().unwrap()
+        )))
         .with(Disable::row(Rows::single(1)))
         .with(Style::modern())
         .with(Modify::new(Rows::new(0..)).with(Alignment::center()));

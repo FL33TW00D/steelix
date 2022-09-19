@@ -4,7 +4,7 @@ use prost::Message;
 use std::collections::{HashMap, HashSet};
 
 ///Parses a valid ONNX model at the provided path
-pub fn parse_model(model_path: std::path::PathBuf) -> Result<Model, anyhow::Error> {
+pub fn parse_model(model_path: &std::path::PathBuf) -> Result<Model, anyhow::Error> {
     let pb_model = onnx_pb::ModelProto::decode(bytes::Bytes::from(std::fs::read(model_path)?))?;
     let pb_graph = pb_model.graph.expect("No model graph found.");
 
