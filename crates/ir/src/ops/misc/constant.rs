@@ -13,13 +13,13 @@ impl Op for Constant {
     fn op_group(&self) -> OpGroup {
         OpGroup::Constant
     }
-    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+    fn realize(&self, _: PVec) -> anyhow::Result<RealizedOp> {
         let mut qv = PVec::new();
         qv.push(self.0.clone());
         Ok(RealizedOp {
             cost: OpCost {
                 flops: 0,
-                parameters: 0,
+                parameters: self.0.numel(),
             },
             outputs: qv,
         })
