@@ -19,7 +19,6 @@ impl Op for Matmul {
 
     //𝑛𝑚(2𝑝−1)
     fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
-        println!("PROVIDERS: {:?}", providers);
         let p0_shape = &providers[0].shape;
         let p1_shape = &providers[1].shape;
 
@@ -31,7 +30,7 @@ impl Op for Matmul {
 
         let flops = m * n * (2 * p - 1);
 
-        let res = Tensor::new(providers[0].dt, output_shape.into());
+        let res = Tensor::new(providers[0].dt, output_shape.into(), None);
 
         Ok(RealizedOp {
             cost: OpCost {

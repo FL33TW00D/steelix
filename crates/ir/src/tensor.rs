@@ -1,5 +1,6 @@
-use std::{fmt, sync::Arc};
+use std::{fmt, mem::size_of, sync::Arc};
 
+use bytes::BytesMut;
 use ndarray::Array;
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
 
@@ -38,6 +39,7 @@ pub struct Tensor {
     pub dt: DType,
     pub shape: Shape,
     pub len: usize, //actual entry count
+    pub data: Option<BytesMut>,
 }
 
 impl std::fmt::Debug for Tensor {
@@ -51,9 +53,14 @@ impl std::fmt::Debug for Tensor {
 }
 
 impl Tensor {
-    pub fn new(dt: DType, shape: Shape) -> Self {
+    pub fn new(dt: DType, shape: Shape, data: Option<BytesMut>) -> Self {
         let len = shape.iter().cloned().product::<usize>();
-        Self { dt, shape, len }
+        Self {
+            dt,
+            shape,
+            len,
+            data,
+        }
     }
 
     pub fn numel(&self) -> usize {
@@ -147,8 +154,14 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
         let dt = ProtoDType::from_i32(tproto.data_type).unwrap().try_into()?;
         let shape: Shape = tproto.dims.iter().map(|&i| i as usize).collect();
         let len = shape.iter().cloned().product::<usize>();
+        let data: BytesMut = (*tproto.raw_data).into();
 
-        Ok(Tensor { dt, shape, len })
+        Ok(Tensor {
+            dt,
+            shape,
+            len,
+            data: Some(data),
+        })
     }
 }
 
@@ -204,10 +217,13 @@ impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
         let shape = nda.shape().to_vec();
         let vec = nda.into_raw_vec().into_boxed_slice();
         let len = vec.len();
+        let byte_count = len * size_of::<A>();
+        let data = unsafe { std::slice::from_raw_parts(Box::into_raw(vec) as *mut u8, byte_count) };
         Tensor {
             dt: A::to_internal(),
             shape: shape.into(),
             len,
+            data: Some(data.into()),
         }
     }
 }

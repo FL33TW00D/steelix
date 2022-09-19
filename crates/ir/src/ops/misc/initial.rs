@@ -1,7 +1,7 @@
 use smallvec::smallvec;
 use std::{borrow::Cow, sync::Arc};
 
-use crate::{BoxOp, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Tensor, ValueInfo};
+use crate::{BoxOp, DType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Tensor, ValueInfo};
 
 #[derive(Debug, Clone)]
 pub struct Initial(Arc<Tensor>);
@@ -21,6 +21,7 @@ impl Op for Initial {
 }
 
 pub fn build_initial(value_info: ValueInfo) -> Result<BoxOp, anyhow::Error> {
-    let initial = Tensor::new(crate::DType::F32, value_info.dimensions);
-    Ok(Box::new(Initial(initial.into_arc_tensor())) as BoxOp)
+    Ok(Box::new(Initial(
+        Tensor::new(DType::F32, value_info.dimensions, None).into_arc_tensor(),
+    )) as BoxOp)
 }

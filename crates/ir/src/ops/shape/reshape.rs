@@ -25,7 +25,7 @@ impl Op for Reshape {
 
         let shape_tensor = &providers[1].clone();
 
-        let reshaped = Tensor::new(crate::DType::F32, smallvec![1, 9216]).into_arc_tensor();
+        let reshaped = Tensor::new(crate::DType::F32, smallvec![1, 9216], None).into_arc_tensor();
 
         println!("RESHAPED: {:?}", reshaped);
 

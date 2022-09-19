@@ -12,7 +12,6 @@ pub fn parse_model(model_path: &std::path::PathBuf) -> Result<Model, anyhow::Err
 
     let mut initializers_map = parse_graph_initializers(&pb_graph.initializer);
     let inputs_map = parse_graph_inputs(&pb_graph.input, &mut initializers_map, &mut model);
-    println!("Inputs map :{:?}", inputs_map);
 
     let initializer_ids =
         initializers_map
@@ -58,10 +57,9 @@ fn parse_graph_inputs(
                 ops::misc::build_constant(init).unwrap(), //static constants
             );
         } else {
-            let vip: ValueInfo = (*input).clone().try_into().unwrap();
             let input_node_id = model.add_node(
                 input.name.to_owned(),
-                ops::misc::build_initial(vip).unwrap(),
+                ops::misc::build_initial((*input).clone().try_into().unwrap()).unwrap(),
             );
             model.inputs.push(input_node_id);
             inputs_map.insert(input.name.to_owned(), input_idx);
