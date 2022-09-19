@@ -35,7 +35,7 @@ impl Op for Clip {
 }
 
 pub fn build_clip(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let min = proto.get_attribute("min", Some(i64::MIN), proto)?;
-    let max = proto.get_attribute("max", Some(i64::MAX), proto)?;
+    let min = proto.get_attribute("min", Some(i64::MIN))?;
+    let max = proto.get_attribute("max", Some(i64::MAX))?;
     Ok(Box::new(Clip { min, max }) as BoxOp)
 }

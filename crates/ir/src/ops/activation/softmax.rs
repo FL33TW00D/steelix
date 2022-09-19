@@ -34,14 +34,14 @@ impl Op for Softmax {
     //   2*n          -- compute softmax from exp of shifted logits
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         let output_shape = if self.axis == -1 {
-            providers[0].shape[providers[0].shape.len()]
+            providers[0].shape[providers[0].shape.len() - 1]
         } else {
             providers[0].shape[self.axis as usize]
         };
         let out = Tensor::new(providers[0].dt, vec![output_shape].into());
         Ok(RealizedOp {
             cost: OpCost {
-                flops: 0,
+                flops: 5 * out.numel(),
                 parameters: 0,
             },
             outputs: smallvec![out.into_arc_tensor(); 4],
@@ -50,6 +50,6 @@ impl Op for Softmax {
 }
 
 pub fn build_softmax(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let axis = proto.get_attribute("axis", Some(-1), proto)?;
+    let axis = proto.get_attribute("axis", Some(-1))?;
     Ok(Box::new(Softmax { axis }) as BoxOp)
 }

@@ -26,10 +26,9 @@ impl Op for LRN {
     //[gamma weights, beta weights, moving_mean(non-trainable), moving_variance(non-trainable)]
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 1, &self.name())?;
-        let mac = providers[0].numel() * 4;
         Ok(RealizedOp {
             cost: OpCost {
-                flops: mac,
+                flops: providers[0].numel(),
                 parameters: 0,
             },
             outputs: smallvec![providers[0].clone(); 4],
@@ -38,10 +37,10 @@ impl Op for LRN {
 }
 
 pub fn build_lrn(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let alpha = proto.get_attribute("alpha", Some(1e-4), proto)?;
-    let beta = proto.get_attribute("beta", Some(7.5e-1), proto)?;
-    let bias = proto.get_attribute("bias", Some(1.), proto)?;
-    let size = proto.get_attribute("size", None, proto)?;
+    let alpha = proto.get_attribute("alpha", Some(1e-4))?;
+    let beta = proto.get_attribute("beta", Some(7.5e-1))?;
+    let bias = proto.get_attribute("bias", Some(1.))?;
+    let size = proto.get_attribute("size", None)?;
     Ok(Box::new(LRN {
         alpha,
         beta,

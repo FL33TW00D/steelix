@@ -1,8 +1,6 @@
 use clap::ArgMatches;
-use ir::{IntoArcTensor, Tensor};
 use parser::parse_model;
-use smallvec::smallvec;
-use std::{collections::HashMap, process::Command as ProcessCommand, sync::Arc};
+use std::process::Command as ProcessCommand;
 use steelix::{
     build_cli, hardware_table, metrics_table, opcount_table, render_to, RenderableGraph,
 };

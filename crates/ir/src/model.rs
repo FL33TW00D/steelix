@@ -161,6 +161,7 @@ impl Model {
                 })
                 .collect();
             let result = node.realize(providers)?;
+            println!("RESULT: {:?}", result);
             total_flops += result.cost.flops;
             total_params += result.cost.parameters;
 
@@ -168,7 +169,6 @@ impl Model {
                 .intermediates
                 .insert(node_id, result.outputs);
         }
-        total_flops *= 8; //TODO fix
         Ok(ModelSummary {
             total_flops,
             total_params,

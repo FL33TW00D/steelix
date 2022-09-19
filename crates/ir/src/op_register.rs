@@ -21,12 +21,15 @@ impl Default for OpRegister {
         reg.insert("Softmax", activation::build_softmax);
         reg.insert("Clip", activation::build_clip);
         reg.insert("Transpose", shape::build_transpose);
+        reg.insert("Reshape", shape::build_reshape);
         reg.insert("BatchNormalization", nn::build_batchnorm);
         reg.insert("Add", binary::build_add);
         reg.insert("Squeeze", shape::build_squeeze);
         reg.insert("MatMul", binary::build_matmul);
+        reg.insert("Gemm", binary::build_matmul);
         reg.insert("LRN", nn::build_lrn);
         reg.insert("AveragePool", pool::build_avgpool);
+        reg.insert("Dropout", nn::build_dropout);
         reg.insert("MaxPool", pool::build_maxpool);
         reg.insert("Abs", |_| Ok(Box::new(Abs)));
         reg.insert("Relu", |_| Ok(Box::new(Relu)));

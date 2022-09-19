@@ -78,11 +78,11 @@ impl Op for Conv {
 }
 
 pub fn build_conv(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let group = proto.get_attribute("group", Some(1), proto)?;
-    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]), proto)?;
-    let kernel_shape = proto.get_attribute("kernel_shape", None, proto)?;
-    let strides = proto.get_attribute("strides", None, proto)?;
-    let dilations = proto.get_attribute("dilations", Some(vec![1, 1, 1, 1]), proto)?;
+    let group = proto.get_attribute("group", Some(1))?;
+    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]))?;
+    let kernel_shape = proto.get_attribute("kernel_shape", None)?;
+    let strides = proto.get_attribute("strides", None)?;
+    let dilations = proto.get_attribute("dilations", Some(vec![1, 1, 1, 1]))?;
 
     Ok(Box::new(Conv {
         group,

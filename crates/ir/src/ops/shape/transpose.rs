@@ -1,6 +1,6 @@
 use onnx::onnx_pb;
 use smallvec::smallvec;
-use std::{borrow::Cow, sync::Arc};
+use std::borrow::Cow;
 
 use crate::{
     validate_providers, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor,
@@ -52,7 +52,7 @@ impl Op for Transpose {
 
 pub fn build_transpose(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
     let perm: Vec<usize> = proto
-        .get_attribute::<Vec<i64>>("perm", None, proto)?
+        .get_attribute::<Vec<i64>>("perm", None)?
         .iter()
         .cloned()
         .map(|x| x as usize)

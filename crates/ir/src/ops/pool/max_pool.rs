@@ -44,10 +44,12 @@ impl Op for MaxPool {
         let input_shape = &providers[0].shape;
         let (h_out, w_out) = self.output_dims(input_shape[2] as i64, input_shape[3] as i64);
         let out_shape = vec![input_shape[0], input_shape[1], h_out, w_out];
+        let kernel_area = self.kernel_shape.iter().cloned().product::<i64>() as usize;
+
         let out = Tensor::new(providers[0].dt, out_shape.into());
         Ok(RealizedOp {
             cost: OpCost {
-                flops: providers[0].numel(),
+                flops: kernel_area * out.numel(),
                 parameters: 0,
             },
             outputs: smallvec![out.into_arc_tensor(); 4],
@@ -56,11 +58,11 @@ impl Op for MaxPool {
 }
 
 pub fn build_maxpool(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let ceil_mode = proto.get_attribute("ceil_mode", Some(0), proto)?;
-    let count_include_pad = proto.get_attribute("count_include_pad", Some(0), proto)?;
-    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]), proto)?;
-    let kernel_shape = proto.get_attribute("kernel_shape", None, proto)?; //TODO: fix
-    let strides = proto.get_attribute("strides", Some(vec![1, 1]), proto)?;
+    let ceil_mode = proto.get_attribute("ceil_mode", Some(0))?;
+    let count_include_pad = proto.get_attribute("count_include_pad", Some(0))?;
+    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]))?;
+    let kernel_shape = proto.get_attribute("kernel_shape", None)?; //TODO: fix
+    let strides = proto.get_attribute("strides", Some(vec![1, 1]))?;
 
     Ok(Box::new(MaxPool {
         ceil_mode,

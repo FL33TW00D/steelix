@@ -56,11 +56,11 @@ impl Op for AvgPool {
 }
 
 pub fn build_avgpool(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let ceil_mode = proto.get_attribute("ceil_mode", Some(0), proto)?;
-    let count_include_pad = proto.get_attribute("count_include_pad", Some(0), proto)?;
-    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]), proto)?;
-    let kernel_shape = proto.get_attribute("kernel_shape", None, proto)?; //TODO: fix
-    let strides = proto.get_attribute("strides", Some(vec![1, 1]), proto)?;
+    let ceil_mode = proto.get_attribute("ceil_mode", Some(0))?;
+    let count_include_pad = proto.get_attribute("count_include_pad", Some(0))?;
+    let pads = proto.get_attribute("pads", Some(vec![0, 0, 0, 0]))?;
+    let kernel_shape = proto.get_attribute("kernel_shape", None)?; //TODO: fix
+    let strides = proto.get_attribute("strides", Some(vec![1, 1]))?;
 
     Ok(Box::new(AvgPool {
         ceil_mode,
