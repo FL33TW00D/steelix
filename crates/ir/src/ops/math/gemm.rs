@@ -6,11 +6,11 @@ use smallvec::smallvec;
 use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
-pub struct Matmul;
+pub struct Gemm;
 
-impl Op for Matmul {
+impl Op for Gemm {
     fn name(&self) -> Cow<str> {
-        "Matmul".into()
+        "Gemm".into()
     }
 
     fn op_group(&self) -> OpGroup {
@@ -42,6 +42,6 @@ impl Op for Matmul {
     }
 }
 
-pub fn build_matmul(_proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    Ok(Box::new(Matmul) as BoxOp)
+pub fn build_gemm(_proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
+    Ok(Box::new(Gemm) as BoxOp)
 }

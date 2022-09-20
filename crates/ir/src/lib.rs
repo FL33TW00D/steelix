@@ -40,7 +40,6 @@ impl OpCost {
 
 type PVec = SmallVec<[Arc<Tensor>; 4]>;
 type Shape = SmallVec<[usize; 4]>;
-
 type StResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Default)]

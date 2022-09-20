@@ -43,10 +43,10 @@ impl Op for Transpose {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 1, &self.name())?;
 
-        let new_shape = Self::transpose::<f32>(self, &providers[0], &self.perm);
         Ok(RealizedOp::zero_cost(smallvec![Tensor::new(
             crate::DType::F32,
-            new_shape.into()
+            Self::transpose::<f32>(self, &providers[0], &self.perm).into(),
+            None
         )
         .into_arc_tensor()]))
     }

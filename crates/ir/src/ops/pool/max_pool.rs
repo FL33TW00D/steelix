@@ -46,7 +46,7 @@ impl Op for MaxPool {
         let out_shape = vec![input_shape[0], input_shape[1], h_out, w_out];
         let kernel_area = self.kernel_shape.iter().cloned().product::<i64>() as usize;
 
-        let out = Tensor::new(providers[0].dt, out_shape.into());
+        let out = Tensor::new(providers[0].dt, out_shape.into(), None);
         Ok(RealizedOp {
             cost: OpCost {
                 flops: kernel_area * out.numel(),

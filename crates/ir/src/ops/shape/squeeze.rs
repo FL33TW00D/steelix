@@ -39,7 +39,7 @@ impl Op for Squeeze {
 
     fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
         let new_shape = self.squeeze(&providers[0]);
-        let output = Tensor::new(providers[0].dt, new_shape.into());
+        let output = Tensor::new(providers[0].dt, new_shape.into(), None);
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
             outputs: smallvec![output.into_arc_tensor()],

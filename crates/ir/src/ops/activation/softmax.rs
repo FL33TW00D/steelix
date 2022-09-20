@@ -38,7 +38,7 @@ impl Op for Softmax {
         } else {
             providers[0].shape[self.axis as usize]
         };
-        let out = Tensor::new(providers[0].dt, vec![output_shape].into());
+        let out = Tensor::new(providers[0].dt, vec![output_shape].into(), None);
         Ok(RealizedOp {
             cost: OpCost {
                 flops: 5 * out.numel(),

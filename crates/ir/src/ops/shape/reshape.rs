@@ -1,14 +1,29 @@
 use onnx::onnx_pb;
-use smallvec::smallvec;
+use smallvec::{smallvec, SmallVec};
 use std::borrow::Cow;
 
-use crate::{validate_providers, BoxOp, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Tensor};
+use crate::{
+    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
+    RealizedOp, Shape, Tensor,
+};
 #[derive(Debug, Clone)]
 pub struct Reshape {
     allow_zero: i64,
 }
 
-impl Reshape {}
+impl Reshape {
+    pub fn reshape<D: DataType + ndarray::LinalgScalar + num::NumCast>(
+        shape_tensor: &Tensor,
+    ) -> Shape {
+        let data: Vec<D> = shape_tensor.as_slice().unwrap().into();
+        let mut new_shape = SmallVec::new();
+        for elem in data {
+            new_shape.push(num::cast(elem).unwrap());
+        }
+
+        new_shape
+    }
+}
 
 impl Op for Reshape {
     fn name(&self) -> Cow<str> {
@@ -21,20 +36,16 @@ impl Op for Reshape {
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 2, 2, &self.name())?;
-        println!("RESHAPE PROVIDERS: {:?}", providers);
 
-        let shape_tensor = &providers[1].clone();
+        let new_shape = as_std!(Reshape::reshape(providers[0].dt)(&providers[1]));
 
-        let reshaped = Tensor::new(crate::DType::F32, smallvec![1, 9216]).into_arc_tensor();
-
-        println!("RESHAPED: {:?}", reshaped);
+        let reshaped = Tensor::new(providers[0].dt, new_shape, None).into_arc_tensor();
 
         Ok(RealizedOp::zero_cost(smallvec![reshaped]))
     }
 }
 
 pub fn build_reshape(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    println!("PROTO: {:?}", proto);
     let allow_zero = proto.get_attribute("allowzero", Some(0))?;
     Ok(Box::new(Reshape { allow_zero }) as BoxOp)
 }

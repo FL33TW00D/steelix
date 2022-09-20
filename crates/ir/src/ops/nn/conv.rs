@@ -65,7 +65,7 @@ impl Op for Conv {
         let parameters = f * cin * kh * (kw / self.group as usize);
 
         let placeholder =
-            Tensor::new(providers[0].dt, smallvec![n, f, h_out, w_out]).into_arc_tensor();
+            Tensor::new(providers[0].dt, smallvec![n, f, h_out, w_out], None).into_arc_tensor();
 
         Ok(RealizedOp {
             cost: OpCost {

@@ -11,3 +11,4 @@ Cargo.lock
 
 **/*.svg
 **/models/*
+.DS_Store

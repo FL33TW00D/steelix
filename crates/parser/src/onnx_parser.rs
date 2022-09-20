@@ -12,7 +12,6 @@ pub fn parse_model(model_path: &std::path::PathBuf) -> Result<Model, anyhow::Err
 
     let mut initializers_map = parse_graph_initializers(&pb_graph.initializer);
     let inputs_map = parse_graph_inputs(&pb_graph.input, &mut initializers_map, &mut model);
-    println!("Inputs map :{:?}", inputs_map);
 
     let initializer_ids =
         initializers_map
@@ -58,10 +57,9 @@ fn parse_graph_inputs(
                 ops::misc::build_constant(init).unwrap(), //static constants
             );
         } else {
-            let vip: ValueInfo = (*input).clone().try_into().unwrap();
             let input_node_id = model.add_node(
                 input.name.to_owned(),
-                ops::misc::build_initial(vip).unwrap(),
+                ops::misc::build_initial((*input).clone().try_into().unwrap()).unwrap(),
             );
             model.inputs.push(input_node_id);
             inputs_map.insert(input.name.to_owned(), input_idx);
@@ -96,26 +94,24 @@ fn link_nodes(
 
     let graph_offset = model.inputs.len() + initializers_map.len();
     for (op_idx, op_node) in graph_nodes.iter().enumerate() {
-        let op_offset = op_idx + graph_offset;
-
         op_node.input.iter().for_each(|input| {
             if inputs_map.contains_key(input) {
-                model.add_edge(*inputs_map.get(input).unwrap(), op_offset);
+                model.add_edge(*inputs_map.get(input).unwrap(), op_idx + graph_offset);
             }
 
             if initializers_map.contains_key(input) {
-                model.add_edge(*initializers_map.get(input).unwrap(), op_offset);
+                model.add_edge(*initializers_map.get(input).unwrap(), op_idx + graph_offset);
             }
         });
 
         op_node.output.iter().for_each(|output| {
             if outputs_map.contains_key(output) {
-                model.add_edge(op_offset, *outputs_map.get(output).unwrap());
+                model.add_edge(op_idx + graph_offset, *outputs_map.get(output).unwrap());
             }
         });
 
         let output_set: HashSet<String> = HashSet::from_iter(op_node.output.iter().cloned());
-        let target_offset = op_idx + 1; //topological sort offset
+        let target_offset = op_idx + 1; //topo offset
         for (target_idx, target_node) in graph_nodes[target_offset..graph_nodes.len()]
             .iter()
             .enumerate()
@@ -124,8 +120,9 @@ fn link_nodes(
                 HashSet::from_iter(target_node.input.iter().cloned());
 
             if !target_inp_set.is_disjoint(&output_set) {
-                let producer_id = op_offset;
+                let producer_id = op_idx + graph_offset;
                 let consumer_id = target_idx + target_offset + graph_offset;
+                //println!("INSERTING EDGE: {:?} -> {:?}", producer_id, consumer_id);
                 model.add_edge(producer_id, consumer_id);
             }
         }
