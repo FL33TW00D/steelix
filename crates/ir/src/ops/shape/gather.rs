@@ -1,11 +1,12 @@
 use bytes::BytesMut;
+use ndarray::{Axis, Dimension};
 use onnx::onnx_pb;
 use smallvec::{smallvec, SmallVec};
-use std::borrow::Cow;
+use std::{borrow::Cow, sync::Arc};
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
-    RealizedOp, Shape, Tensor,
+    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, IntoTensor, Op, OpGroup,
+    PVec, RealizedOp, Shape, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Gather {
@@ -30,6 +31,46 @@ impl Gather {
         }
         Ok(output_shape)
     }
+
+    unsafe fn eval<T: DataType + num_traits::Zero + num_traits::NumCast>(
+        &self,
+        data: Arc<Tensor>,
+        indices: &Arc<Tensor>,
+    ) -> anyhow::Result<Arc<Tensor>> {
+        let data_view = data.to_array_view_unchecked::<T>();
+        if indices.shape.is_empty() {
+            //let mut index = *indices.to_scalar::<i64>()?;
+            println!("TEST");
+            //if index < 0 {
+            //    index += data_view.shape()[0] as i64;
+            //}
+            let index = 0;
+            let tensor = data_view
+                .index_axis(Axis(self.axis as usize), index as usize)
+                .to_owned()
+                .into_tensor();
+            return Ok(tensor.into_arc_tensor());
+        }
+
+        println!("HERE");
+
+        let mut output =
+            Tensor::uninitialized::<T>(self.compute_output_shape(&data.shape, &indices.shape)?);
+        let mut view = output.to_array_view_mut_unchecked::<T>();
+        for (indices_coords, indices_value) in indices.to_array_view::<i64>()?.indexed_iter() {
+            let mut to_update = view.index_axis_mut(Axis(self.axis as usize), indices_coords[0]);
+            for idx in 1..indices_coords.ndim() {
+                to_update = to_update.index_axis_move(Axis(0), indices_coords[idx]);
+            }
+            let index_value = if *indices_value >= 0 {
+                *indices_value
+            } else {
+                indices_value + data_view.shape()[self.axis as usize] as i64
+            } as usize;
+            to_update.assign(&data_view.index_axis(Axis(self.axis as usize), index_value));
+        }
+        Ok(output.into_arc_tensor())
+    }
 }
 
 impl Op for Gather {
@@ -44,12 +85,15 @@ impl Op for Gather {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 2, 2, &self.name())?;
 
-        let input_shape = &providers[0].shape;
-        let indices_shape = &providers[1].shape;
-        let output_shape = self.compute_output_shape(&input_shape, &indices_shape)?;
-
-        let out = Tensor::new(providers[0].dt, output_shape.into(), None);
-        Ok(RealizedOp::zero_cost(smallvec![out.into_arc_tensor()]))
+        unsafe {
+            let result = as_std!(Self::eval(providers[0].dt)(
+                self,
+                providers[0].clone(),
+                &providers[1]
+            ))?;
+            println!("RESULT: {:?}", result);
+            Ok(RealizedOp::zero_cost(smallvec![result]))
+        }
     }
 }
 

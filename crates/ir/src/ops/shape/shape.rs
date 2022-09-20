@@ -25,19 +25,21 @@ impl Op for Shape {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 1, &self.name())?;
         let input_shape = &providers[0].shape;
-
         let end = if self.end == -1 {
             input_shape.len() as i64
         } else {
             self.end
         };
-
-        let new_shape = &providers[0].shape[self.start as usize..end as usize];
+        let new_shape = providers[0].shape[self.start as usize..end as usize]
+            .iter()
+            .cloned()
+            .map(|i| i as i64)
+            .collect::<Vec<i64>>();
 
         let bytes: Vec<u8> = new_shape.iter().flat_map(|s| s.to_ne_bytes()).collect();
 
         let out = Tensor::new(
-            providers[0].dt,
+            DType::I64,
             smallvec![new_shape.len()],
             Some((*bytes).into()),
         );

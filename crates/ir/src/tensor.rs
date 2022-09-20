@@ -1,7 +1,7 @@
-use std::{fmt, mem::size_of, sync::Arc};
+use std::{borrow::Cow, fmt, mem::size_of, sync::Arc};
 
 use bytes::BytesMut;
-use ndarray::Array;
+use ndarray::{Array, ArrayViewD, ArrayViewMutD};
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
 
 use crate::{OpError, Shape};
@@ -66,6 +66,10 @@ impl Tensor {
         }
     }
 
+    pub fn uninitialized<T: DataType>(shape: Shape) -> Self {
+        Self::new(T::to_internal(), shape.into(), None)
+    }
+
     pub fn numel(&self) -> usize {
         self.shape.iter().cloned().product::<usize>()
     }
@@ -81,6 +85,13 @@ impl Tensor {
         std::slice::from_raw_parts::<D>(self.data.as_ref().unwrap().as_ptr() as *const D, self.len)
     }
 
+    pub unsafe fn as_mut_slice_unchecked<D: DataType>(&mut self) -> &mut [D] {
+        std::slice::from_raw_parts_mut::<D>(
+            self.data.as_ref().unwrap().as_ptr() as *mut D,
+            self.len,
+        )
+    }
+
     pub fn as_slice<D: DataType>(&self) -> Result<&[D], OpError> {
         if self.data.is_none() {
             Err(OpError::ValidationError(
@@ -92,10 +103,69 @@ impl Tensor {
         }
     }
 
+    pub fn as_mut_slice<D: DataType>(&mut self) -> Result<&mut [D], OpError> {
+        if self.data.is_none() {
+            Err(OpError::ValidationError(
+                "Tried to take slice of non existent data!".to_string(),
+            ))
+        } else {
+            //todo check len too
+            unsafe { Ok(self.as_mut_slice_unchecked()) }
+        }
+    }
+
+    /// Access the data as a scalar.
+    pub fn to_scalar<D: DataType>(&self) -> anyhow::Result<&D> {
+        if self.len == 0 {
+            anyhow::bail!("to_scalar called on empty tensor ({:?})", self)
+        }
+        unsafe { Ok(self.to_scalar_unchecked()) }
+    }
+
+    /// Access the data as a scalar.
+    pub unsafe fn to_scalar_unchecked<D: DataType>(&self) -> &D {
+        println!("SELFY: {:?}", self);
+        &*(self.data.clone().unwrap().as_mut_ptr() as *mut D)
+    }
+
+    /// Transform the data as a `ndarray::Array`.
+    pub fn to_array_view<A: DataType>(&self) -> anyhow::Result<ArrayViewD<A>> {
+        //TODO: error checking
+        unsafe { Ok(self.to_array_view_unchecked()) }
+    }
+
+    /// Transform the data as a `ndarray::Array`.
+    pub fn to_array_view_mut<A: DataType>(&mut self) -> anyhow::Result<ArrayViewMutD<A>> {
+        //TODO: error checking
+        unsafe { Ok(self.to_array_view_mut_unchecked()) }
+    }
+
+    pub unsafe fn to_array_view_unchecked<A: DataType>(&self) -> ArrayViewD<A> {
+        if self.len != 0 {
+            ArrayViewD::from_shape_ptr(
+                &*self.shape,
+                self.data.clone().unwrap().as_ptr() as *const A,
+            )
+        } else {
+            ArrayViewD::from_shape(&*self.shape, &[]).unwrap()
+        }
+    }
+
+    pub unsafe fn to_array_view_mut_unchecked<A: DataType>(&mut self) -> ArrayViewMutD<A> {
+        if self.len != 0 {
+            ArrayViewMutD::from_shape_ptr(
+                &*self.shape,
+                self.data.clone().unwrap().as_mut_ptr() as *mut A,
+            )
+        } else {
+            ArrayViewMutD::from_shape(&*self.shape, &mut []).unwrap()
+        }
+    }
+
     //Rust generics fucking suck or I'd extract this to a function
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
-            let chunk_size = 64;
+            let chunk_size = if input.len < 64 { input.len - 1 } else { 64 };
             let start_chunk = &input.as_slice::<D>().unwrap()[0..chunk_size];
             let end_chunk = &input.as_slice::<D>().unwrap()[input.len - chunk_size..input.len];
 
@@ -128,7 +198,7 @@ impl Tensor {
 
             format!("{}\n...\n{}", start_str, end_str)
         }
-        unsafe { as_float!(pretty_print(self.dt)(self)) }
+        unsafe { as_std!(pretty_print(self.dt)(self)) }
     }
 }
 

@@ -34,7 +34,6 @@ pub fn parse_model(model_path: &std::path::PathBuf) -> Result<Model, anyhow::Err
         outputs_map,
         initializer_ids,
     );
-    println!("MODEL: {:#?}", model);
     Ok(model)
 }
 
