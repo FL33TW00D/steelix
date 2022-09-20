@@ -16,12 +16,25 @@
     </a>
 </p>
 
-Steelix is a fast CLI based visualizer for ONNX machine learning models! Steelix renders your ONNX model to an SVG using DOT.
+Steelix is your one stop shop for ONNX model analysis.
+
+## Features
+Steelix has 2 main functions:
+
+1. Model Summarization
+Steelix can produce an output like below for any provided ONNX model.
+
+2. Graph Visualization
+Steelix parses your ONNX file and can transpile it to a DOT file for your
+viewing pleasure. This SVG can be embedded in a notebook, website etc. Steelix
+runs a mock forward pass through your network to ensure that every edge will
+have a shape label!
 
 ## How to use
 
 ```
 steelix plot --model-path ./my-model.onnx --output-path ./my-svg.svg
+steelix summary --model-path ./my-model.onnx --output-path ./my-svg.svg
 ```
 
 ## Why not Netron?
