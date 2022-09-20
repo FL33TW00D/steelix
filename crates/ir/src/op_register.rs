@@ -32,6 +32,7 @@ impl Default for OpRegister {
         reg.insert("GlobalAveragePool", pool::build_globalavgpool);
         reg.insert("Dropout", nn::build_dropout);
         reg.insert("Shape", shape::build_shape);
+        reg.insert("Gather", shape::build_gather);
         reg.insert("MaxPool", pool::build_maxpool);
         reg.insert("Abs", |_| Ok(Box::new(Abs)));
         reg.insert("Relu", |_| Ok(Box::new(Relu)));
