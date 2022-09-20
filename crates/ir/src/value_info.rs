@@ -23,12 +23,12 @@ impl TryFrom<onnx_pb::ValueInfoProto> for ValueInfo {
                         let mut dimensions = SmallVec::new();
                         pb_dims
                             .into_iter()
-                            .for_each(|dim| match dim.value.unwrap() {
+                            .for_each(|dim| match dim.value.clone().unwrap() {
                                 onnx_pb::tensor_shape_proto::dimension::Value::DimValue(v) => {
                                     dimensions.push(v as usize);
                                 }
                                 onnx_pb::tensor_shape_proto::dimension::Value::DimParam(_) => {
-                                    todo!()
+                                    dimensions.push(1); //Pushing 1 for a N batch
                                 }
                             });
 

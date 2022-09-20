@@ -27,6 +27,5 @@ impl Op for Constant {
 }
 
 pub fn build_constant(t: Tensor) -> Result<BoxOp, anyhow::Error> {
-    println!("T: {:?}", t);
     Ok(Box::new(Constant(t.into_arc_tensor())) as BoxOp)
 }
