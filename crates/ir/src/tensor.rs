@@ -3,6 +3,7 @@ use std::{borrow::Cow, fmt, mem::size_of, sync::Arc};
 use bytes::BytesMut;
 use ndarray::{Array, ArrayViewD, ArrayViewMutD};
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
+use smallvec::smallvec;
 
 use crate::{OpError, Shape};
 
@@ -310,6 +311,12 @@ pub trait IntoArcTensor: Sized {
     fn into_arc_tensor(self) -> Arc<Tensor>;
 }
 
+impl<T: DataType> IntoArcTensor for Vec<T> {
+    fn into_arc_tensor(self) -> Arc<Tensor> {
+        Arc::new(Tensor::from(self))
+    }
+}
+
 impl<D: ::ndarray::Dimension, T: DataType> IntoArcTensor for Array<T, D> {
     fn into_arc_tensor(self) -> Arc<Tensor> {
         Arc::new(Tensor::from(self))
@@ -334,13 +341,33 @@ impl IntoArcTensor for Arc<Tensor> {
     }
 }
 
+impl<T: DataType> IntoTensor for Vec<T> {
+    fn into_tensor(self) -> Tensor {
+        Tensor::from(self)
+    }
+}
+
 impl<D: ::ndarray::Dimension, T: DataType> IntoTensor for Array<T, D> {
     fn into_tensor(self) -> Tensor {
         Tensor::from(self)
     }
 }
 
-//A is elem type, D is dimension
+impl<T: DataType> From<Vec<T>> for Tensor {
+    fn from(vec: Vec<T>) -> Tensor {
+        let shape = smallvec![vec.len()];
+        let (ptr, len, _) = vec.into_raw_parts();
+        let byte_count = len * size_of::<T>();
+        let data = unsafe { std::slice::from_raw_parts(ptr as *mut u8, byte_count) };
+        Tensor {
+            dt: T::to_internal(),
+            shape,
+            len,
+            data: Some(data.into()),
+        }
+    }
+}
+
 impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
     fn from(nda: Array<A, D>) -> Tensor {
         let shape = nda.shape().to_vec();

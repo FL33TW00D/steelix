@@ -3,8 +3,8 @@ use smallvec::smallvec;
 use std::{borrow::Cow, sync::Arc};
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
-    RealizedOp, Tensor,
+    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, IntoTensor, Op, OpGroup,
+    PVec, RealizedOp, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Unsqueeze {
@@ -47,9 +47,11 @@ impl Op for Unsqueeze {
         validate_providers(&providers, 1, 2, &self.name())?;
 
         let data = &providers[0];
-        let axes = if let Some(ax) = self.axes {
-            
-        }
+        let mut axes = if let Some(ax) = &self.axes {
+            ax.clone().into_arc_tensor()
+        } else {
+            providers[1].clone()
+        };
 
         let new_tensor = as_std!(Unsqueeze::unsqueeze(providers[0].dt)(
             self,

@@ -1,3 +1,4 @@
+#![feature(vec_into_raw_parts)]
 //Operator set is defined here: https://github.com/onnx/onnx/blob/main/onnx/defs/operator_sets.h
 mod model;
 mod op_group;
