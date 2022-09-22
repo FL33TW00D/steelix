@@ -28,13 +28,11 @@ impl Op for Gemm {
         let n = p1_shape[1];
         let p = p0_shape[1];
 
-        let flops = m * n * (2 * p - 1);
-
-        let res = Tensor::new(providers[0].dt, output_shape.into(), None);
+        let res = Tensor::new(providers[0].dt, output_shape.into());
 
         Ok(RealizedOp {
             cost: OpCost {
-                flops,
+                flops: m * n * (2 * p - 1),
                 parameters: 0,
             },
             outputs: smallvec![res.into_arc_tensor()],

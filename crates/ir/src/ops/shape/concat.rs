@@ -1,5 +1,5 @@
 use onnx::onnx_pb;
-use smallvec::{smallvec, SmallVec};
+use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
@@ -14,6 +14,8 @@ pub struct Concat {
 impl Concat {
     pub fn concat<D: DataType + ndarray::LinalgScalar + num::NumCast>(providers: PVec) -> Shape {
         //Now what
+        //
+        Shape::new()
     }
 }
 
@@ -31,9 +33,7 @@ impl Op for Concat {
 
         let new_shape = as_std!(Concat::concat(providers[0].dt)(providers));
 
-        let concatd = Tensor::new(providers[0].dt, new_shape, None).into_arc_tensor();
-
-        Ok(RealizedOp::zero_cost(smallvec![concatd]))
+        Ok(RealizedOp::zero_cost(smallvec![]))
     }
 }
 

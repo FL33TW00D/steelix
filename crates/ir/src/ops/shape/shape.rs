@@ -1,4 +1,4 @@
-use bytes::BytesMut;
+use bytes::{BufMut, BytesMut};
 use onnx::onnx_pb;
 use smallvec::{smallvec, SmallVec};
 use std::borrow::Cow;
@@ -38,11 +38,8 @@ impl Op for Shape {
 
         let bytes: Vec<u8> = new_shape.iter().flat_map(|s| s.to_ne_bytes()).collect();
 
-        let out = Tensor::new(
-            DType::I64,
-            smallvec![new_shape.len()],
-            Some((*bytes).into()),
-        );
+        let mut out = Tensor::new(DType::I64, smallvec![new_shape.len()]);
+        out.data.put(&*bytes);
 
         Ok(RealizedOp::zero_cost(smallvec![out.into_arc_tensor()]))
     }

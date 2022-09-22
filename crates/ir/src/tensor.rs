@@ -40,7 +40,7 @@ pub struct Tensor {
     pub dt: DType,
     pub shape: Shape,
     pub len: usize, //actual entry count
-    pub data: Option<BytesMut>,
+    pub data: BytesMut,
 }
 
 impl std::fmt::Debug for Tensor {
@@ -57,26 +57,26 @@ impl std::fmt::Debug for Tensor {
 }
 
 impl Tensor {
-    pub fn new(dt: DType, shape: Shape, data: Option<BytesMut>) -> Self {
-        let len = shape.iter().cloned().product::<usize>();
+    pub fn new(dt: DType, shape: Shape) -> Self {
+        let len = shape.iter().product::<usize>();
         Self {
             dt,
             shape,
             len,
-            data,
+            data: BytesMut::with_capacity(len),
         }
     }
 
     pub fn uninitialized<T: DataType>(shape: Shape) -> Self {
-        Self::new(T::to_internal(), shape.into(), None)
+        Self::new(T::to_internal(), shape.into())
     }
 
     pub fn uninitialized_dt(dt: DType, shape: Shape) -> Self {
-        Self::new(dt, shape.into(), None)
+        Self::new(dt, shape.into())
     }
 
     pub fn numel(&self) -> usize {
-        self.shape.iter().cloned().product::<usize>()
+        self.shape.iter().product::<usize>()
     }
 
     pub fn update_shape(&mut self, new_shape: Shape) {
@@ -87,50 +87,20 @@ impl Tensor {
     ///# Safety
     /// This shit is straight unsafe dog
     pub unsafe fn as_slice_unchecked<D: DataType>(&self) -> &[D] {
-        std::slice::from_raw_parts::<D>(self.data.as_ref().unwrap().as_ptr() as *const D, self.len)
+        std::slice::from_raw_parts::<D>(self.data.as_ptr() as *const D, self.len)
     }
 
     pub unsafe fn as_mut_slice_unchecked<D: DataType>(&mut self) -> &mut [D] {
-        std::slice::from_raw_parts_mut::<D>(
-            self.data.as_ref().unwrap().as_ptr() as *mut D,
-            self.len,
-        )
+        std::slice::from_raw_parts_mut::<D>(self.data.as_ptr() as *mut D, self.len)
     }
 
     pub fn as_slice<D: DataType>(&self) -> Result<&[D], OpError> {
-        if self.data.is_none() {
-            Err(OpError::ValidationError(
-                "Tried to take slice of non existent data!".to_string(),
-            ))
-        } else {
-            //todo check len too
-            unsafe { Ok(self.as_slice_unchecked()) }
-        }
+        unsafe { Ok(self.as_slice_unchecked()) }
     }
 
     pub fn as_mut_slice<D: DataType>(&mut self) -> Result<&mut [D], OpError> {
-        if self.data.is_none() {
-            Err(OpError::ValidationError(
-                "Tried to take slice of non existent data!".to_string(),
-            ))
-        } else {
-            //todo check len too
-            unsafe { Ok(self.as_mut_slice_unchecked()) }
-        }
-    }
-
-    /// Access the data as a scalar.
-    pub fn to_scalar<D: DataType>(&self) -> anyhow::Result<&D> {
-        if self.len == 0 {
-            anyhow::bail!("to_scalar called on empty tensor ({:?})", self)
-        }
-        unsafe { Ok(self.to_scalar_unchecked()) }
-    }
-
-    /// Access the data as a scalar.
-    pub unsafe fn to_scalar_unchecked<D: DataType>(&self) -> &D {
-        println!("SELFY: {:?}", self);
-        &*(self.data.clone().unwrap().as_mut_ptr() as *mut D)
+        //todo check len too
+        unsafe { Ok(self.as_mut_slice_unchecked()) }
     }
 
     /// Transform the data as a `ndarray::Array`.
@@ -147,10 +117,7 @@ impl Tensor {
 
     pub unsafe fn to_array_view_unchecked<A: DataType>(&self) -> ArrayViewD<A> {
         if self.len != 0 {
-            ArrayViewD::from_shape_ptr(
-                &*self.shape,
-                self.data.clone().unwrap().as_ptr() as *const A,
-            )
+            ArrayViewD::from_shape_ptr(&*self.shape, self.data.as_ptr() as *const A)
         } else {
             ArrayViewD::from_shape(&*self.shape, &[]).unwrap()
         }
@@ -158,10 +125,7 @@ impl Tensor {
 
     pub unsafe fn to_array_view_mut_unchecked<A: DataType>(&mut self) -> ArrayViewMutD<A> {
         if self.len != 0 {
-            ArrayViewMutD::from_shape_ptr(
-                &*self.shape,
-                self.data.clone().unwrap().as_mut_ptr() as *mut A,
-            )
+            ArrayViewMutD::from_shape_ptr(&*self.shape, self.data.as_mut_ptr() as *mut A)
         } else {
             ArrayViewMutD::from_shape(&*self.shape, &mut []).unwrap()
         }
@@ -209,42 +173,6 @@ impl Tensor {
             format!("{}\n...\n{}", start_str, end_str)
         }
         unsafe { as_std!(pretty_print(self.dt)(self)) }
-    }
-
-    pub fn stack_tensors(
-        axis: usize,
-        tensors: &[impl std::borrow::Borrow<Tensor>],
-    ) -> anyhow::Result<Tensor> {
-        anyhow::ensure!(tensors.len() > 0);
-        let rank = tensors[0].borrow().rank();
-        anyhow::ensure!(axis < rank);
-        anyhow::ensure!(tensors.iter().all(|t| t.borrow().rank() == rank));
-        let dt = tensors[0].borrow().dt;
-        anyhow::ensure!(tensors.iter().all(|t| t.borrow().dt == dt));
-        let mut shape = tensors[0].borrow().shape;
-        for ax in 0..rank {
-            if ax != axis {
-                anyhow::ensure!(tensors.iter().all(|t| t.borrow().shape[ax] == shape[ax]));
-            }
-        }
-        shape[axis] = tensors.iter().map(|v| v.borrow().shape[axis]).sum();
-        unsafe {
-            let mut result = Tensor::uninitialized_dt(dt, shape);
-            if shape[..axis].iter().all(|d| *d == 1) {
-                let mut offset = 0isize;
-                for v in tensors {
-                    let v = v.borrow();
-                    let len = 8;
-                    std::ptr::copy_nonoverlapping(
-                        v.data.unwrap().as_mut_ptr(),
-                        result.data.unwrap().as_mut_ptr().offset(offset),
-                        len,
-                    );
-                    offset += len as isize;
-                }
-            }
-            Ok(result)
-        }
     }
 }
 
@@ -335,7 +263,7 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
             dt,
             shape,
             len,
-            data: Some(data),
+            data,
         })
     }
 }
@@ -354,12 +282,6 @@ pub trait IntoArcTensor: Sized {
     ///
     /// May perform a copy
     fn into_arc_tensor(self) -> Arc<Tensor>;
-}
-
-impl<T: DataType> IntoArcTensor for Vec<T> {
-    fn into_arc_tensor(self) -> Arc<Tensor> {
-        Arc::new(Tensor::from(self))
-    }
 }
 
 impl<D: ::ndarray::Dimension, T: DataType> IntoArcTensor for Array<T, D> {
@@ -386,30 +308,9 @@ impl IntoArcTensor for Arc<Tensor> {
     }
 }
 
-impl<T: DataType> IntoTensor for Vec<T> {
-    fn into_tensor(self) -> Tensor {
-        Tensor::from(self)
-    }
-}
-
 impl<D: ::ndarray::Dimension, T: DataType> IntoTensor for Array<T, D> {
     fn into_tensor(self) -> Tensor {
         Tensor::from(self)
-    }
-}
-
-impl<T: DataType> From<Vec<T>> for Tensor {
-    fn from(vec: Vec<T>) -> Tensor {
-        let shape = smallvec![vec.len()];
-        let (ptr, len, _) = vec.into_raw_parts();
-        let byte_count = len * size_of::<T>();
-        let data = unsafe { std::slice::from_raw_parts(ptr as *mut u8, byte_count) };
-        Tensor {
-            dt: T::to_internal(),
-            shape,
-            len,
-            data: Some(data.into()),
-        }
     }
 }
 
@@ -424,7 +325,7 @@ impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
             dt: A::to_internal(),
             shape: shape.into(),
             len,
-            data: Some(data.into()),
+            data: data.into(),
         }
     }
 }

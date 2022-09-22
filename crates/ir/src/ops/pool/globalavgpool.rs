@@ -21,7 +21,7 @@ impl Op for GlobalAveragePool {
     fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
         let input_shape = &providers[0].shape;
         let out_shape = vec![input_shape[0], input_shape[1], 1, 1];
-        let out = Tensor::new(providers[0].dt, out_shape.into(), None);
+        let out = Tensor::new(providers[0].dt, out_shape.into());
         Ok(RealizedOp {
             cost: OpCost {
                 flops: providers[0].numel(),

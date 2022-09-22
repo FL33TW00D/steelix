@@ -46,7 +46,6 @@ impl Op for Transpose {
         Ok(RealizedOp::zero_cost(smallvec![Tensor::new(
             crate::DType::F32,
             Self::transpose::<f32>(self, &providers[0], &self.perm).into(),
-            None
         )
         .into_arc_tensor()]))
     }

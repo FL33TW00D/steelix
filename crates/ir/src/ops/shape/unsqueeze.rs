@@ -15,21 +15,15 @@ impl Unsqueeze {
     pub fn unsqueeze<D: DataType + ndarray::LinalgScalar + std::cmp::PartialOrd + num::NumCast>(
         &self,
         input: &Tensor,
-        axes: &mut Tensor,
+        mut axes: Vec<i64>,
     ) -> anyhow::Result<Tensor> {
-        let shape = axes.as_mut_slice::<D>()?;
-
-        shape.sort_by(|a, b| b.partial_cmp(a).expect("Failed to sort."));
-
-        println!("TO INSERT: {:?}", shape);
+        axes.sort_by(|a, b| b.partial_cmp(a).expect("Failed to sort."));
         let mut new_shape = input.shape.clone();
-        println!("NEW SHAPE: {:?}", new_shape);
 
-        shape
-            .iter()
+        axes.iter()
             .for_each(|new_axis| new_shape.insert(num::cast(*new_axis).unwrap(), 1));
 
-        Ok(Tensor::new(input.dt, new_shape, None))
+        Ok(Tensor::new(input.dt, new_shape))
     }
 }
 
@@ -48,16 +42,12 @@ impl Op for Unsqueeze {
 
         let data = &providers[0];
         let mut axes = if let Some(ax) = &self.axes {
-            ax.clone().into_arc_tensor()
+            ax.clone()
         } else {
-            providers[1].clone()
+            providers[1].as_slice()?.to_vec()
         };
 
-        let new_tensor = as_std!(Unsqueeze::unsqueeze(providers[0].dt)(
-            self,
-            data,
-            Arc::get_mut(&mut axes).unwrap()
-        ))?;
+        let new_tensor = as_std!(Unsqueeze::unsqueeze(providers[0].dt)(self, data, axes))?;
 
         Ok(RealizedOp::zero_cost(smallvec![
             new_tensor.into_arc_tensor()

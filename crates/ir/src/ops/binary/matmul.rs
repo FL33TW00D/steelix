@@ -30,7 +30,7 @@ impl Op for Matmul {
 
         let flops = m * n * (2 * p - 1);
 
-        let res = Tensor::new(providers[0].dt, output_shape.into(), None);
+        let res = Tensor::new(providers[0].dt, output_shape.into());
 
         Ok(RealizedOp {
             cost: OpCost {
