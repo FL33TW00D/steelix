@@ -7,18 +7,17 @@ use crate::{
     RealizedOp, Shape, Tensor,
 };
 #[derive(Debug, Clone)]
-pub struct concat {
-    allow_zero: i64,
+pub struct Concat {
+    axis: i64,
 }
 
-impl concat {
-    pub fn concat<D: DataType + ndarray::LinalgScalar + num::NumCast>(
-        shape_tensor: &Tensor,
-    ) -> Shape {
+impl Concat {
+    pub fn concat<D: DataType + ndarray::LinalgScalar + num::NumCast>(providers: PVec) -> Shape {
+        //Now what
     }
 }
 
-impl Op for concat {
+impl Op for Concat {
     fn name(&self) -> Cow<str> {
         "concat".into()
     }
@@ -28,9 +27,9 @@ impl Op for concat {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        validate_providers(&providers, 2, 2, &self.name())?;
+        validate_providers(&providers, 1, 2, &self.name())?;
 
-        let new_shape = as_std!(concat::concat(providers[0].dt)(&providers[1]));
+        let new_shape = as_std!(Concat::concat(providers[0].dt)(providers));
 
         let concatd = Tensor::new(providers[0].dt, new_shape, None).into_arc_tensor();
 
@@ -39,6 +38,6 @@ impl Op for concat {
 }
 
 pub fn build_concat(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    let allow_zero = proto.get_attribute("allowzero", Some(0))?;
-    Ok(Box::new(concat { allow_zero }) as BoxOp)
+    let axis = proto.get_attribute("axis", None)?;
+    Ok(Box::new(Concat { axis }) as BoxOp)
 }
