@@ -15,13 +15,6 @@ impl concat {
     pub fn concat<D: DataType + ndarray::LinalgScalar + num::NumCast>(
         shape_tensor: &Tensor,
     ) -> Shape {
-        let data: Vec<D> = shape_tensor.as_slice().unwrap().into();
-        let mut new_shape = SmallVec::new();
-        for elem in data {
-            new_shape.push(num::cast(elem).unwrap());
-        }
-
-        new_shape
     }
 }
 

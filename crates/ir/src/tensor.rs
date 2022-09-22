@@ -71,6 +71,10 @@ impl Tensor {
         Self::new(T::to_internal(), shape.into(), None)
     }
 
+    pub fn uninitialized_dt(dt: DType, shape: Shape) -> Self {
+        Self::new(dt, shape.into(), None)
+    }
+
     pub fn numel(&self) -> usize {
         self.shape.iter().cloned().product::<usize>()
     }
@@ -163,6 +167,11 @@ impl Tensor {
         }
     }
 
+    #[inline]
+    pub fn rank(&self) -> usize {
+        self.shape.len()
+    }
+
     //Rust generics fucking suck or I'd extract this to a function
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
@@ -200,6 +209,42 @@ impl Tensor {
             format!("{}\n...\n{}", start_str, end_str)
         }
         unsafe { as_std!(pretty_print(self.dt)(self)) }
+    }
+
+    pub fn stack_tensors(
+        axis: usize,
+        tensors: &[impl std::borrow::Borrow<Tensor>],
+    ) -> anyhow::Result<Tensor> {
+        anyhow::ensure!(tensors.len() > 0);
+        let rank = tensors[0].borrow().rank();
+        anyhow::ensure!(axis < rank);
+        anyhow::ensure!(tensors.iter().all(|t| t.borrow().rank() == rank));
+        let dt = tensors[0].borrow().dt;
+        anyhow::ensure!(tensors.iter().all(|t| t.borrow().dt == dt));
+        let mut shape = tensors[0].borrow().shape;
+        for ax in 0..rank {
+            if ax != axis {
+                anyhow::ensure!(tensors.iter().all(|t| t.borrow().shape[ax] == shape[ax]));
+            }
+        }
+        shape[axis] = tensors.iter().map(|v| v.borrow().shape[axis]).sum();
+        unsafe {
+            let mut result = Tensor::uninitialized_dt(dt, shape);
+            if shape[..axis].iter().all(|d| *d == 1) {
+                let mut offset = 0isize;
+                for v in tensors {
+                    let v = v.borrow();
+                    let len = 8;
+                    std::ptr::copy_nonoverlapping(
+                        v.data.unwrap().as_mut_ptr(),
+                        result.data.unwrap().as_mut_ptr().offset(offset),
+                        len,
+                    );
+                    offset += len as isize;
+                }
+            }
+            Ok(result)
+        }
     }
 }
 
