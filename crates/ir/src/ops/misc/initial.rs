@@ -22,6 +22,6 @@ impl Op for Initial {
 
 pub fn build_initial(value_info: ValueInfo) -> Result<BoxOp, anyhow::Error> {
     Ok(Box::new(Initial(
-        Tensor::new(DType::F32, value_info.dimensions, None).into_arc_tensor(),
+        Tensor::new(DType::F32, value_info.dimensions).into_arc_tensor(),
     )) as BoxOp)
 }

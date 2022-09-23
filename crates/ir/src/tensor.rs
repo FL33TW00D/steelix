@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fmt, mem::size_of, sync::Arc};
+use std::{fmt, mem::size_of, sync::Arc};
 
 use bytes::BytesMut;
 use ndarray::{Array, ArrayViewD, ArrayViewMutD};
@@ -39,7 +39,7 @@ pub struct Tensor {
     pub dt: DType,
     pub shape: Shape,
     pub len: usize, //actual entry count
-    pub data: Option<BytesMut>,
+    pub data: BytesMut,
 }
 
 impl std::fmt::Debug for Tensor {
@@ -55,23 +55,52 @@ impl std::fmt::Debug for Tensor {
     }
 }
 
+impl PartialEq for Tensor {
+    fn eq(&self, other: &Self) -> bool {
+        unsafe fn eq_t<D: DataType>(cur: &Tensor, other: &Tensor) -> bool {
+            cur.as_slice_unchecked::<D>() == other.as_slice_unchecked::<D>()
+        }
+
+        self.dt == other.dt
+            && self.shape == other.shape
+            && self.len == other.len
+            && unsafe { as_std!(eq_t(self.dt)(self, other)) }
+    }
+}
+
 impl Tensor {
-    pub fn new(dt: DType, shape: Shape, data: Option<BytesMut>) -> Self {
-        let len = shape.iter().cloned().product::<usize>();
+    pub fn new(dt: DType, shape: Shape) -> Self {
+        let len = shape.iter().product::<usize>();
+        let byte_count = len * dt.size_of();
         Self {
             dt,
             shape,
             len,
-            data,
+            data: BytesMut::zeroed(byte_count),
+        }
+    }
+
+    pub fn zeros<T: DataType>(shape: Shape) -> Self {
+        let len = shape.iter().product::<usize>();
+        let byte_count = len * T::to_internal().size_of();
+        Self {
+            dt: T::to_internal(),
+            shape,
+            len,
+            data: BytesMut::zeroed(byte_count),
         }
     }
 
     pub fn uninitialized<T: DataType>(shape: Shape) -> Self {
-        Self::new(T::to_internal(), shape.into(), None)
+        Self::new(T::to_internal(), shape)
+    }
+
+    pub fn uninitialized_dt(dt: DType, shape: Shape) -> Self {
+        Self::new(dt, shape)
     }
 
     pub fn numel(&self) -> usize {
-        self.shape.iter().cloned().product::<usize>()
+        self.shape.iter().product::<usize>()
     }
 
     pub fn update_shape(&mut self, new_shape: Shape) {
@@ -82,50 +111,22 @@ impl Tensor {
     ///# Safety
     /// This shit is straight unsafe dog
     pub unsafe fn as_slice_unchecked<D: DataType>(&self) -> &[D] {
-        std::slice::from_raw_parts::<D>(self.data.as_ref().unwrap().as_ptr() as *const D, self.len)
+        std::slice::from_raw_parts::<D>(self.data.as_ptr() as *const D, self.len)
     }
 
+    ///# Safety
+    /// This shit is extra unsafe dog
     pub unsafe fn as_mut_slice_unchecked<D: DataType>(&mut self) -> &mut [D] {
-        std::slice::from_raw_parts_mut::<D>(
-            self.data.as_ref().unwrap().as_ptr() as *mut D,
-            self.len,
-        )
+        std::slice::from_raw_parts_mut::<D>(self.data.as_ptr() as *mut D, self.len)
     }
 
     pub fn as_slice<D: DataType>(&self) -> Result<&[D], OpError> {
-        if self.data.is_none() {
-            Err(OpError::ValidationError(
-                "Tried to take slice of non existent data!".to_string(),
-            ))
-        } else {
-            //todo check len too
-            unsafe { Ok(self.as_slice_unchecked()) }
-        }
+        unsafe { Ok(self.as_slice_unchecked()) }
     }
 
     pub fn as_mut_slice<D: DataType>(&mut self) -> Result<&mut [D], OpError> {
-        if self.data.is_none() {
-            Err(OpError::ValidationError(
-                "Tried to take slice of non existent data!".to_string(),
-            ))
-        } else {
-            //todo check len too
-            unsafe { Ok(self.as_mut_slice_unchecked()) }
-        }
-    }
-
-    /// Access the data as a scalar.
-    pub fn to_scalar<D: DataType>(&self) -> anyhow::Result<&D> {
-        if self.len == 0 {
-            anyhow::bail!("to_scalar called on empty tensor ({:?})", self)
-        }
-        unsafe { Ok(self.to_scalar_unchecked()) }
-    }
-
-    /// Access the data as a scalar.
-    pub unsafe fn to_scalar_unchecked<D: DataType>(&self) -> &D {
-        println!("SELFY: {:?}", self);
-        &*(self.data.clone().unwrap().as_mut_ptr() as *mut D)
+        //todo check len too
+        unsafe { Ok(self.as_mut_slice_unchecked()) }
     }
 
     /// Transform the data as a `ndarray::Array`.
@@ -142,10 +143,7 @@ impl Tensor {
 
     pub unsafe fn to_array_view_unchecked<A: DataType>(&self) -> ArrayViewD<A> {
         if self.len != 0 {
-            ArrayViewD::from_shape_ptr(
-                &*self.shape,
-                self.data.clone().unwrap().as_ptr() as *const A,
-            )
+            ArrayViewD::from_shape_ptr(&*self.shape, self.data.as_ptr() as *const A)
         } else {
             ArrayViewD::from_shape(&*self.shape, &[]).unwrap()
         }
@@ -153,12 +151,59 @@ impl Tensor {
 
     pub unsafe fn to_array_view_mut_unchecked<A: DataType>(&mut self) -> ArrayViewMutD<A> {
         if self.len != 0 {
-            ArrayViewMutD::from_shape_ptr(
-                &*self.shape,
-                self.data.clone().unwrap().as_mut_ptr() as *mut A,
-            )
+            ArrayViewMutD::from_shape_ptr(&*self.shape, self.data.as_mut_ptr() as *mut A)
         } else {
             ArrayViewMutD::from_shape(&*self.shape, &mut []).unwrap()
+        }
+    }
+
+    /// Access the data as a scalar.
+    pub fn to_scalar<D: DataType>(&self) -> anyhow::Result<&D> {
+        if self.len == 0 {
+            anyhow::bail!("to_scalar called on empty tensor ({:?})", self)
+        }
+        unsafe { Ok(self.to_scalar_unchecked()) }
+    }
+
+    /// Access the data as a scalar.
+    pub unsafe fn to_scalar_unchecked<D: DataType>(&self) -> &D {
+        &*(self.data.as_ptr() as *mut D)
+    }
+
+    #[inline]
+    pub fn rank(&self) -> usize {
+        self.shape.len()
+    }
+
+    pub fn stack_tensors(
+        axis: usize,
+        tensors: &[impl std::borrow::Borrow<Tensor>],
+    ) -> anyhow::Result<Tensor> {
+        let rank = tensors[0].borrow().rank();
+        let dt = tensors[0].borrow().dt;
+        let mut shape: Shape = tensors[0].borrow().shape.clone();
+        for ax in 0..rank {
+            if ax != axis {
+                anyhow::ensure!(tensors.iter().all(|t| t.borrow().shape[ax] == shape[ax]));
+            }
+        }
+        shape[axis] = tensors.iter().map(|v| v.borrow().shape[axis]).sum();
+        unsafe {
+            let mut result = Tensor::uninitialized_dt(dt, shape.clone());
+            if shape[..axis].iter().all(|d| *d == 1) {
+                let mut offset = 0isize;
+                for v in tensors {
+                    let v = v.borrow();
+                    let dd = v.data.as_ptr();
+                    std::ptr::copy_nonoverlapping(
+                        dd,
+                        result.data.as_mut_ptr().offset(offset),
+                        v.len,
+                    );
+                    offset += v.len as isize;
+                }
+            }
+            Ok(result)
         }
     }
 
@@ -166,8 +211,8 @@ impl Tensor {
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
             let chunk_size = if input.len < 64 { input.len - 1 } else { 64 };
+            println!("chunk size: {:?}", chunk_size);
             let start_chunk = &input.as_slice::<D>().unwrap()[0..chunk_size];
-            let end_chunk = &input.as_slice::<D>().unwrap()[input.len - chunk_size..input.len];
 
             let start_str = start_chunk
                 .iter()
@@ -182,21 +227,7 @@ impl Tensor {
                     out
                 })
                 .collect::<String>();
-            let end_str = end_chunk
-                .iter()
-                .enumerate()
-                .map(|(idx, d)| {
-                    let mut out = format!("{:>10.6},", d);
-                    if (input.shape.len() > 1)
-                        && (idx + 1).rem_euclid(input.shape[input.shape.len() - 1]) == 0
-                    {
-                        out.push('\n')
-                    }
-                    out
-                })
-                .collect::<String>();
-
-            format!("{}\n...\n{}", start_str, end_str)
+            start_str
         }
         unsafe { as_std!(pretty_print(self.dt)(self)) }
     }
@@ -220,7 +251,7 @@ pub enum DType {
 impl DType {
     #[inline]
     pub fn size_of(&self) -> usize {
-        as_float!(std::mem::size_of(self)())
+        as_std!(std::mem::size_of(self)())
     }
 }
 
@@ -289,7 +320,7 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
             dt,
             shape,
             len,
-            data: Some(data),
+            data,
         })
     }
 }
@@ -340,7 +371,6 @@ impl<D: ::ndarray::Dimension, T: DataType> IntoTensor for Array<T, D> {
     }
 }
 
-//A is elem type, D is dimension
 impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
     fn from(nda: Array<A, D>) -> Tensor {
         let shape = nda.shape().to_vec();
@@ -352,7 +382,7 @@ impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
             dt: A::to_internal(),
             shape: shape.into(),
             len,
-            data: Some(data.into()),
+            data: data.into(),
         }
     }
 }

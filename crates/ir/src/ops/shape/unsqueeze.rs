@@ -1,6 +1,7 @@
+use anyhow::bail;
 use onnx::onnx_pb;
 use smallvec::smallvec;
-use std::{borrow::Cow, sync::Arc};
+use std::borrow::Cow;
 
 use crate::{
     as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
@@ -15,21 +16,16 @@ impl Unsqueeze {
     pub fn unsqueeze<D: DataType + ndarray::LinalgScalar + std::cmp::PartialOrd + num::NumCast>(
         &self,
         input: &Tensor,
-        axes: &mut Tensor,
+        mut axes: Vec<i64>,
     ) -> anyhow::Result<Tensor> {
-        let shape = axes.as_mut_slice::<D>()?;
-
-        shape.sort_by(|a, b| b.partial_cmp(a).expect("Failed to sort."));
-
-        println!("TO INSERT: {:?}", shape);
+        axes.sort_by(|a, b| a.partial_cmp(b).expect("Failed to sort."));
         let mut new_shape = input.shape.clone();
-        println!("NEW SHAPE: {:?}", new_shape);
 
-        shape
-            .iter()
-            .for_each(|new_axis| new_shape.insert(num::cast(*new_axis).unwrap(), 1));
+        axes.iter().for_each(|new_axis| {
+            new_shape.insert(num::cast(*new_axis).unwrap(), 1);
+        });
 
-        Ok(Tensor::new(input.dt, new_shape, None))
+        Ok(Tensor::new(input.dt, new_shape))
     }
 }
 
@@ -43,18 +39,22 @@ impl Op for Unsqueeze {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        println!("PROVIDERS: {:?}", providers);
         validate_providers(&providers, 1, 2, &self.name())?;
-
-        let data = &providers[0];
-        let axes = if let Some(ax) = self.axes {
-            
+        if providers.len() == 1 && self.axes.is_none() {
+            bail!("Invalid parameters for Unsqueeze")
         }
+        println!("PROVIDERS: {:?}", providers);
+
+        let axes = if let Some(ax) = &self.axes {
+            ax.clone()
+        } else {
+            providers[1].as_slice()?.to_vec()
+        };
 
         let new_tensor = as_std!(Unsqueeze::unsqueeze(providers[0].dt)(
             self,
-            data,
-            Arc::get_mut(&mut axes).unwrap()
+            &providers[0],
+            axes
         ))?;
 
         Ok(RealizedOp::zero_cost(smallvec![

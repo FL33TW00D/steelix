@@ -20,7 +20,7 @@ impl Op for Dropout {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 2, &self.name())?;
         let placeholder =
-            Tensor::new(providers[0].dt, providers[0].shape.clone(), None).into_arc_tensor();
+            Tensor::new(providers[0].dt, providers[0].shape.clone()).into_arc_tensor();
 
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),

@@ -1,9 +1,9 @@
 use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    validate_providers, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor,
+    as_std, pvec, validate_providers, BoxOp, DType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp,
+    Tensor,
 };
 
 #[derive(Debug, Clone)]
@@ -43,12 +43,15 @@ impl Op for Transpose {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 1, &self.name())?;
 
-        Ok(RealizedOp::zero_cost(smallvec![Tensor::new(
-            crate::DType::F32,
-            Self::transpose::<f32>(self, &providers[0], &self.perm).into(),
-            None
-        )
-        .into_arc_tensor()]))
+        let transposed_shape = as_std!(Transpose::transpose(providers[0].dt)(
+            self,
+            &providers[0],
+            &self.perm
+        ))
+        .into();
+        let result = Tensor::new(providers[0].dt, transposed_shape).into_arc_tensor();
+
+        Ok(RealizedOp::zero_cost(pvec!(result)))
     }
 }
 

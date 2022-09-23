@@ -22,6 +22,7 @@ impl Default for OpRegister {
         reg.insert("Clip", activation::build_clip);
         reg.insert("Transpose", shape::build_transpose);
         reg.insert("Reshape", shape::build_reshape);
+        reg.insert("Concat", shape::build_concat);
         reg.insert("BatchNormalization", nn::build_batchnorm);
         reg.insert("Add", binary::build_add);
         reg.insert("Squeeze", shape::build_squeeze);

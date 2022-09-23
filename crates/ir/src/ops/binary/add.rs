@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use onnx::onnx_pb;
 use smallvec::smallvec;
 
-use crate::{BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
+use crate::{pvec, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct Add;
@@ -23,7 +23,7 @@ impl Op for Add {
                 flops: providers[0].numel(),
                 parameters: 0,
             },
-            outputs: smallvec![providers[0].clone()],
+            outputs: pvec![providers[0].clone()],
         })
     }
 }

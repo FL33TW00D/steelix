@@ -1,12 +1,10 @@
-use bytes::BytesMut;
 use ndarray::{Axis, Dimension};
 use onnx::onnx_pb;
-use smallvec::{smallvec, SmallVec};
+use smallvec::smallvec;
 use std::{borrow::Cow, sync::Arc};
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, IntoTensor, Op, OpGroup,
-    PVec, RealizedOp, Shape, Tensor,
+    as_std, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Shape, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Gather {
@@ -39,23 +37,19 @@ impl Gather {
     ) -> anyhow::Result<Arc<Tensor>> {
         let data_view = data.to_array_view_unchecked::<T>();
         if indices.shape.is_empty() {
-            //let mut index = *indices.to_scalar::<i64>()?;
-            println!("TEST");
-            //if index < 0 {
-            //    index += data_view.shape()[0] as i64;
-            //}
-            let index = 0;
-            let tensor = data_view
+            let mut index = *indices.to_scalar::<i64>()?;
+            if index < 0 {
+                index += data_view.shape()[0] as i64;
+            }
+            return Ok(data_view
                 .index_axis(Axis(self.axis as usize), index as usize)
                 .to_owned()
-                .into_tensor();
-            return Ok(tensor.into_arc_tensor());
+                .into_arc_tensor());
         }
-
-        println!("HERE");
 
         let mut output =
             Tensor::uninitialized::<T>(self.compute_output_shape(&data.shape, &indices.shape)?);
+
         let mut view = output.to_array_view_mut_unchecked::<T>();
         for (indices_coords, indices_value) in indices.to_array_view::<i64>()?.indexed_iter() {
             let mut to_update = view.index_axis_mut(Axis(self.axis as usize), indices_coords[0]);
@@ -83,15 +77,12 @@ impl Op for Gather {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        validate_providers(&providers, 2, 2, &self.name())?;
-
         unsafe {
             let result = as_std!(Self::eval(providers[0].dt)(
                 self,
                 providers[0].clone(),
                 &providers[1]
             ))?;
-            println!("RESULT: {:?}", result);
             Ok(RealizedOp::zero_cost(smallvec![result]))
         }
     }

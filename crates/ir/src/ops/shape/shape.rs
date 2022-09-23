@@ -1,11 +1,10 @@
-use bytes::BytesMut;
+use bytes::BufMut;
 use onnx::onnx_pb;
-use smallvec::{smallvec, SmallVec};
+use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
-    RealizedOp, Shape as TensorShape, Tensor,
+    validate_providers, BoxOp, DType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Shape {
@@ -38,11 +37,8 @@ impl Op for Shape {
 
         let bytes: Vec<u8> = new_shape.iter().flat_map(|s| s.to_ne_bytes()).collect();
 
-        let out = Tensor::new(
-            DType::I64,
-            smallvec![new_shape.len()],
-            Some((*bytes).into()),
-        );
+        let mut out = Tensor::new(DType::I64, smallvec![new_shape.len()]);
+        out.data.put(&*bytes);
 
         Ok(RealizedOp::zero_cost(smallvec![out.into_arc_tensor()]))
     }
