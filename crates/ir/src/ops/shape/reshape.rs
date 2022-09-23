@@ -8,7 +8,7 @@ use crate::{
 };
 #[derive(Debug, Clone)]
 pub struct Reshape {
-    allow_zero: i64,
+    pub allow_zero: i64,
 }
 
 impl Reshape {
@@ -37,7 +37,7 @@ impl Op for Reshape {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 2, 2, &self.name())?;
 
-        let new_shape = as_std!(Reshape::reshape(providers[0].dt)(&providers[1]));
+        let new_shape = as_std!(Reshape::reshape(providers[1].dt)(&providers[1]));
 
         let reshaped = Tensor::new(providers[0].dt, new_shape).into_arc_tensor();
         println!("RESHAPED: {:?}", reshaped.shape);

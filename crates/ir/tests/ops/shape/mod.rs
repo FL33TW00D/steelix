@@ -1,6 +1,7 @@
-mod squeeze;
-mod unsqueeze;
+mod concat;
 mod gather;
+mod reshape;
 mod shape;
 mod slice;
-mod concat;
+mod squeeze;
+mod unsqueeze;
