@@ -1,9 +1,8 @@
-use std::{borrow::Cow, fmt, mem::size_of, ops::Range, sync::Arc};
+use std::{fmt, mem::size_of, sync::Arc};
 
 use bytes::BytesMut;
-use ndarray::{Array, ArrayD, ArrayViewD, ArrayViewMutD, Axis};
+use ndarray::{Array, ArrayViewD, ArrayViewMutD};
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
-use smallvec::smallvec;
 
 use crate::{OpError, Shape};
 

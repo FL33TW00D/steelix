@@ -50,7 +50,7 @@ struct SummaryTable {
 }
 
 fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
-    let mut model_path = matches
+    let model_path = matches
         .get_one::<String>("MODEL_PATH")
         .expect("Failed to find model at path.")
         .into();

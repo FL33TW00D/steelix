@@ -4,8 +4,7 @@ use smallvec::smallvec;
 use std::{borrow::Cow, sync::Arc};
 
 use crate::{
-    as_std, BoxOp, DType, DataType, IntoArcTensor, IntoTensor, Op, OpGroup, PVec, RealizedOp,
-    Shape, Tensor,
+    as_std, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Shape, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Gather {
@@ -37,26 +36,22 @@ impl Gather {
         indices: &Arc<Tensor>,
     ) -> anyhow::Result<Arc<Tensor>> {
         let data_view = data.to_array_view_unchecked::<T>();
-        if indices.shape.len() == 0 {
+        if indices.shape.is_empty() {
             let mut index = *indices.to_scalar::<i64>()?;
             if index < 0 {
                 index += data_view.shape()[0] as i64;
             }
-            let mut tensor = data_view
+            return Ok(data_view
                 .index_axis(Axis(self.axis as usize), index as usize)
                 .to_owned()
-                .into_tensor();
-            return Ok(tensor.into_arc_tensor());
+                .into_arc_tensor());
         }
 
         let mut output =
             Tensor::uninitialized::<T>(self.compute_output_shape(&data.shape, &indices.shape)?);
 
-        println!("OUTPUT SHAPE: {:?}", output);
         let mut view = output.to_array_view_mut_unchecked::<T>();
         for (indices_coords, indices_value) in indices.to_array_view::<i64>()?.indexed_iter() {
-            println!("INDEX COORDS: {:?}", indices_coords);
-            println!("INDICES VALUE: {:?}", indices_value);
             let mut to_update = view.index_axis_mut(Axis(self.axis as usize), indices_coords[0]);
             for idx in 1..indices_coords.ndim() {
                 to_update = to_update.index_axis_move(Axis(0), indices_coords[idx]);
@@ -82,8 +77,6 @@ impl Op for Gather {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        //print out all providers one by one
-
         unsafe {
             let result = as_std!(Self::eval(providers[0].dt)(
                 self,

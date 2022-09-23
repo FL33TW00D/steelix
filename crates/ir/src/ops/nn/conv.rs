@@ -48,10 +48,10 @@ impl Op for Conv {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 2, 3, &self.name())?;
         let x = providers[0].clone();
-        let (n, cin, h, w) = (x.shape[0], x.shape[1], x.shape[2], x.shape[3]);
+        let (n, cin, _, _) = (x.shape[0], x.shape[1], x.shape[2], x.shape[3]);
 
         let w = providers[1].clone();
-        let (f, kc, kh, kw) = (w.shape[0], w.shape[1], w.shape[2], w.shape[3]);
+        let (f, _, kh, kw) = (w.shape[0], w.shape[1], w.shape[2], w.shape[3]);
 
         let (h_out, w_out) = self.output_dims(
             &x.shape

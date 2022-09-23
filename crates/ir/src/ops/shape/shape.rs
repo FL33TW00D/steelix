@@ -1,11 +1,10 @@
-use bytes::{BufMut, BytesMut};
+use bytes::BufMut;
 use onnx::onnx_pb;
-use smallvec::{smallvec, SmallVec};
+use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
-    RealizedOp, Shape as TensorShape, Tensor,
+    validate_providers, BoxOp, DType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Shape {

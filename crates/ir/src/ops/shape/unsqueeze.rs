@@ -1,11 +1,11 @@
 use anyhow::bail;
 use onnx::onnx_pb;
 use smallvec::smallvec;
-use std::{borrow::Cow, sync::Arc};
+use std::borrow::Cow;
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, IntoTensor, Op, OpGroup,
-    PVec, RealizedOp, Tensor,
+    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
+    RealizedOp, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Unsqueeze {
