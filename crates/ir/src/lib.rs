@@ -39,9 +39,9 @@ impl OpCost {
     }
 }
 
-type PVec = SmallVec<[Arc<Tensor>; 4]>;
-type Shape = SmallVec<[usize; 4]>;
-type StResult<T> = anyhow::Result<T>;
+pub type PVec = SmallVec<[Arc<Tensor>; 4]>;
+pub type Shape = SmallVec<[usize; 4]>;
+pub type StResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Default)]
 pub struct RealizedOp {
@@ -131,14 +131,39 @@ macro_rules! elementwise {
 }
 
 #[macro_export]
-macro_rules! pvec {
+macro_rules! shape {
+    (@one $x:expr) => (1usize);
+    ($elem:expr; $n:expr) => ({
+        $crate::Shape::from_elem($elem, $n)
+    });
     ($($x:expr),*$(,)*) => ({
-        let mut vec = $crate::TVec::new();
+        let count = 0usize $(+ shape!(@one $x))*;
+        #[allow(unused_mut)]
+        let mut vec = $crate::Shape::new();
         if count <= vec.inline_size() {
             $(vec.push($x);)*
             vec
         } else {
-            $crate::TVec::from_vec(vec![$($x,)*])
+            $crate::Shape::from_vec(vec![$($x,)*])
+        }
+    });
+}
+
+#[macro_export]
+macro_rules! pvec {
+    (@one $x:expr) => (1usize);
+    ($elem:expr; $n:expr) => ({
+        $crate::PVec::from_elem($elem, $n)
+    });
+    ($($x:expr),*$(,)*) => ({
+        let count = 0usize $(+ pvec!(@one $x))*;
+        #[allow(unused_mut)]
+        let mut vec = $crate::PVec::new();
+        if count <= vec.inline_size() {
+            $(vec.push($x);)*
+            vec
+        } else {
+            $crate::PVec::from_vec(vec![$($x,)*])
         }
     });
 }

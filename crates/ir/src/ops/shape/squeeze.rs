@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use onnx::onnx_pb;
 use smallvec::smallvec;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, RealizedOp, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, RealizedOp, Shape, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Squeeze {
@@ -11,7 +11,7 @@ pub struct Squeeze {
 }
 
 impl Squeeze {
-    pub fn squeeze(&self, to_squeeze: &Tensor) -> Vec<usize> {
+    pub fn squeeze(&self, to_squeeze: &Tensor) -> Shape {
         let shape_iter = to_squeeze.shape.iter();
         let new_shape: Vec<usize> = if self.axes.is_some() {
             let all_axes = self.axes.as_ref().unwrap();
@@ -24,7 +24,7 @@ impl Squeeze {
             shape_iter.filter(|ax| **ax != 1_usize).copied().collect()
         };
 
-        new_shape
+        new_shape.into()
     }
 }
 
@@ -39,7 +39,7 @@ impl Op for Squeeze {
 
     fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
         let new_shape = self.squeeze(&providers[0]);
-        let output = Tensor::new(providers[0].dt, new_shape.into());
+        let output = Tensor::new(providers[0].dt, new_shape);
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
             outputs: smallvec![output.into_arc_tensor()],

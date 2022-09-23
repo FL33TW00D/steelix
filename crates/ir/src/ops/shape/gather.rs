@@ -1,4 +1,3 @@
-use bytes::BytesMut;
 use ndarray::{Axis, Dimension};
 use onnx::onnx_pb;
 use smallvec::{smallvec, SmallVec};
@@ -40,7 +39,6 @@ impl Gather {
         let data_view = data.to_array_view_unchecked::<T>();
         if indices.shape.is_empty() {
             //let mut index = *indices.to_scalar::<i64>()?;
-            println!("TEST");
             //if index < 0 {
             //    index += data_view.shape()[0] as i64;
             //}
@@ -51,8 +49,6 @@ impl Gather {
                 .into_tensor();
             return Ok(tensor.into_arc_tensor());
         }
-
-        println!("HERE");
 
         let mut output =
             Tensor::uninitialized::<T>(self.compute_output_shape(&data.shape, &indices.shape)?);
@@ -83,7 +79,7 @@ impl Op for Gather {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        validate_providers(&providers, 2, 2, &self.name())?;
+        //print out all providers one by one
 
         unsafe {
             let result = as_std!(Self::eval(providers[0].dt)(
@@ -91,7 +87,6 @@ impl Op for Gather {
                 providers[0].clone(),
                 &providers[1]
             ))?;
-            println!("RESULT: {:?}", result);
             Ok(RealizedOp::zero_cost(smallvec![result]))
         }
     }

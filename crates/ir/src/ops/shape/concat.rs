@@ -31,6 +31,7 @@ impl Op for Concat {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 2, &self.name())?;
 
+        println!("CONCAT PROVIDERS: {:?}", providers);
         let new_shape = as_std!(Concat::concat(providers[0].dt)(providers));
 
         Ok(RealizedOp::zero_cost(smallvec![]))

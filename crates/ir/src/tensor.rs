@@ -67,12 +67,23 @@ impl Tensor {
         }
     }
 
+    pub fn zeros<T: DataType>(shape: Shape) -> Self {
+        let len = shape.iter().cloned().product::<usize>();
+        let byte_count = len * T::to_internal().size_of();
+        Self {
+            dt: T::to_internal(),
+            shape,
+            len,
+            data: BytesMut::zeroed(byte_count),
+        }
+    }
+
     pub fn uninitialized<T: DataType>(shape: Shape) -> Self {
-        Self::new(T::to_internal(), shape.into())
+        Self::new(T::to_internal(), shape)
     }
 
     pub fn uninitialized_dt(dt: DType, shape: Shape) -> Self {
-        Self::new(dt, shape.into())
+        Self::new(dt, shape)
     }
 
     pub fn numel(&self) -> usize {
@@ -90,6 +101,8 @@ impl Tensor {
         std::slice::from_raw_parts::<D>(self.data.as_ptr() as *const D, self.len)
     }
 
+    ///# Safety
+    /// This shit is extra unsafe dog
     pub unsafe fn as_mut_slice_unchecked<D: DataType>(&mut self) -> &mut [D] {
         std::slice::from_raw_parts_mut::<D>(self.data.as_ptr() as *mut D, self.len)
     }
