@@ -1,7 +1,7 @@
 use std::{borrow::Cow, fmt, mem::size_of, sync::Arc};
 
 use bytes::BytesMut;
-use ndarray::{Array, ArrayViewD, ArrayViewMutD};
+use ndarray::{Array, ArrayD, ArrayViewD, ArrayViewMutD};
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
 use smallvec::smallvec;
 
@@ -221,7 +221,7 @@ pub enum DType {
 impl DType {
     #[inline]
     pub fn size_of(&self) -> usize {
-        as_float!(std::mem::size_of(self)())
+        as_std!(std::mem::size_of(self)())
     }
 }
 

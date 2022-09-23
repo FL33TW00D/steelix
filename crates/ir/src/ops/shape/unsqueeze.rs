@@ -1,3 +1,4 @@
+use anyhow::bail;
 use onnx::onnx_pb;
 use smallvec::smallvec;
 use std::{borrow::Cow, sync::Arc};
@@ -17,11 +18,12 @@ impl Unsqueeze {
         input: &Tensor,
         mut axes: Vec<i64>,
     ) -> anyhow::Result<Tensor> {
-        axes.sort_by(|a, b| b.partial_cmp(a).expect("Failed to sort."));
+        axes.sort_by(|a, b| a.partial_cmp(b).expect("Failed to sort."));
         let mut new_shape = input.shape.clone();
 
-        axes.iter()
-            .for_each(|new_axis| new_shape.insert(num::cast(*new_axis).unwrap(), 1));
+        axes.iter().for_each(|new_axis| {
+            new_shape.insert(num::cast(*new_axis).unwrap(), 1);
+        });
 
         Ok(Tensor::new(input.dt, new_shape))
     }
@@ -37,17 +39,23 @@ impl Op for Unsqueeze {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        println!("PROVIDERS: {:?}", providers);
         validate_providers(&providers, 1, 2, &self.name())?;
+        if providers.len() == 1 && self.axes.is_none() {
+            bail!("Invalid parameters for Unsqueeze")
+        }
+        println!("PROVIDERS: {:?}", providers);
 
-        let data = &providers[0];
-        let mut axes = if let Some(ax) = &self.axes {
+        let axes = if let Some(ax) = &self.axes {
             ax.clone()
         } else {
             providers[1].as_slice()?.to_vec()
         };
 
-        let new_tensor = as_std!(Unsqueeze::unsqueeze(providers[0].dt)(self, data, axes))?;
+        let new_tensor = as_std!(Unsqueeze::unsqueeze(providers[0].dt)(
+            self,
+            &providers[0],
+            axes
+        ))?;
 
         Ok(RealizedOp::zero_cost(smallvec![
             new_tensor.into_arc_tensor()

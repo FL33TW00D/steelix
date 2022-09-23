@@ -21,7 +21,7 @@ impl Concat {
 
 impl Op for Concat {
     fn name(&self) -> Cow<str> {
-        "concat".into()
+        "Concat".into()
     }
 
     fn op_group(&self) -> OpGroup {
