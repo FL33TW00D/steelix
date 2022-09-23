@@ -158,6 +158,19 @@ impl Tensor {
         }
     }
 
+    /// Access the data as a scalar.
+    pub fn to_scalar<D: DataType>(&self) -> anyhow::Result<&D> {
+        if self.len == 0 {
+            anyhow::bail!("to_scalar called on empty tensor ({:?})", self)
+        }
+        unsafe { Ok(self.to_scalar_unchecked()) }
+    }
+
+    /// Access the data as a scalar.
+    pub unsafe fn to_scalar_unchecked<D: DataType>(&self) -> &D {
+        &*(self.data.as_ptr() as *mut D)
+    }
+
     #[inline]
     pub fn rank(&self) -> usize {
         self.shape.len()
