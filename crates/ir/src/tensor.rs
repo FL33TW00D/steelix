@@ -56,19 +56,33 @@ impl std::fmt::Debug for Tensor {
     }
 }
 
+impl PartialEq for Tensor {
+    fn eq(&self, other: &Self) -> bool {
+        unsafe fn eq_t<D: DataType>(cur: &Tensor, other: &Tensor) -> bool {
+            cur.as_slice_unchecked::<D>() == other.as_slice_unchecked::<D>()
+        }
+
+        self.dt == other.dt
+            && self.shape == other.shape
+            && self.len == other.len
+            && unsafe { as_float!(eq_t(self.dt)(self, other)) }
+    }
+}
+
 impl Tensor {
     pub fn new(dt: DType, shape: Shape) -> Self {
         let len = shape.iter().product::<usize>();
+        let byte_count = len * dt.size_of();
         Self {
             dt,
             shape,
             len,
-            data: BytesMut::with_capacity(len),
+            data: BytesMut::zeroed(byte_count),
         }
     }
 
     pub fn zeros<T: DataType>(shape: Shape) -> Self {
-        let len = shape.iter().cloned().product::<usize>();
+        let len = shape.iter().product::<usize>();
         let byte_count = len * T::to_internal().size_of();
         Self {
             dt: T::to_internal(),

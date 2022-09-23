@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use onnx::onnx_pb;
 use smallvec::smallvec;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, RealizedOp, Shape, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Shape, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Squeeze {
@@ -37,7 +37,7 @@ impl Op for Squeeze {
         OpGroup::Shape
     }
 
-    fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         let new_shape = self.squeeze(&providers[0]);
         let output = Tensor::new(providers[0].dt, new_shape);
         Ok(RealizedOp {

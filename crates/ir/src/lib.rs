@@ -20,7 +20,7 @@ pub use op_register::*;
 pub use tensor::*;
 pub use value_info::*;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct OpCost {
     pub flops: usize,      //# Floating Point Operations
     pub parameters: usize, //# Parameters
@@ -45,8 +45,8 @@ pub type StResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Default)]
 pub struct RealizedOp {
-    cost: OpCost,
-    outputs: PVec,
+    pub cost: OpCost,
+    pub outputs: PVec,
 }
 
 impl RealizedOp {
@@ -55,6 +55,12 @@ impl RealizedOp {
             cost: OpCost::default(),
             outputs,
         }
+    }
+}
+
+impl PartialEq for RealizedOp {
+    fn eq(&self, other: &Self) -> bool {
+        self.cost == other.cost && self.outputs == other.outputs
     }
 }
 
