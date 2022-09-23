@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use onnx::onnx_pb;
 use smallvec::smallvec;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, RealizedOp, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Gemm;
@@ -18,7 +18,7 @@ impl Op for Gemm {
     }
 
     //𝑛𝑚(2𝑝−1)
-    fn realize(&self, providers: crate::PVec) -> anyhow::Result<crate::RealizedOp> {
+    fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
         let p0_shape = &providers[0].shape;
         let p1_shape = &providers[1].shape;
 
