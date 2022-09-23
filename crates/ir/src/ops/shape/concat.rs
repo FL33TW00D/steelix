@@ -3,7 +3,7 @@ use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
+    as_std, pvec, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
     RealizedOp, Shape, Tensor,
 };
 #[derive(Debug, Clone)]
@@ -12,10 +12,13 @@ pub struct Concat {
 }
 
 impl Concat {
-    pub fn concat<D: DataType + ndarray::LinalgScalar + num::NumCast>(providers: PVec) -> Shape {
-        //Now what
-        //
-        Shape::new()
+    pub fn concat<D: DataType + ndarray::LinalgScalar + num::NumCast>(
+        &self,
+        providers: &PVec,
+    ) -> Shape {
+        Tensor::stack_tensors(self.axis as usize, providers)
+            .unwrap()
+            .shape
     }
 }
 
@@ -32,9 +35,11 @@ impl Op for Concat {
         validate_providers(&providers, 1, 2, &self.name())?;
 
         println!("CONCAT PROVIDERS: {:?}", providers);
-        let new_shape = as_std!(Concat::concat(providers[0].dt)(providers));
+        let new_shape = as_std!(Concat::concat(providers[0].dt)(self, &providers));
 
-        Ok(RealizedOp::zero_cost(smallvec![]))
+        let tttt = Tensor::new(providers[0].dt, new_shape).into_arc_tensor();
+
+        Ok(RealizedOp::zero_cost(pvec!(tttt)))
     }
 }
 

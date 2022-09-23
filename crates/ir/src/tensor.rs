@@ -1,7 +1,7 @@
-use std::{borrow::Cow, fmt, mem::size_of, sync::Arc};
+use std::{borrow::Cow, fmt, mem::size_of, ops::Range, sync::Arc};
 
 use bytes::BytesMut;
-use ndarray::{Array, ArrayD, ArrayViewD, ArrayViewMutD};
+use ndarray::{Array, ArrayD, ArrayViewD, ArrayViewMutD, Axis};
 use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
 use smallvec::smallvec;
 
@@ -174,6 +174,38 @@ impl Tensor {
     #[inline]
     pub fn rank(&self) -> usize {
         self.shape.len()
+    }
+
+    pub fn stack_tensors(
+        axis: usize,
+        tensors: &[impl std::borrow::Borrow<Tensor>],
+    ) -> anyhow::Result<Tensor> {
+        let rank = tensors[0].borrow().rank();
+        let dt = tensors[0].borrow().dt;
+        let mut shape: Shape = tensors[0].borrow().shape.clone();
+        for ax in 0..rank {
+            if ax != axis {
+                anyhow::ensure!(tensors.iter().all(|t| t.borrow().shape[ax] == shape[ax]));
+            }
+        }
+        shape[axis] = tensors.iter().map(|v| v.borrow().shape[axis]).sum();
+        unsafe {
+            let mut result = Tensor::uninitialized_dt(dt, shape.clone());
+            if shape[..axis].iter().all(|d| *d == 1) {
+                let mut offset = 0isize;
+                for v in tensors {
+                    let v = v.borrow();
+                    let dd = v.data.as_ptr();
+                    std::ptr::copy_nonoverlapping(
+                        dd,
+                        result.data.as_mut_ptr().offset(offset),
+                        v.len,
+                    );
+                    offset += v.len as isize;
+                }
+            }
+            Ok(result)
+        }
     }
 
     //Rust generics fucking suck or I'd extract this to a function
