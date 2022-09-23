@@ -21,3 +21,6 @@ npyz = "0.7.0"
 tabled = { git = "https://github.com/zhiburt/tabled", branch = "master" }
 smallvec = "1.9.0"
 human-repr = "1.0.1"
+half = "2.1.0"
+serde = "1.0.145"
+serde_json = "1.0.85"

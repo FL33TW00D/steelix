@@ -38,7 +38,7 @@ pub enum ModelError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
-///                         MODEL NODE STRUCTURE
+///                        MODEL GRAPH STRUCTURE
 /// --------------------------------------------------------------------
 /// | user inputs | constant initializers | processing nodes | outputs |
 /// --------------------------------------------------------------------
@@ -58,10 +58,9 @@ pub struct TraversalState {
 
 #[derive(Debug, Default)]
 pub struct ModelSummary {
-    //what do we need here?
     pub total_flops: usize,
     pub total_params: usize,
-    pub op_counts: HashMap<String, usize>,
+    pub op_frequencies: HashMap<String, usize>,
 }
 
 impl Model {
@@ -171,7 +170,7 @@ impl Model {
         Ok(ModelSummary {
             total_flops,
             total_params,
-            op_counts,
+            op_frequencies: op_counts,
         })
     }
 }

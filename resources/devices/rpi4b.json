@@ -1,0 +1,9 @@
+{
+    "name": "Raspberry Pi 4B",
+    "stats": {
+        "tops": 0,
+        "half": 0,
+        "single": 135000000000,
+        "double": 0
+    }
+}
