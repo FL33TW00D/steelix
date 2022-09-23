@@ -21,6 +21,8 @@ impl Op for Gemm {
     fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
         let p0_shape = &providers[0].shape;
         let p1_shape = &providers[1].shape;
+        println!("p0_shape: {:?}", p0_shape);
+        println!("p1_shape: {:?}", p1_shape);
 
         let output_shape = vec![p0_shape[0], p1_shape[1]];
 

@@ -64,7 +64,7 @@ impl PartialEq for Tensor {
         self.dt == other.dt
             && self.shape == other.shape
             && self.len == other.len
-            && unsafe { as_float!(eq_t(self.dt)(self, other)) }
+            && unsafe { as_std!(eq_t(self.dt)(self, other)) }
     }
 }
 
@@ -211,8 +211,8 @@ impl Tensor {
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
             let chunk_size = if input.len < 64 { input.len - 1 } else { 64 };
+            println!("chunk size: {:?}", chunk_size);
             let start_chunk = &input.as_slice::<D>().unwrap()[0..chunk_size];
-            let end_chunk = &input.as_slice::<D>().unwrap()[input.len - chunk_size..input.len];
 
             let start_str = start_chunk
                 .iter()
@@ -227,21 +227,7 @@ impl Tensor {
                     out
                 })
                 .collect::<String>();
-            let end_str = end_chunk
-                .iter()
-                .enumerate()
-                .map(|(idx, d)| {
-                    let mut out = format!("{:>10.6},", d);
-                    if (input.shape.len() > 1)
-                        && (idx + 1).rem_euclid(input.shape[input.shape.len() - 1]) == 0
-                    {
-                        out.push('\n')
-                    }
-                    out
-                })
-                .collect::<String>();
-
-            format!("{}\n...\n{}", start_str, end_str)
+            start_str
         }
         unsafe { as_std!(pretty_print(self.dt)(self)) }
     }
