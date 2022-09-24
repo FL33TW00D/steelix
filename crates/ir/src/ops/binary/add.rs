@@ -1,9 +1,7 @@
 use std::borrow::Cow;
 
-use onnx::onnx_pb;
-use smallvec::smallvec;
-
 use crate::{pvec, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
+use onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct Add;

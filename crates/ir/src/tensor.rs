@@ -213,7 +213,6 @@ impl Tensor {
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
             let chunk_size = if input.len < 64 { input.len - 1 } else { 64 };
-            println!("chunk size: {:?}", chunk_size);
             let start_chunk = &input.as_slice::<D>().unwrap()[0..chunk_size];
 
             let start_str = start_chunk
