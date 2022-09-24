@@ -46,7 +46,7 @@ impl Device {
             }
         };
 
-        Ok(Iterations((flops / flops_per_sec) as f64))
+        Ok(Iterations((flops_per_sec / flops) as f64))
     }
 }
 
@@ -61,15 +61,13 @@ pub fn load_devices() -> Result<Vec<Device>, anyhow::Error> {
     let entries = std::fs::read_dir(d)?
         .map(|res| res.map(|e| e.path()))
         .collect::<Result<Vec<_>, std::io::Error>>()?;
-    println!("Entries : {:?}", entries);
 
-    let mut devices = vec![];
-    for entry in entries {
-        let device_str = std::fs::read_to_string(entry)?;
+    let devices: Result<Vec<Device>, anyhow::Error> =
+        entries.iter().try_fold(Vec::new(), |mut acc, entry| {
+            let device = serde_json::from_str(&std::fs::read_to_string(entry)?)?;
+            acc.push(device);
+            Ok(acc)
+        });
 
-        let device: Device = serde_json::from_str(&device_str)?;
-        devices.push(device);
-    }
-
-    Ok(devices)
+    devices
 }

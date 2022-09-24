@@ -61,6 +61,7 @@ struct HardwareEntry {
 }
 
 pub fn hardware_table(total_flops: usize) -> Table {
+    println!("TOTAL FLOPS: {}", total_flops);
     let devices = load_devices().expect("Failed to load devices.");
 
     let hardware: Vec<HardwareEntry> = devices
