@@ -55,13 +55,13 @@ pub fn load_devices() -> Result<Vec<Device>, anyhow::Error> {
     for _ in 0..2 {
         d.pop();
     }
-    println!("D: {:?}", d);
     d.push("resources");
     d.push("devices");
 
-    let entries = std::fs::read_dir(".")?
+    let entries = std::fs::read_dir(d)?
         .map(|res| res.map(|e| e.path()))
         .collect::<Result<Vec<_>, std::io::Error>>()?;
+    println!("Entries : {:?}", entries);
 
     let mut devices = vec![];
     for entry in entries {
