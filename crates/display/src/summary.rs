@@ -61,15 +61,15 @@ struct HardwareEntry {
 }
 
 pub fn hardware_table(total_flops: usize) -> Table {
-    let devices = load_devices().unwrap();
+    let devices = load_devices().expect("Failed to load devices.");
 
     let hardware: Vec<HardwareEntry> = devices
         .iter()
         .map(|device| HardwareEntry {
-            name: device.name,
+            name: device.name.clone(),
             its: device
                 .calculate_its(DType::F32, total_flops)
-                .unwrap()
+                .expect("Failed to calculate iterations.")
                 .to_string(),
         })
         .collect();

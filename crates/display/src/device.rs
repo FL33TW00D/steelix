@@ -1,11 +1,12 @@
 use std::{fmt::Display, path::PathBuf};
 
 use ir::DType;
+use serde::Deserialize;
 
 #[derive(thiserror::Error, Debug)]
 pub enum DeviceError {
     #[error("{0}")]
-    NumberFormatError(&str),
+    NumberFormatError(String),
 }
 
 ///Represents a hardware device for running the ONNX model
@@ -40,7 +41,7 @@ impl Device {
             DType::F64 => self.stats.double,
             _ => {
                 return Err(DeviceError::NumberFormatError(
-                    "Invalid data type provided.",
+                    "Invalid data type provided.".to_string(),
                 ))
             }
         };
@@ -54,10 +55,21 @@ pub fn load_devices() -> Result<Vec<Device>, anyhow::Error> {
     for _ in 0..2 {
         d.pop();
     }
+    println!("D: {:?}", d);
     d.push("resources");
     d.push("devices");
 
-    let device_paths = std::fs::read_dir(d)?;
+    let entries = std::fs::read_dir(".")?
+        .map(|res| res.map(|e| e.path()))
+        .collect::<Result<Vec<_>, std::io::Error>>()?;
 
-    Ok(vec![])
+    let mut devices = vec![];
+    for entry in entries {
+        let device_str = std::fs::read_to_string(entry)?;
+
+        let device: Device = serde_json::from_str(&device_str)?;
+        devices.push(device);
+    }
+
+    Ok(devices)
 }
