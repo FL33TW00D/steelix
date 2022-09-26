@@ -161,7 +161,6 @@ impl Model {
             let result = node.realize(providers)?;
             total_flops += result.cost.flops;
             total_params += result.cost.parameters;
-            println!("total_flops: {:?}", total_flops);
 
             traversal_state
                 .intermediates

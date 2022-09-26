@@ -34,7 +34,7 @@ have a shape label!
 
 ```
 steelix plot --model-path ./my-model.onnx --output-path ./my-svg.svg
-steelix summary --model-path ./my-model.onnx --output-path ./my-svg.svg
+steelix summary --model-path ./my-model.onnx
 ```
 
 ## Why not Netron?
