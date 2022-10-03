@@ -144,7 +144,6 @@ impl Model {
             if node.op.op_group() != OpGroup::Constant {
                 *op_counts.entry(node.name.to_owned()).or_insert(0) += 1;
             }
-            println!("NODE: {:?}", node);
 
             let providers: PVec = node
                 .providers

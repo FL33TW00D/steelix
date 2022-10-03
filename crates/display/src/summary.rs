@@ -2,7 +2,7 @@ use human_repr::HumanCount;
 use std::collections::HashMap;
 
 use ir::{DType, ModelSummary};
-use tabled::{object::Rows, Alignment, Modify, Style, Table, Tabled};
+use tabled::{object::Rows, Alignment, Modify, Panel, Style, Table, Tabled};
 
 use crate::load_devices;
 
@@ -14,19 +14,22 @@ struct CountTableEntry {
 }
 
 pub fn opcount_table(op_counts: HashMap<String, usize>) -> Table {
-    let mut costs = op_counts
+    let mut counts = op_counts
         .iter()
         .map(|(k, v)| CountTableEntry {
             op_name: k.to_string(),
             count: *v,
         })
         .collect::<Vec<CountTableEntry>>();
-    costs.sort_by(|a, b| b.count.cmp(&a.count));
+    counts.sort_by(|a, b| b.count.cmp(&a.count));
 
-    Table::new(&costs)
+    let total = counts.iter().fold(0, |acc, count| acc + count.count);
+
+    Table::new(&counts)
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
+        .with(Panel::footer(format!("{} nodes", total)))
 }
 
 #[derive(Tabled)]

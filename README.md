@@ -250,3 +250,7 @@ cargo install steelix
 | Range                     |                                      |
 | Softmax                   | ✅                                    |
 | SoftmaxCrossEntropyLoss   |                                      |
+
+
+TODO: 
+1. Add total number of nodes in the DOT graph to the summary
