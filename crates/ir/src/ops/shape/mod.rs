@@ -1,3 +1,4 @@
+mod broadcast;
 mod concat;
 mod gather;
 mod reshape;
@@ -6,6 +7,7 @@ mod squeeze;
 mod transpose;
 mod unsqueeze;
 
+pub use broadcast::*;
 pub use concat::*;
 pub use gather::*;
 pub use reshape::*;
