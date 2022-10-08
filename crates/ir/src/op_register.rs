@@ -28,6 +28,7 @@ impl Default for OpRegister {
         reg.insert("Squeeze", shape::build_squeeze);
         reg.insert("MatMul", binary::build_matmul);
         reg.insert("Gemm", binary::build_matmul);
+        reg.insert("Mul", binary::build_matmul);
         reg.insert("Unsqueeze", shape::build_unsqueeze);
         reg.insert("LRN", nn::build_lrn);
         reg.insert("AveragePool", pool::build_avgpool);

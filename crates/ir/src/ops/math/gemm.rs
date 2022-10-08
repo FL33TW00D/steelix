@@ -19,6 +19,7 @@ impl Op for Gemm {
 
     //𝑛𝑚(2𝑝−1)
     fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
+        println!("GEMM PROVIDERS: {:?}", providers);
         let p0_shape = &providers[0].shape;
         let p1_shape = &providers[1].shape;
         println!("p0_shape: {:?}", p0_shape);

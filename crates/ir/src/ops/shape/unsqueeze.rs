@@ -43,7 +43,6 @@ impl Op for Unsqueeze {
         if providers.len() == 1 && self.axes.is_none() {
             bail!("Invalid parameters for Unsqueeze")
         }
-        println!("PROVIDERS: {:?}", providers);
 
         let axes = if let Some(ax) = &self.axes {
             ax.clone()
@@ -56,6 +55,8 @@ impl Op for Unsqueeze {
             &providers[0],
             axes
         ))?;
+
+        println!("UNSQUEEZE: {:?}", new_tensor);
 
         Ok(RealizedOp::zero_cost(smallvec![
             new_tensor.into_arc_tensor()

@@ -1,7 +1,12 @@
 [package]
-name = "display"
+name = "steelix"
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "steelix"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.58"
@@ -10,6 +15,7 @@ clap = { version = "3.2", features = ["derive"] }
 onnx = { path = "../onnx" }
 parser = { path = "../parser" }
 ir = { path = "../ir" }
+display = { path = "../display" }
 prost = "0.10.4"
 dot = { git = "https://github.com/FL33TW00D/dot-rust", branch = "develop" }
 tempfile = "3.3.0"

@@ -1,9 +1,8 @@
 use clap::ArgMatches;
+use display::*;
 use parser::parse_model;
 use std::process::Command as ProcessCommand;
-use steelix::{
-    build_cli, hardware_table, metrics_table, opcount_table, render_to, RenderableGraph,
-};
+use steelix::build_cli;
 use tabled::{object::Rows, Alignment, Disable, Modify, Panel, Style, Table, Tabled};
 use tempfile::NamedTempFile;
 
