@@ -6,3 +6,6 @@ members = [
     "crates/parser",
     "crates/steelix",
 ]
+
+[profile.release]
+debug = true
