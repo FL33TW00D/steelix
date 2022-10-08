@@ -71,12 +71,11 @@ impl PartialEq for Tensor {
 impl Tensor {
     pub fn new(dt: DType, shape: Shape) -> Self {
         let len = shape.iter().product::<usize>();
-        let byte_count = len * dt.size_of();
         Self {
             dt,
             shape,
             len,
-            data: BytesMut::zeroed(byte_count),
+            data: BytesMut::zeroed(len * dt.size_of()),
         }
     }
 

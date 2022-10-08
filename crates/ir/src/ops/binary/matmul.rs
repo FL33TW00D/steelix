@@ -1,9 +1,11 @@
 use std::borrow::Cow;
 
 use onnx::onnx_pb;
-use smallvec::smallvec;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
+use crate::{
+    ops::shape::multi_broadcast, pvec, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp,
+    Tensor,
+};
 
 #[derive(Debug, Clone)]
 pub struct Matmul;
@@ -19,9 +21,16 @@ impl Op for Matmul {
 
     //𝑛𝑚(2𝑝−1)
     fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
-        println!("MATMUL providers: {:?}", providers);
-        let p0_shape = &providers[0].shape;
-        let p1_shape = &providers[1].shape;
+        let broadcasted_shape = multi_broadcast(
+            &providers
+                .iter()
+                .map(|p| p.shape.clone())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+
+        let p0_shape = &broadcasted_shape;
+        let p1_shape = &broadcasted_shape;
 
         let output_shape = vec![p0_shape[0], p1_shape[1]];
 
@@ -29,16 +38,14 @@ impl Op for Matmul {
         let n = p1_shape[1];
         let p = p0_shape[1];
 
-        let flops = m * n * (2 * p - 1);
-
         let res = Tensor::new(providers[0].dt, output_shape.into());
 
         Ok(RealizedOp {
             cost: OpCost {
-                flops,
+                flops: m * n * (2 * p - 1),
                 parameters: 0,
             },
-            outputs: smallvec![res.into_arc_tensor()],
+            outputs: pvec![res.into_arc_tensor()],
         })
     }
 }
