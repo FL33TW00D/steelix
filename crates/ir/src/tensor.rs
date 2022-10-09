@@ -225,18 +225,18 @@ impl Tensor {
     /*
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
-            let chunk_size = if input.len < 64 { input.len - 1 } else { 64 };
-            let start_chunk = &input.as_slice::<D>().unwrap()[0..chunk_size];
+            let chunk_size = if inputproto.len < 64 { inputproto.len - 1 } else { 64 };
+            let start_chunk = &inputproto.as_slice::<D>().unwrap()[0..chunk_size];
 
             let start_str = start_chunk
                 .iter()
                 .enumerate()
                 .map(|(idx, d)| {
                     let mut out = format!("{:>10.6},", d);
-                    if (input.shape.len() > 1)
-                        && (idx + 1).rem_euclid(input.shape[input.shape.len() - 1]) == 0
+                    if (inputproto.shape.len() > 1)
+                        && (idx + 1).rem_euclid(inputproto.shape[inputproto.shape.len() - 1]) == 0
                     {
-                        out.push('\n')
+                        outproto.push('\n')
                     }
                     out
                 })
@@ -335,26 +335,43 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
     type Error = anyhow::Error;
 
     fn try_from(tproto: onnx_pb::TensorProto) -> Result<Self, Self::Error> {
-        println!(
-            "TensorProto: dims: {:?} dtype: {:?}",
-            tproto.dims, tproto.data_type
-        );
-
-        if tproto.dims.is_empty() {
-            println!("EMPTY RAW DATA: {:?}", tproto.raw_data);
-        }
-
         let dt = ProtoDType::from_i32(tproto.data_type).unwrap().try_into()?;
         let shape: Shape = tproto.dims.iter().map(|&i| i as usize).collect();
-        let len = shape.iter().cloned().product::<usize>();
-        let data: BytesMut = (*tproto.raw_data).into();
 
-        Ok(Tensor {
-            dt,
-            shape,
-            len,
-            data,
-        })
+        let tensor = if tproto.raw_data.len() > 0 {
+            let len = shape.iter().cloned().product::<usize>();
+            let data: BytesMut = (*tproto.raw_data).into();
+            Tensor {
+                dt,
+                shape,
+                len,
+                data,
+            }
+        } else {
+            match dt {
+                DType::U8 => {
+                    Tensor::from_vec(shape, tproto.int32_data.iter().map(|&x| x as u8).collect())
+                }
+                DType::U16 => {
+                    Tensor::from_vec(shape, tproto.int32_data.iter().map(|&x| x as u16).collect())
+                }
+                DType::U32 => Tensor::from_vec(shape, tproto.int32_data.to_vec()),
+                DType::U64 => Tensor::from_vec(shape, tproto.int64_data.to_vec()),
+                DType::I8 => {
+                    Tensor::from_vec(shape, tproto.int32_data.iter().map(|&x| x as i8).collect())
+                }
+                DType::I16 => {
+                    Tensor::from_vec(shape, tproto.int32_data.iter().map(|&x| x as i16).collect())
+                }
+                DType::I32 => Tensor::from_vec(shape, tproto.int32_data.to_vec()),
+                DType::I64 => Tensor::from_vec(shape, tproto.int64_data.to_vec()),
+                DType::F32 => Tensor::from_vec(shape, tproto.float_data.to_vec()),
+                DType::F64 => Tensor::from_vec(shape, tproto.double_data.to_vec()),
+                _ => unimplemented!("Unsupported data type"),
+            }
+        };
+
+        Ok(tensor)
     }
 }
 

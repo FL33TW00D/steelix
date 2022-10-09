@@ -18,7 +18,7 @@ impl Reshape {
         let data: Vec<D> = shape_tensor.as_slice().unwrap().into();
         let mut new_shape = SmallVec::new();
         for elem in data {
-            new_shape.push(num::cast(elem).unwrap());
+            new_shape.push(num::cast(elem).unwrap_or_else(|| panic!("Failed to cast: {:?}", elem)));
         }
 
         new_shape
@@ -35,28 +35,11 @@ impl Op for Reshape {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        println!("PROVIDERS LEN: {:?}", providers.len());
-        println!("PROIDERS: {:?}", providers[1].data);
-        println!(
-            "PROVIDERS 1 LEN: {:?} {:?} {:?}",
-            providers[1].dt, providers[1].shape, providers[1].len
-        );
+        println!("Reshape providers: {:?}", providers);
         validate_providers(&providers, 2, 2, &self.name())?;
-        println!("testing");
-        println!("RESHAPE PROV: {:?}", providers);
-        println!("testing");
-        println!("testing");
-        println!("testing");
-        println!("testing");
-        println!("testing");
-        println!("testing");
-        println!("PROIDERS: {:?}", providers[1]);
-        println!("testing");
-
         let new_shape = as_std!(Reshape::reshape(providers[1].dt)(&providers[1]));
 
         let reshaped = Tensor::new(providers[0].dt, new_shape).into_arc_tensor();
-        println!("RESHAPED: {:?}", reshaped.shape);
 
         Ok(RealizedOp::zero_cost(smallvec![reshaped]))
     }
