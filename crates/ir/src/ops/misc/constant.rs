@@ -16,6 +16,7 @@ impl Op for Constant {
         OpGroup::Constant
     }
     fn realize(&self, _: PVec) -> anyhow::Result<RealizedOp> {
+        println!("Constant output: {:?}", self.0);
         Ok(RealizedOp {
             cost: OpCost {
                 flops: 0,

@@ -36,6 +36,7 @@ impl Op for Shape {
             .collect::<Vec<i64>>();
 
         let out = Tensor::from_vec(smallvec![new_shape.len()], new_shape);
+        println!("SHAPE OUTPUT: {:?}", out);
         Ok(RealizedOp::zero_cost(smallvec![out.into_arc_tensor()]))
     }
 }

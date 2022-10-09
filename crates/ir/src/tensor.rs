@@ -332,6 +332,15 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
     type Error = anyhow::Error;
 
     fn try_from(tproto: onnx_pb::TensorProto) -> Result<Self, Self::Error> {
+        println!(
+            "TensorProto: dims: {:?} dtype: {:?}",
+            tproto.dims, tproto.data_type
+        );
+
+        if tproto.dims.is_empty() {
+            println!("EMPTY RAW DATA: {:?}", tproto.raw_data);
+        }
+
         let dt = ProtoDType::from_i32(tproto.data_type).unwrap().try_into()?;
         let shape: Shape = tproto.dims.iter().map(|&i| i as usize).collect();
         let len = shape.iter().cloned().product::<usize>();

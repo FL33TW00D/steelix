@@ -28,9 +28,6 @@ impl Op for Matmul {
                 .collect::<Vec<_>>(),
         )
         .unwrap();
-        println!("Broadcasted matmul: {:?}", broadcasted_shape);
-
-        println!("Matmul providers: {:?}", providers);
         let p0_shape = &broadcasted_shape;
         let p1_shape = &broadcasted_shape;
 
