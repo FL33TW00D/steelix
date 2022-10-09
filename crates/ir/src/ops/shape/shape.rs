@@ -35,11 +35,7 @@ impl Op for Shape {
             .map(|i| i as i64)
             .collect::<Vec<i64>>();
 
-        let bytes: Vec<u8> = new_shape.iter().flat_map(|s| s.to_ne_bytes()).collect();
-
-        let mut out = Tensor::new(DType::I64, smallvec![new_shape.len()]);
-        out.data.put(&*bytes);
-
+        let out = Tensor::from_vec(smallvec![new_shape.len()], new_shape);
         Ok(RealizedOp::zero_cost(smallvec![out.into_arc_tensor()]))
     }
 }

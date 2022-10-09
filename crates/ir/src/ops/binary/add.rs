@@ -19,6 +19,7 @@ impl Op for Add {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        println!("MATMUL PROVIDERS: {:?}", providers);
         let broadcasted_shape = multi_broadcast(
             &providers
                 .iter()
@@ -31,7 +32,7 @@ impl Op for Add {
         let p1_shape = &broadcasted_shape;
 
         let output_shape = vec![p0_shape[0], p1_shape[1]];
-        let res = Tensor::new(providers[0].dt, output_shape.into());
+        let res = Tensor::new(providers[0].dt, broadcasted_shape.into());
         Ok(RealizedOp {
             cost: OpCost {
                 flops: providers[0].numel(),

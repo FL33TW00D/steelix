@@ -77,12 +77,14 @@ impl Op for Gather {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        println!("Gather Providers: {:?}", providers);
         unsafe {
             let result = as_std!(Self::eval(providers[0].dt)(
                 self,
                 providers[0].clone(),
                 &providers[1]
             ))?;
+            println!("GATHER RESULT: {:?}", result);
             Ok(RealizedOp::zero_cost(smallvec![result]))
         }
     }

@@ -19,6 +19,7 @@ smallvec = "1.9.0"
 strum = "0.24"
 strum_macros = "0.24"
 thiserror = "1.0.32"
+byteorder = "1.4.3"
 
 [dev-dependencies]
 criterion = "0.3.6"

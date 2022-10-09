@@ -46,7 +46,7 @@ impl std::fmt::Debug for Tensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}, \n {}}}",
+            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}, \n data: {} \n}}",
             self.dt,
             self.shape,
             self.len,
@@ -87,6 +87,21 @@ impl Tensor {
             shape,
             len,
             data: BytesMut::zeroed(byte_count),
+        }
+    }
+
+    pub fn from_vec<T: DataType>(shape: Shape, data: Vec<T>) -> Self {
+        let len = shape.iter().product::<usize>();
+        let byte_count = len * T::to_internal().size_of();
+        let mut bytes = BytesMut::with_capacity(byte_count);
+        bytes.extend_from_slice(unsafe {
+            std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_count)
+        });
+        Self {
+            dt: T::to_internal(),
+            shape,
+            len,
+            data: bytes,
         }
     }
 
@@ -207,6 +222,7 @@ impl Tensor {
     }
 
     //Rust generics fucking suck or I'd extract this to a function
+    /*
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
             let chunk_size = if input.len < 64 { input.len - 1 } else { 64 };
@@ -226,6 +242,13 @@ impl Tensor {
                 })
                 .collect::<String>();
             start_str
+        }
+        unsafe { as_std!(pretty_print(self.dt)(self)) }
+    }
+    */
+    pub fn stringify_data(&self) -> String {
+        unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
+            input.to_array_view::<D>().unwrap().to_string()
         }
         unsafe { as_std!(pretty_print(self.dt)(self)) }
     }
