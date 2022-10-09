@@ -248,7 +248,10 @@ impl Tensor {
     */
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
-            input.to_array_view::<D>().unwrap().to_string()
+            input
+                .to_array_view::<D>()
+                .expect("Failed to convert to array view")
+                .to_string()
         }
         unsafe { as_std!(pretty_print(self.dt)(self)) }
     }

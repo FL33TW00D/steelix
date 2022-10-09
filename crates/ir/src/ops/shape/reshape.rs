@@ -35,7 +35,23 @@ impl Op for Reshape {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        println!("PROVIDERS LEN: {:?}", providers.len());
+        println!("PROIDERS: {:?}", providers[1].data);
+        println!(
+            "PROVIDERS 1 LEN: {:?} {:?} {:?}",
+            providers[1].dt, providers[1].shape, providers[1].len
+        );
         validate_providers(&providers, 2, 2, &self.name())?;
+        println!("testing");
+        println!("RESHAPE PROV: {:?}", providers);
+        println!("testing");
+        println!("testing");
+        println!("testing");
+        println!("testing");
+        println!("testing");
+        println!("testing");
+        println!("PROIDERS: {:?}", providers[1]);
+        println!("testing");
 
         let new_shape = as_std!(Reshape::reshape(providers[1].dt)(&providers[1]));
 
