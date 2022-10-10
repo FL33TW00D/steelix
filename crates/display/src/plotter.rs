@@ -62,14 +62,11 @@ impl RenderableGraph {
             op_node.providers.iter().for_each(|provider_id| {
                 if model.nodes[*provider_id].op.op_group() != OpGroup::Constant {
                     let mut pid = *provider_id;
+                    let shape = model_summary.output_shapes.get(&pid).unwrap().to_string();
                     if *provider_id > offset {
                         pid -= offset;
                     }
-                    g.create_edge(
-                        model_summary.provider_shapes.get(&pid).unwrap().to_string(),
-                        pid,
-                        op_idx - offset,
-                    );
+                    g.create_edge(shape, pid, op_idx - offset);
                 }
             });
         }

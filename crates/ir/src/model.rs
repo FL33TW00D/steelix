@@ -60,7 +60,7 @@ pub struct ModelSummary {
     pub total_flops: usize,
     pub total_params: usize,
     pub op_frequencies: HashMap<String, usize>,
-    pub provider_shapes: HashMap<usize, Shape>,
+    pub output_shapes: HashMap<usize, Shape>,
 }
 
 impl Model {
@@ -136,7 +136,7 @@ impl Model {
 
         let mut total_flops = 0;
         let mut total_params = 0;
-        let mut provider_shapes = HashMap::new();
+        let mut output_shapes = HashMap::new();
 
         let mut op_counts = HashMap::new();
         for node_id in order {
@@ -161,7 +161,8 @@ impl Model {
             let result = node.realize(providers)?;
             total_flops += result.cost.flops;
             total_params += result.cost.parameters;
-            provider_shapes.insert(node_id, result.outputs[0].shape.clone());
+            println!("RESULT: {:?}", result);
+            output_shapes.insert(node_id, result.outputs[0].shape.clone());
 
             traversal_state
                 .intermediates
@@ -171,7 +172,7 @@ impl Model {
             total_flops,
             total_params,
             op_frequencies: op_counts,
-            provider_shapes,
+            output_shapes,
         })
     }
 }
