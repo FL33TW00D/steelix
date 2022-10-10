@@ -39,10 +39,11 @@ impl Op for Reshape {
 
         let new_shape = as_std!(Reshape::reshape(providers[1].dt)(&providers[1]));
 
-        let reshaped = Tensor::new(providers[0].dt, new_shape).into_arc_tensor();
-        println!("RESHAPED: {:?}", reshaped.shape);
-
-        Ok(RealizedOp::zero_cost(smallvec![reshaped]))
+        Ok(RealizedOp::zero_cost(smallvec![Tensor::new(
+            providers[0].dt,
+            new_shape
+        )
+        .into_arc_tensor()]))
     }
 }
 

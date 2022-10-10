@@ -1,8 +1,10 @@
 use human_repr::HumanCount;
 use std::collections::HashMap;
 
-use ir::ModelSummary;
-use tabled::{object::Rows, Alignment, Modify, Style, Table, Tabled};
+use ir::{DType, ModelSummary};
+use tabled::{object::Rows, Alignment, Modify, Panel, Style, Table, Tabled};
+
+use crate::load_devices;
 
 #[derive(Tabled)]
 #[tabled(rename_all = "PascalCase")]
@@ -12,19 +14,22 @@ struct CountTableEntry {
 }
 
 pub fn opcount_table(op_counts: HashMap<String, usize>) -> Table {
-    let mut costs = op_counts
+    let mut counts = op_counts
         .iter()
         .map(|(k, v)| CountTableEntry {
             op_name: k.to_string(),
             count: *v,
         })
         .collect::<Vec<CountTableEntry>>();
-    costs.sort_by(|a, b| b.count.cmp(&a.count));
+    counts.sort_by(|a, b| b.count.cmp(&a.count));
 
-    Table::new(&costs)
+    let total = counts.iter().fold(0, |acc, count| acc + count.count);
+
+    Table::new(&counts)
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
+        .with(Panel::footer(format!("{} nodes", total)))
 }
 
 #[derive(Tabled)]
@@ -58,18 +63,20 @@ struct HardwareEntry {
     its: String,
 }
 
-//A100 19.5 TFLOPS FP32
 pub fn hardware_table(total_flops: usize) -> Table {
-    let hardware = vec![
-        HardwareEntry {
-            name: "A100".to_string(),
-            its: format!("{} it/s", 19.5e12 / total_flops as f32),
-        },
-        HardwareEntry {
-            name: "Raspberry Pi 4B".to_string(),
-            its: format!("{} it/s", 13.5e9 / total_flops as f32),
-        },
-    ];
+    let devices = load_devices().expect("Failed to load devices.");
+
+    let hardware: Vec<HardwareEntry> = devices
+        .iter()
+        .map(|device| HardwareEntry {
+            name: device.name.clone(),
+            its: device
+                .calculate_its(DType::F32, total_flops)
+                .expect("Failed to calculate iterations.")
+                .to_string(),
+        })
+        .collect();
+
     Table::new(hardware)
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))

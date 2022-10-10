@@ -57,13 +57,13 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
 
     let summary = parse_model(&model_path)?.build_traversal_order().run()?;
 
-    let op_counts = summary.op_counts.clone();
+    let op_frequencies = summary.op_frequencies.clone();
     let flops = summary.total_flops;
 
     let summary = vec![
         SummaryTable {
             table: "Operations".to_string(),
-            subtable: opcount_table(op_counts),
+            subtable: opcount_table(op_frequencies),
         },
         SummaryTable {
             table: "Metrics".to_string(),

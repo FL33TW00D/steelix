@@ -34,7 +34,7 @@ have a shape label!
 
 ```
 steelix plot --model-path ./my-model.onnx --output-path ./my-svg.svg
-steelix summary --model-path ./my-model.onnx --output-path ./my-svg.svg
+steelix summary --model-path ./my-model.onnx
 ```
 
 ## Why not Netron?
@@ -250,3 +250,7 @@ cargo install steelix
 | Range                     |                                      |
 | Softmax                   | ✅                                    |
 | SoftmaxCrossEntropyLoss   |                                      |
+
+
+TODO: 
+1. Add total number of nodes in the DOT graph to the summary
