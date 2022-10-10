@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
+use crate::{shape, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
 
 use smallvec::smallvec;
 
@@ -43,10 +43,10 @@ impl Op for MaxPool {
     fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
         let input_shape = &providers[0].shape;
         let (h_out, w_out) = self.output_dims(input_shape[2] as i64, input_shape[3] as i64);
-        let out_shape = vec![input_shape[0], input_shape[1], h_out, w_out];
+        let out_shape = shape![input_shape[0], input_shape[1], h_out, w_out];
         let kernel_area = self.kernel_shape.iter().cloned().product::<i64>() as usize;
 
-        let out = Tensor::new(providers[0].dt, out_shape.into());
+        let out = Tensor::new(providers[0].dt, out_shape);
         Ok(RealizedOp {
             cost: OpCost {
                 flops: kernel_area * out.numel(),

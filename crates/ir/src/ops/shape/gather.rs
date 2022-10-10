@@ -1,11 +1,10 @@
 use ndarray::{Axis, Dimension};
 use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::{borrow::Cow, sync::Arc};
 
 use crate::{
-    as_std, pvec, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Shape,
-    Tensor,
+    as_std, pvec, shape, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp,
+    Shape, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Gather {
@@ -18,7 +17,7 @@ impl Gather {
         input_shape: &[D],
         indices_shape: &[D],
     ) -> anyhow::Result<Shape> {
-        let mut output_shape = smallvec![];
+        let mut output_shape = shape!();
         for (idx, dim) in input_shape.iter().enumerate() {
             if idx as i64 != self.axis {
                 output_shape.push(num::cast((*dim).clone()).unwrap());
