@@ -41,7 +41,6 @@ impl Op for MaxPool {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
-        println!("PROVIDERS: {:?}", providers);
         let input_shape = &providers[0].shape;
         let (h_out, w_out) = self.output_dims(input_shape[2] as i64, input_shape[3] as i64);
         let out_shape = vec![input_shape[0], input_shape[1], h_out, w_out];

@@ -66,8 +66,6 @@ impl Op for Conv {
         let placeholder =
             Tensor::new(providers[0].dt, smallvec![n, f, h_out, w_out]).into_arc_tensor();
 
-        println!("PLACEHOLDER: {:?}", placeholder);
-
         Ok(RealizedOp {
             cost: OpCost {
                 flops: mac * 2,

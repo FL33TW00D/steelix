@@ -28,11 +28,7 @@ impl Op for Add {
         )
         .unwrap();
 
-        let p0_shape = &broadcasted_shape;
-        let p1_shape = &broadcasted_shape;
-
-        let output_shape = vec![p0_shape[0], p1_shape[1]];
-        let res = Tensor::new(providers[0].dt, broadcasted_shape.into());
+        let res = Tensor::new(providers[0].dt, broadcasted_shape);
         Ok(RealizedOp {
             cost: OpCost {
                 flops: providers[0].numel(),

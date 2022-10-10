@@ -338,7 +338,7 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
         let dt = ProtoDType::from_i32(tproto.data_type).unwrap().try_into()?;
         let shape: Shape = tproto.dims.iter().map(|&i| i as usize).collect();
 
-        let tensor = if tproto.raw_data.len() > 0 {
+        let tensor = if !tproto.raw_data.is_empty() {
             let len = shape.iter().cloned().product::<usize>();
             let data: BytesMut = (*tproto.raw_data).into();
             Tensor {
@@ -367,7 +367,6 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
                 DType::I64 => Tensor::from_vec(shape, tproto.int64_data.to_vec()),
                 DType::F32 => Tensor::from_vec(shape, tproto.float_data.to_vec()),
                 DType::F64 => Tensor::from_vec(shape, tproto.double_data.to_vec()),
-                _ => unimplemented!("Unsupported data type"),
             }
         };
 

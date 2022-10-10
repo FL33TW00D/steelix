@@ -35,7 +35,7 @@ impl Op for Matmul {
         let n = p1_shape[1];
         let p = p0_shape[1];
 
-        let res = Tensor::new(providers[0].dt, broadcasted_shape.into());
+        let res = Tensor::new(providers[0].dt, broadcasted_shape);
 
         Ok(RealizedOp {
             cost: OpCost {
