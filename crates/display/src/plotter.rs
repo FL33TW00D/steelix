@@ -131,7 +131,7 @@ impl From<Model> for RenderableGraph {
                     if *provider_id > offset {
                         pid -= offset;
                     }
-                    g.create_edge("".to_string(), pid, op_idx - offset);
+                    g.create_edge("binga".to_string(), pid, op_idx - offset);
                 }
             });
         }

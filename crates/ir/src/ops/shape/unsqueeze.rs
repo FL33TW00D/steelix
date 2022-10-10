@@ -1,10 +1,9 @@
 use anyhow::bail;
 use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
+    as_std, pvec, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
     RealizedOp, Tensor,
 };
 #[derive(Debug, Clone)]
@@ -43,7 +42,6 @@ impl Op for Unsqueeze {
         if providers.len() == 1 && self.axes.is_none() {
             bail!("Invalid parameters for Unsqueeze")
         }
-        println!("PROVIDERS: {:?}", providers);
 
         let axes = if let Some(ax) = &self.axes {
             ax.clone()
@@ -57,9 +55,7 @@ impl Op for Unsqueeze {
             axes
         ))?;
 
-        Ok(RealizedOp::zero_cost(smallvec![
-            new_tensor.into_arc_tensor()
-        ]))
+        Ok(RealizedOp::zero_cost(pvec![new_tensor.into_arc_tensor()]))
     }
 }
 

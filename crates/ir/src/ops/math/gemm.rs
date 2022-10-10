@@ -3,10 +3,16 @@ use std::borrow::Cow;
 use onnx::onnx_pb;
 use smallvec::smallvec;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
+use crate::{
+    ops::shape::multi_broadcast, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp,
+    Tensor,
+};
 
 #[derive(Debug, Clone)]
-pub struct Gemm;
+pub struct Gemm {
+    trans_a: usize,
+    trans_b: usize,
+}
 
 impl Op for Gemm {
     fn name(&self) -> Cow<str> {
@@ -17,12 +23,17 @@ impl Op for Gemm {
         OpGroup::Transform
     }
 
-    //𝑛𝑚(2𝑝−1)
     fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
-        let p0_shape = &providers[0].shape;
-        let p1_shape = &providers[1].shape;
-        println!("p0_shape: {:?}", p0_shape);
-        println!("p1_shape: {:?}", p1_shape);
+        let broadcasted_shape = multi_broadcast(
+            &providers
+                .iter()
+                .map(|p| p.shape.clone())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+
+        let p0_shape = &broadcasted_shape;
+        let p1_shape = &broadcasted_shape;
 
         let output_shape = vec![p0_shape[0], p1_shape[1]];
 
@@ -42,6 +53,8 @@ impl Op for Gemm {
     }
 }
 
-pub fn build_gemm(_proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    Ok(Box::new(Gemm) as BoxOp)
+pub fn build_gemm(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
+    let trans_a = proto.get_attribute("transA", Some(0))? as usize;
+    let trans_b = proto.get_attribute("transB", Some(0))? as usize;
+    Ok(Box::new(Gemm { trans_a, trans_b }) as BoxOp)
 }

@@ -37,6 +37,7 @@ pub fn parse_model(model_path: &std::path::PathBuf) -> Result<Model, anyhow::Err
     Ok(model)
 }
 
+///Model initializers from ONNX file
 fn parse_graph_initializers(initializers: &[onnx_pb::TensorProto]) -> HashMap<String, Tensor> {
     initializers.iter().fold(HashMap::new(), |mut acc, ip| {
         acc.insert(ip.name.to_owned(), ip.clone().try_into().unwrap());
@@ -44,6 +45,7 @@ fn parse_graph_initializers(initializers: &[onnx_pb::TensorProto]) -> HashMap<St
     })
 }
 
+///User provided graph inputs
 fn parse_graph_inputs(
     inputs: &[onnx_pb::ValueInfoProto],
     initializers_map: &mut HashMap<String, Tensor>,

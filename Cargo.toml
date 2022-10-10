@@ -4,4 +4,8 @@ members = [
     "crates/onnx",
     "crates/ir",
     "crates/parser",
+    "crates/steelix",
 ]
+
+[profile.release]
+debug = true

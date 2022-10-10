@@ -4,7 +4,8 @@ use smallvec::smallvec;
 use std::{borrow::Cow, sync::Arc};
 
 use crate::{
-    as_std, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Shape, Tensor,
+    as_std, pvec, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Shape,
+    Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Gather {
@@ -83,7 +84,7 @@ impl Op for Gather {
                 providers[0].clone(),
                 &providers[1]
             ))?;
-            Ok(RealizedOp::zero_cost(smallvec![result]))
+            Ok(RealizedOp::zero_cost(pvec![result]))
         }
     }
 }

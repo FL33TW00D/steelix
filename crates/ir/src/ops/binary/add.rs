@@ -1,6 +1,9 @@
 use std::borrow::Cow;
 
-use crate::{pvec, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
+use crate::{
+    ops::shape::multi_broadcast, pvec, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp,
+    Tensor,
+};
 use onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
@@ -16,12 +19,21 @@ impl Op for Add {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        let broadcasted_shape = multi_broadcast(
+            &providers
+                .iter()
+                .map(|p| p.shape.clone())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+
+        let res = Tensor::new(providers[0].dt, broadcasted_shape);
         Ok(RealizedOp {
             cost: OpCost {
                 flops: providers[0].numel(),
                 parameters: 0,
             },
-            outputs: pvec![providers[0].clone()],
+            outputs: pvec![res.into_arc_tensor()],
         })
     }
 }

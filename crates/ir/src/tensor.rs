@@ -48,7 +48,7 @@ impl std::fmt::Debug for Tensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}, \n {}}}",
+            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}, \n data: {} \n}}",
             self.dt,
             self.shape,
             self.len,
@@ -73,12 +73,11 @@ impl PartialEq for Tensor {
 impl Tensor {
     pub fn new(dt: DType, shape: Shape) -> Self {
         let len = shape.iter().product::<usize>();
-        let byte_count = len * dt.size_of();
         Self {
             dt,
             shape,
             len,
-            data: BytesMut::zeroed(byte_count),
+            data: BytesMut::zeroed(len * dt.size_of()),
         }
     }
 
@@ -90,6 +89,21 @@ impl Tensor {
             shape,
             len,
             data: BytesMut::zeroed(byte_count),
+        }
+    }
+
+    pub fn from_vec<T: DataType>(shape: Shape, data: Vec<T>) -> Self {
+        let len = shape.iter().product::<usize>();
+        let byte_count = len * T::to_internal().size_of();
+        let mut bytes = BytesMut::with_capacity(byte_count);
+        bytes.extend_from_slice(unsafe {
+            std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_count)
+        });
+        Self {
+            dt: T::to_internal(),
+            shape,
+            len,
+            data: bytes,
         }
     }
 
@@ -209,26 +223,12 @@ impl Tensor {
         }
     }
 
-    //Rust generics fucking suck or I'd extract this to a function
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
-            let chunk_size = if input.len < 64 { input.len - 1 } else { 64 };
-            let start_chunk = &input.as_slice::<D>().unwrap()[0..chunk_size];
-
-            let start_str = start_chunk
-                .iter()
-                .enumerate()
-                .map(|(idx, d)| {
-                    let mut out = format!("{:>10.6},", d);
-                    if (input.shape.len() > 1)
-                        && (idx + 1).rem_euclid(input.shape[input.shape.len() - 1]) == 0
-                    {
-                        out.push('\n')
-                    }
-                    out
-                })
-                .collect::<String>();
-            start_str
+            input
+                .to_array_view::<D>()
+                .expect("Failed to convert to array view")
+                .to_string()
         }
         unsafe { as_std!(pretty_print(self.dt)(self)) }
     }
@@ -316,15 +316,41 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
     fn try_from(tproto: onnx_pb::TensorProto) -> Result<Self, Self::Error> {
         let dt = ProtoDType::from_i32(tproto.data_type).unwrap().try_into()?;
         let shape: Shape = tproto.dims.iter().map(|&i| i as usize).collect();
-        let len = shape.iter().cloned().product::<usize>();
-        let data: BytesMut = (*tproto.raw_data).into();
 
-        Ok(Tensor {
-            dt,
-            shape,
-            len,
-            data,
-        })
+        let tensor = if !tproto.raw_data.is_empty() {
+            let len = shape.iter().cloned().product::<usize>();
+            let data: BytesMut = (*tproto.raw_data).into();
+            Tensor {
+                dt,
+                shape,
+                len,
+                data,
+            }
+        } else {
+            match dt {
+                DType::U8 => {
+                    Tensor::from_vec(shape, tproto.int32_data.iter().map(|&x| x as u8).collect())
+                }
+                DType::U16 => {
+                    Tensor::from_vec(shape, tproto.int32_data.iter().map(|&x| x as u16).collect())
+                }
+                DType::U32 => Tensor::from_vec(shape, tproto.int32_data.to_vec()),
+                DType::U64 => Tensor::from_vec(shape, tproto.int64_data.to_vec()),
+                DType::I8 => {
+                    Tensor::from_vec(shape, tproto.int32_data.iter().map(|&x| x as i8).collect())
+                }
+                DType::I16 => {
+                    Tensor::from_vec(shape, tproto.int32_data.iter().map(|&x| x as i16).collect())
+                }
+                DType::I32 => Tensor::from_vec(shape, tproto.int32_data.to_vec()),
+                DType::I64 => Tensor::from_vec(shape, tproto.int64_data.to_vec()),
+                DType::F16 => Tensor::from_vec(shape, tproto.float_data.to_vec()),
+                DType::F32 => Tensor::from_vec(shape, tproto.float_data.to_vec()),
+                DType::F64 => Tensor::from_vec(shape, tproto.double_data.to_vec()),
+            }
+        };
+
+        Ok(tensor)
     }
 }
 
