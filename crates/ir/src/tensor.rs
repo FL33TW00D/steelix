@@ -409,7 +409,7 @@ impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
         let data = unsafe { std::slice::from_raw_parts(Box::into_raw(vec) as *mut u8, byte_count) };
         Tensor {
             dt: A::to_internal(),
-            shape: shape.into(),
+            shape: Shape(shape.into()),
             len,
             data: data.into(),
         }

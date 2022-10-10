@@ -3,6 +3,7 @@ pub struct Shape(pub SmallVec<[usize; 4]>);
 
 use std::{fmt::Display, ops::Deref};
 
+use ndarray::{Dim, IntoDimension, IxDyn, IxDynImpl};
 use smallvec::SmallVec;
 
 impl Deref for Shape {

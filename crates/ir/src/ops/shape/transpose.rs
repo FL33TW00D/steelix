@@ -3,7 +3,7 @@ use std::borrow::Cow;
 
 use crate::{
     as_std, pvec, validate_providers, BoxOp, DType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp,
-    Tensor,
+    Shape, Tensor,
 };
 
 #[derive(Debug, Clone)]
@@ -49,7 +49,7 @@ impl Op for Transpose {
             &self.perm
         ))
         .into();
-        let result = Tensor::new(providers[0].dt, transposed_shape).into_arc_tensor();
+        let result = Tensor::new(providers[0].dt, Shape(transposed_shape)).into_arc_tensor();
 
         Ok(RealizedOp::zero_cost(pvec!(result)))
     }
