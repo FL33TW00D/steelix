@@ -21,6 +21,7 @@ strum = "0.24"
 strum_macros = "0.24"
 thiserror = "1.0.32"
 byteorder = "1.4.3"
+dyn-clone = "1.0.9"
 
 [dev-dependencies]
 criterion = "0.3.6"

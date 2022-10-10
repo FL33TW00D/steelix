@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io::Write};
 
-use ir::{Model, OpGroup, COLOUR_MAP};
+use ir::{Model, ModelSummary, OpGroup, COLOUR_MAP};
 
 type Nd = usize;
 
@@ -42,6 +42,38 @@ impl RenderableGraph {
 
     pub fn create_edge(&mut self, label: String, from: usize, to: usize) {
         self.edges.push(Edge::new(label, from, to));
+    }
+
+    pub fn build_graph(model: Model, model_summary: ModelSummary) -> Self {
+        let mut g = RenderableGraph::new();
+        let mut offset = 0;
+
+        for (op_idx, op_node) in model.nodes.iter().enumerate() {
+            if op_node.op.op_group() == OpGroup::Constant {
+                offset += 1;
+                continue;
+            }
+
+            let renderable_node = g.create_node(op_node.name.clone());
+            renderable_node.add_attribute((
+                "fillcolor",
+                COLOUR_MAP.get(&op_node.op.op_group()).unwrap_or(&"white"),
+            ));
+            op_node.providers.iter().for_each(|provider_id| {
+                if model.nodes[*provider_id].op.op_group() != OpGroup::Constant {
+                    let mut pid = *provider_id;
+                    if *provider_id > offset {
+                        pid -= offset;
+                    }
+                    g.create_edge(
+                        model_summary.provider_shapes.get(&pid).unwrap().to_string(),
+                        pid,
+                        op_idx - offset,
+                    );
+                }
+            });
+        }
+        g
     }
 }
 
@@ -107,34 +139,5 @@ impl<'a> dot::GraphWalk<'a, Nd, Edge> for RenderableGraph {
     }
     fn target(&self, e: &Edge) -> Nd {
         e.to
-    }
-}
-
-impl From<Model> for RenderableGraph {
-    fn from(model: Model) -> Self {
-        let mut g = RenderableGraph::new();
-        let mut offset = 0;
-        for (op_idx, op_node) in model.nodes.iter().enumerate() {
-            if op_node.op.op_group() == OpGroup::Constant {
-                offset += 1;
-                continue;
-            }
-
-            let renderable_node = g.create_node(op_node.name.clone());
-            renderable_node.add_attribute((
-                "fillcolor",
-                COLOUR_MAP.get(&op_node.op.op_group()).unwrap_or(&"white"),
-            ));
-            op_node.providers.iter().for_each(|provider_id| {
-                if model.nodes[*provider_id].op.op_group() != OpGroup::Constant {
-                    let mut pid = *provider_id;
-                    if *provider_id > offset {
-                        pid -= offset;
-                    }
-                    g.create_edge("binga".to_string(), pid, op_idx - offset);
-                }
-            });
-        }
-        g
     }
 }

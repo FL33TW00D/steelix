@@ -40,7 +40,20 @@ impl OpCost {
 }
 
 pub type PVec = SmallVec<[Arc<Tensor>; 4]>;
-pub type Shape = SmallVec<[usize; 4]>;
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct Shape(SmallVec<[usize; 4]>);
+
+use std::ops::Deref;
+
+impl Deref for Shape {
+    type Target = SmallVec<[usize; 4]>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 pub type StResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Default)]
