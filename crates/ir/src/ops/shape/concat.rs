@@ -1,10 +1,9 @@
 use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, pvec, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
-    RealizedOp, Shape, Tensor,
+    as_std, pvec, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpError, OpGroup,
+    PVec, RealizedOp, Shape, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Concat {
@@ -15,10 +14,8 @@ impl Concat {
     pub fn concat<D: DataType + ndarray::LinalgScalar + num::NumCast>(
         &self,
         providers: &PVec,
-    ) -> Shape {
-        Tensor::stack_tensors(self.axis as usize, providers)
-            .unwrap()
-            .shape
+    ) -> Result<Shape, OpError> {
+        Ok(Tensor::stack_tensors(self.axis as usize, providers)?.shape)
     }
 }
 
@@ -34,12 +31,13 @@ impl Op for Concat {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 2, &self.name())?;
 
-        println!("CONCAT PROVIDERS: {:?}", providers);
-        let new_shape = as_std!(Concat::concat(providers[0].dt)(self, &providers));
+        let new_shape = as_std!(Concat::concat(providers[0].dt)(self, &providers))?;
 
-        let tttt = Tensor::new(providers[0].dt, new_shape).into_arc_tensor();
-
-        Ok(RealizedOp::zero_cost(pvec!(tttt)))
+        Ok(RealizedOp::zero_cost(pvec!(Tensor::new(
+            providers[0].dt,
+            new_shape
+        )
+        .into_arc_tensor())))
     }
 }
 

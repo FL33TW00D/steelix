@@ -1,3 +1,4 @@
+use half::f16;
 use std::{fmt, mem::size_of, sync::Arc};
 
 use bytes::BytesMut;
@@ -18,6 +19,7 @@ macro_rules! as_std {
           DType::I16  => $($path)::*::<i16>($($args),*),
           DType::I32  => $($path)::*::<i32>($($args),*),
           DType::I64  => $($path)::*::<i64>($($args),*),
+          DType::F16  => $($path)::*::<i16>($($args),*),
           DType::F32  => $($path)::*::<f32>($($args),*),
           DType::F64  => $($path)::*::<f64>($($args),*),
         }
@@ -267,6 +269,7 @@ pub enum DType {
     I16,
     I32,
     I64,
+    F16,
     #[default]
     F32,
     F64,
@@ -302,6 +305,7 @@ map_type!(i8, I8);
 map_type!(i16, I16);
 map_type!(i32, I32);
 map_type!(i64, I64);
+map_type!(f16, F16); //half crate
 map_type!(f32, F32);
 map_type!(f64, F64);
 
@@ -320,7 +324,7 @@ impl TryFrom<ProtoDType> for DType {
             ProtoDType::Int64 => Ok(DType::I64),
             ProtoDType::String => todo!(),
             ProtoDType::Bool => todo!(),
-            ProtoDType::Float16 => todo!(),
+            ProtoDType::Float16 => Ok(DType::F16),
             ProtoDType::Double => Ok(DType::F32),
             ProtoDType::Uint32 => Ok(DType::U32),
             ProtoDType::Uint64 => Ok(DType::U64),

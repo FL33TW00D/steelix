@@ -1,0 +1,9 @@
+{
+    "name": "M1 ANE (fp16 only)",
+    "stats": {
+        "tops": 15800000000000,
+        "half": 15800000000000,
+        "single": 1,
+        "double": 1
+    }
+}
