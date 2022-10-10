@@ -24,6 +24,7 @@ impl DerefMut for Shape {
 
 impl Display for Shape {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "  ")?;
         for (i, dim) in self.iter().enumerate() {
             if i > 0 {
                 write!(f, "x")?;
