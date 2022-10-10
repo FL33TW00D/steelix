@@ -1,10 +1,9 @@
 use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, shape, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
-    RealizedOp, Shape, Tensor,
+    as_std, pvec, shape, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup,
+    PVec, RealizedOp, Shape, Tensor,
 };
 #[derive(Debug, Clone)]
 pub struct Reshape {
@@ -31,8 +30,6 @@ impl Reshape {
             }
         }
 
-        println!("PRODUCT: {:?}", product);
-
         if let Some(unknown_dim) = unknown_dim {
             shape_data[unknown_dim] =
                 D::from(original_shape.iter().product::<usize>() / product.to_usize().unwrap())
@@ -58,8 +55,6 @@ impl Op for Reshape {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        println!("Allow zero: {:?}", self.allow_zero);
-        println!("Reshape providers: {:?}", providers);
         validate_providers(&providers, 2, 2, &self.name())?;
         let new_shape = as_std!(Reshape::reshape(providers[1].dt)(
             providers[0].shape.clone(),
@@ -68,12 +63,11 @@ impl Op for Reshape {
 
         let reshaped = Tensor::new(providers[0].dt, new_shape).into_arc_tensor();
 
-        Ok(RealizedOp::zero_cost(smallvec![reshaped]))
+        Ok(RealizedOp::zero_cost(pvec![reshaped]))
     }
 }
 
 pub fn build_reshape(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
     let allow_zero = proto.get_attribute("allowzero", Some(0))?;
-    println!("ALLOW ZERO: {:?}", allow_zero);
     Ok(Box::new(Reshape { allow_zero }) as BoxOp)
 }

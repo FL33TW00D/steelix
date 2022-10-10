@@ -1,10 +1,9 @@
 use anyhow::bail;
 use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
+    as_std, pvec, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
     RealizedOp, Tensor,
 };
 #[derive(Debug, Clone)]
@@ -56,11 +55,7 @@ impl Op for Unsqueeze {
             axes
         ))?;
 
-        println!("UNSQUEEZE: {:?}", new_tensor);
-
-        Ok(RealizedOp::zero_cost(smallvec![
-            new_tensor.into_arc_tensor()
-        ]))
+        Ok(RealizedOp::zero_cost(pvec![new_tensor.into_arc_tensor()]))
     }
 }
 

@@ -223,31 +223,6 @@ impl Tensor {
         }
     }
 
-    //Rust generics fucking suck or I'd extract this to a function
-    /*
-    pub fn stringify_data(&self) -> String {
-        unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
-            let chunk_size = if inputproto.len < 64 { inputproto.len - 1 } else { 64 };
-            let start_chunk = &inputproto.as_slice::<D>().unwrap()[0..chunk_size];
-
-            let start_str = start_chunk
-                .iter()
-                .enumerate()
-                .map(|(idx, d)| {
-                    let mut out = format!("{:>10.6},", d);
-                    if (inputproto.shape.len() > 1)
-                        && (idx + 1).rem_euclid(inputproto.shape[inputproto.shape.len() - 1]) == 0
-                    {
-                        outproto.push('\n')
-                    }
-                    out
-                })
-                .collect::<String>();
-            start_str
-        }
-        unsafe { as_std!(pretty_print(self.dt)(self)) }
-    }
-    */
     pub fn stringify_data(&self) -> String {
         unsafe fn pretty_print<D: DataType>(input: &Tensor) -> String {
             input
@@ -369,6 +344,7 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
                 }
                 DType::I32 => Tensor::from_vec(shape, tproto.int32_data.to_vec()),
                 DType::I64 => Tensor::from_vec(shape, tproto.int64_data.to_vec()),
+                DType::F16 => Tensor::from_vec(shape, tproto.float_data.to_vec()),
                 DType::F32 => Tensor::from_vec(shape, tproto.float_data.to_vec()),
                 DType::F64 => Tensor::from_vec(shape, tproto.double_data.to_vec()),
             }

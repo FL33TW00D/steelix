@@ -19,7 +19,6 @@ impl Op for Add {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        println!("MATMUL PROVIDERS: {:?}", providers);
         let broadcasted_shape = multi_broadcast(
             &providers
                 .iter()
