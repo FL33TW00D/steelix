@@ -24,9 +24,10 @@ fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .get_one::<String>("OUTPUT_PATH")
         .expect("Invalid output path provided.");
 
-    let plottable: RenderableGraph = parse_model(model_path)
-        .expect("Failed to parse model.")
-        .into();
+    let model = parse_model(model_path)?;
+    let model_summary = parse_model(model_path)?.build_traversal_order().run()?;
+    println!("MODEL SUMMARY: {:?}", model_summary);
+    let plottable: RenderableGraph = RenderableGraph::build_graph(model, model_summary);
 
     let mut f = NamedTempFile::new().unwrap();
     render_to(&mut f, plottable);

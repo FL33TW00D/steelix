@@ -1,5 +1,4 @@
 use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{

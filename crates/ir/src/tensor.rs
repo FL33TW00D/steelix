@@ -159,17 +159,17 @@ impl Tensor {
 
     pub unsafe fn to_array_view_unchecked<A: DataType>(&self) -> ArrayViewD<A> {
         if self.len != 0 {
-            ArrayViewD::from_shape_ptr(self.shape, self.data.as_ptr() as *const A)
+            ArrayViewD::from_shape_ptr(&*(*self.shape), self.data.as_ptr() as *const A)
         } else {
-            ArrayViewD::from_shape(self.shape, &[]).unwrap()
+            ArrayViewD::from_shape(&*(*self.shape), &[]).unwrap()
         }
     }
 
     pub unsafe fn to_array_view_mut_unchecked<A: DataType>(&mut self) -> ArrayViewMutD<A> {
         if self.len != 0 {
-            ArrayViewMutD::from_shape_ptr(self.shape, self.data.as_mut_ptr() as *mut A)
+            ArrayViewMutD::from_shape_ptr(&*(*self.shape), self.data.as_mut_ptr() as *mut A)
         } else {
-            ArrayViewMutD::from_shape(self.shape, &mut []).unwrap()
+            ArrayViewMutD::from_shape(&*(*self.shape), &mut []).unwrap()
         }
     }
 
