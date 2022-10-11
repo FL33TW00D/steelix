@@ -78,96 +78,96 @@ cargo install steelix
 
 | **Operator**              | **Implemented**                      |
 |---------------------------|--------------------------------------|
-| Abs                       | ✅                                    |
-| Acos                      | ✅                                    |
+| Abs                       |                                      |
+| Acos                      |                                      |
 | Acosh                     |                                      |
-| Add                       | ✅                                    |
-| And                       | ✅                                    |
+| Add                       | ✅                                   |
+| And                       |                                      |
 | ArgMax                    |                                      |
 | ArgMin                    |                                      |
-| Asin                      | ✅                                    |
+| Asin                      |                                      |
 | Asinh                     |                                      |
-| Atan                      | ✅                                    |
+| Atan                      |                                      |
 | Atanh                     |                                      |
-| AveragePool               | ✅                                    |
-| BatchNormalization        | ✅                                    |
+| AveragePool               |                                      |
+| BatchNormalization        | ✅                                   |
 | BitShift                  |                                      |
-| Cast                      | ✅                                    |
-| Ceil                      | ✅                                    |
-| Clip                      | ✅                                    |
+| Cast                      |                                      |
+| Ceil                      |                                      |
+| Clip                      |                                      |
 | Compress                  |                                      |
-| Concat                    | ✅                                    |
+| Concat                    | ✅                                   |
 | ConcatFromSequence        |                                      |
 | Constant                  |                                      |
 | ConstantOfShape           |                                      |
-| Conv                      | ✅                                    |
+| Conv                      | ✅                                   |
 | ConvInteger               |                                      |
 | ConvTranspose             |                                      |
-| Cos                       | ✅                                    |
-| Cosh                      | ✅                                    |
+| Cos                       |                                      |
+| Cosh                      |                                      |
 | CumSum                    |                                      |
 | DepthToSpace              |                                      |
 | DequantizeLinear          |                                      |
 | Det                       |                                      |
-| Div                       | ✅                                    |
-| Dropout                   | ✅                                    |
+| Div                       |                                      |
+| Dropout                   |                                      |
 | Einsum                    |                                      |
-| Elu                       | ✅                                    |
-| Equal                     | ✅                                    |
+| Elu                       |                                      |
+| Equal                     |                                      |
 | Erf                       |                                      |
-| Exp                       | ✅                                    |
+| Exp                       |                                      |
 | Expand                    |                                      |
 | EyeLike                   |                                      |
-| Flatten                   | ✅                                    |
-| Floor                     | ✅                                    |
+| Flatten                   |                                      |
+| Floor                     |                                      |
 | GRU                       |                                      |
-| Gather                    | ✅ (axis=0)                           |
+| Gather                    | ✅                                   |
 | GatherElements            |                                      |
 | GatherND                  |                                      |
-| Gemm                      | ✅*                                   |
-| GlobalAveragePool         | ✅                                    |
+| Gemm                      | ✅                                   |
+| GlobalAveragePool         |                                      |
 | GlobalLpPool              |                                      |
 | GlobalMaxPool             |                                      |
-| Greater                   | ✅                                    |
+| Greater                   |                                      |
 | GridSample                |                                      |
 | HardSigmoid               |                                      |
 | Hardmax                   |                                      |
-| Identity                  | ✅                                    |
+| Identity                  |                                      |
 | If                        |                                      |
 | InstanceNormalization     |                                      |
 | IsInf                     |                                      |
 | IsNaN                     |                                      |
 | LRN                       |                                      |
 | LSTM                      |                                      |
-| LeakyRelu                 | ✅                                    |
-| Less                      | ✅                                    |
-| Log                       | ✅                                    |
+| LeakyRelu                 |                                      |
+| Less                      |                                      |
+| Log                       |                                      |
 | Loop                      |                                      |
 | LpNormalization           |                                      |
 | LpPool                    |                                      |
-| MatMul                    | ✅                                    |
+| MatMul                    | ✅                                   |
 | MatMulInteger             |                                      |
 | Max                       |                                      |
-| MaxPool                   | ✅                                    |
+| MaxPool                   | ✅                                   |
 | MaxRoiPool                |                                      |
 | MaxUnpool                 |                                      |
 | Mean                      |                                      |
-| Min                       | ✅                                    |
-| Mod                       | ✅                                    |
-| Mul                       | ✅                                    |
+| Min                       |                                      |
+| Mod                       |                                      |
+| Mul                       | ✅                                   |
 | Multinomial               |                                      |
 | Neg                       |                                      |
 | NonMaxSuppression         |                                      |
 | NonZero                   |                                      |
 | Not                       |                                      |
-| OneHot                    | ✅ (axis=-1)                          |
+| OneHot                    |                                      |
 | Optional                  |                                      |
 | OptionalGetElement        |                                      |
 | OptionalHasElement        |                                      |
-| Or                        | ✅                                    |
-| PRelu                     | ✅                                    |
-| Pad                       | ✅ (mode=constant, pads>=0)           |
-| Pow                       | ✅ (broadcast=0 and data type is f32) |
+| Or                        |                                      |
+| PRelu                     |                                      |
+| Pad                       | ✅ (mode=constant, pads>=0)          |
+| Pow                       |                                      |
 | QLinearConv               |                                      |
 | QLinearMatMul             |                                      |
 | QuantizeLinear            |                                      |
@@ -176,20 +176,20 @@ cargo install steelix
 | RandomNormalLike          |                                      |
 | RandomUniform             |                                      |
 | RandomUniformLike         |                                      |
-| Reciprocal                | ✅                                    |
-| ReduceL1                  | ✅                                    |
-| ReduceL2                  | ✅                                    |
-| ReduceLogSum              | ✅                                    |
-| ReduceLogSumExp           | ✅                                    |
-| ReduceMax                 | ✅                                    |
-| ReduceMean                | ✅                                    |
-| ReduceMin                 | ✅                                    |
-| ReduceProd                | ✅                                    |
-| ReduceSum                 | ✅                                    |
-| ReduceSumSquare           | ✅                                    |
-| Relu                      | ✅                                    |
-| Reshape                   | ✅                                    |
-| Resize                    | ✅                                    |
+| Reciprocal                |                                      |
+| ReduceL1                  |                                      |
+| ReduceL2                  |                                      |
+| ReduceLogSum              |                                      |
+| ReduceLogSumExp           |                                      |
+| ReduceMax                 |                                      |
+| ReduceMean                |                                      |
+| ReduceMin                 |                                      |
+| ReduceProd                |                                      |
+| ReduceSum                 |                                      |
+| ReduceSumSquare           |                                      |
+| Relu                      | ✅                                   |
+| Reshape                   | ✅                                   |
+| Resize                    |                                      |
 | ReverseSequence           |                                      |
 | RoiAlign                  |                                      |
 | Round                     |                                      |
@@ -206,47 +206,47 @@ cargo install steelix
 | SequenceLength            |                                      |
 | Shape                     |                                      |
 | Shrink                    |                                      |
-| Sigmoid                   | ✅                                    |
+| Sigmoid                   | ✅                                   |
 | Sign                      |                                      |
-| Sin                       | ✅                                    |
-| Sinh                      | ✅                                    |
+| Sin                       |                                      |
+| Sinh                      |                                      |
 | Size                      |                                      |
 | Slice                     |                                      |
-| Softplus                  | ✅                                    |
-| Softsign                  | ✅                                    |
+| Softplus                  |                                      |
+| Softsign                  |                                      |
 | SpaceToDepth              |                                      |
 | Split                     |                                      |
 | SplitToSequence           |                                      |
-| Sqrt                      | ✅                                    |
-| Squeeze                   | ✅                                    |
+| Sqrt                      |                                      |
+| Squeeze                   | ✅                                   |
 | StringNormalizer          |                                      |
-| Sub                       | ✅                                    |
+| Sub                       |                                      |
 | Sum                       |                                      |
-| Tan                       | ✅                                    |
-| Tanh                      | ✅                                    |
+| Tan                       |                                      |
+| Tanh                      |                                      |
 | TfIdfVectorizer           |                                      |
 | ThresholdedRelu           |                                      |
 | Tile                      |                                      |
 | TopK                      |                                      |
-| Transpose                 | ✅                                    |
+| Transpose                 |                                      |
 | Trilu                     |                                      |
 | Unique                    |                                      |
-| Unsqueeze                 | ✅                                    |
+| Unsqueeze                 | ✅                                   |
 | Upsample (deprecated)     |                                      |
 | Where                     |                                      |
 | Xor                       |                                      |
 | **Function**              |                                      |
 | Bernoulli                 |                                      |
 | CastLike                  |                                      |
-| Celu                      | ✅                                    |
+| Celu                      |                                      |
 | DynamicQuantizeLinear     |                                      |
-| GreaterOrEqual            | ✅                                    |
+| GreaterOrEqual            |                                      |
 | HardSwish                 |                                      |
-| LessOrEqual               | ✅                                    |
+| LessOrEqual               |                                      |
 | LogSoftmax                |                                      |
 | MeanVarianceNormalization |                                      |
 | NegativeLogLikelihoodLoss |                                      |
 | Range                     |                                      |
-| Softmax                   | ✅                                    |
+| Softmax                   | ✅                                   |
 | SoftmaxCrossEntropyLoss   |                                      |
 
