@@ -157,6 +157,8 @@ impl Tensor {
         unsafe { Ok(self.to_array_view_mut_unchecked()) }
     }
 
+    /// # Safety
+    /// Transform the data as a `ndarray::Array`.
     pub unsafe fn to_array_view_unchecked<A: DataType>(&self) -> ArrayViewD<A> {
         if self.len != 0 {
             ArrayViewD::from_shape_ptr(&*(*self.shape), self.data.as_ptr() as *const A)
@@ -165,6 +167,8 @@ impl Tensor {
         }
     }
 
+    /// # Safety
+    /// Transform the data as a `ndarray::Array`.
     pub unsafe fn to_array_view_mut_unchecked<A: DataType>(&mut self) -> ArrayViewMutD<A> {
         if self.len != 0 {
             ArrayViewMutD::from_shape_ptr(&*(*self.shape), self.data.as_mut_ptr() as *mut A)
@@ -181,6 +185,7 @@ impl Tensor {
         unsafe { Ok(self.to_scalar_unchecked()) }
     }
 
+    /// # Safety
     /// Access the data as a scalar.
     pub unsafe fn to_scalar_unchecked<D: DataType>(&self) -> &D {
         &*(self.data.as_ptr() as *mut D)
