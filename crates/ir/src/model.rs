@@ -1,6 +1,6 @@
 use smallvec::smallvec;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpGroup, OpNode, PVec, Tensor};
+use crate::{BoxOp, IntoArcTensor, Op, OpGroup, OpNode, PVec, Shape, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -53,7 +53,6 @@ pub struct Model {
 #[derive(Debug, Default)]
 pub struct TraversalState {
     pub intermediates: HashMap<usize, PVec>,
-    //eviction_state
 }
 
 #[derive(Debug, Default)]
@@ -61,6 +60,7 @@ pub struct ModelSummary {
     pub total_flops: usize,
     pub total_params: usize,
     pub op_frequencies: HashMap<String, usize>,
+    pub output_shapes: HashMap<usize, Shape>,
 }
 
 impl Model {
@@ -136,6 +136,7 @@ impl Model {
 
         let mut total_flops = 0;
         let mut total_params = 0;
+        let mut output_shapes = HashMap::new();
 
         let mut op_counts = HashMap::new();
         for node_id in order {
@@ -160,6 +161,8 @@ impl Model {
             let result = node.realize(providers)?;
             total_flops += result.cost.flops;
             total_params += result.cost.parameters;
+            println!("RESULT: {:?}", result);
+            output_shapes.insert(node_id, result.outputs[0].shape.clone());
 
             traversal_state
                 .intermediates
@@ -169,6 +172,7 @@ impl Model {
             total_flops,
             total_params,
             op_frequencies: op_counts,
+            output_shapes,
         })
     }
 }

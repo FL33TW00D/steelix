@@ -1,9 +1,7 @@
 use std::borrow::Cow;
 
+use crate::{pvec, shape, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
 use onnx::onnx_pb;
-use smallvec::smallvec;
-
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Softmax {
@@ -38,13 +36,13 @@ impl Op for Softmax {
         } else {
             providers[0].shape[self.axis as usize]
         };
-        let out = Tensor::new(providers[0].dt, vec![output_shape].into());
+        let out = Tensor::new(providers[0].dt, shape![output_shape]);
         Ok(RealizedOp {
             cost: OpCost {
                 flops: 5 * out.numel(),
                 parameters: 0,
             },
-            outputs: smallvec![out.into_arc_tensor()],
+            outputs: pvec![out.into_arc_tensor()],
         })
     }
 }

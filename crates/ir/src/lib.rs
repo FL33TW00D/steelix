@@ -4,6 +4,7 @@ mod model;
 mod op_group;
 mod op_node;
 mod op_register;
+mod shape;
 mod tensor;
 mod value_info;
 
@@ -17,6 +18,7 @@ pub use model::*;
 pub use op_group::*;
 pub use op_node::*;
 pub use op_register::*;
+pub use shape::*;
 pub use tensor::*;
 pub use value_info::*;
 
@@ -40,7 +42,7 @@ impl OpCost {
 }
 
 pub type PVec = SmallVec<[Arc<Tensor>; 4]>;
-pub type Shape = SmallVec<[usize; 4]>;
+
 pub type StResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Default)]
@@ -145,12 +147,12 @@ macro_rules! shape {
     ($($x:expr),*$(,)*) => ({
         let count = 0usize $(+ shape!(@one $x))*;
         #[allow(unused_mut)]
-        let mut vec = $crate::Shape::new();
+        let mut vec = smallvec::SmallVec::new();
         if count <= vec.inline_size() {
             $(vec.push($x);)*
-            vec
+            $crate::Shape(vec)
         } else {
-            $crate::Shape::from_vec(vec![$($x,)*])
+            $crate::Shape(smallvec::SmallVec::from_vec(vec![$($x,)*]))
         }
     });
 }

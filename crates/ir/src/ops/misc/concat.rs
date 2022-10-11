@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use crate::{Op, OpGroup, PVec, RealizedOp};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Concat;
 
 impl Op for Concat {
