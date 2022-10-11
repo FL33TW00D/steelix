@@ -44,7 +44,7 @@ impl RenderableGraph {
         self.edges.push(Edge::new(label, from, to));
     }
 
-    pub fn build_graph(model: Model, model_summary: ModelSummary) -> Self {
+    pub fn build_graph(model: Model, model_summary: Option<ModelSummary>) -> Self {
         let mut g = RenderableGraph::new();
         let mut offset = 0;
 
@@ -62,7 +62,11 @@ impl RenderableGraph {
             op_node.providers.iter().for_each(|provider_id| {
                 if model.nodes[*provider_id].op.op_group() != OpGroup::Constant {
                     let mut pid = *provider_id;
-                    let shape = model_summary.output_shapes.get(&pid).unwrap().to_string();
+                    let shape = if let Some(summary) = &model_summary {
+                        summary.output_shapes.get(&pid).unwrap().to_string()
+                    } else {
+                        "".to_string()
+                    };
                     if *provider_id > offset {
                         pid -= offset;
                     }

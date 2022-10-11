@@ -13,6 +13,13 @@ pub fn build_cli() -> Command<'static> {
                 .required(true),
         )
         .arg(
+            Arg::new("INFER_SHAPES")
+                .short('s')
+                .long("infer-shapes")
+                .takes_value(false)
+                .help("Infer shapes of the model."),
+        )
+        .arg(
             Arg::new("OUTPUT_PATH")
                 .short('o')
                 .long("output-path")

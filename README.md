@@ -24,6 +24,7 @@ Steelix has 2 main functions:
 1. Model Summarization
 Steelix can produce an output like below for any provided ONNX model.
 
+
 2. Graph Visualization
 Steelix parses your ONNX file and can transpile it to a DOT file for your
 viewing pleasure. This SVG can be embedded in a notebook, website etc. Steelix
@@ -48,12 +49,10 @@ result = subprocess.run(
     ["steelix", "steelix plot --model-path ./my-model.onnx --output-path ./my-svg.svg"], capture_output=True, text=True
 ) 
 ```
-2. Speed: Steelix is very very fast, check out our benchmarks for more info.
+2. Guaranteed Shapes
 3. Metrics
 
 Steelix not only allows you to visualize your model, but can give you handy stats like:
-- Total Memory Usage
-- Peak Memory Usage, 
 - Total FLOPs
 - Total Parameters
 
@@ -70,7 +69,7 @@ Ensure you have DOT installed by following the instructions [here](https://graph
 brew install steelix
 ```
 
-### Rust Programmers
+### If you already have Rust installed 
 ```
 cargo install steelix
 ```
@@ -251,6 +250,3 @@ cargo install steelix
 | Softmax                   | ✅                                    |
 | SoftmaxCrossEntropyLoss   |                                      |
 
-
-TODO: 
-1. Add total number of nodes in the DOT graph to the summary
