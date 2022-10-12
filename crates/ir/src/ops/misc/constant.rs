@@ -1,8 +1,6 @@
 use std::{borrow::Cow, sync::Arc};
 
-use smallvec::smallvec;
-
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
+use crate::{pvec, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Constant(pub Arc<Tensor>);
@@ -15,13 +13,14 @@ impl Op for Constant {
     fn op_group(&self) -> OpGroup {
         OpGroup::Constant
     }
+
     fn realize(&self, _: PVec) -> anyhow::Result<RealizedOp> {
         Ok(RealizedOp {
             cost: OpCost {
                 flops: 0,
                 parameters: self.0.numel(),
             },
-            outputs: smallvec![self.0.clone()],
+            outputs: pvec![self.0.clone()],
         })
     }
 }
