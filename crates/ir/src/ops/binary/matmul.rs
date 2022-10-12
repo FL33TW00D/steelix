@@ -3,8 +3,8 @@ use std::borrow::Cow;
 use onnx::onnx_pb;
 
 use crate::{
-    ops::shape::multi_broadcast, pvec, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp,
-    Tensor,
+    ops::shape::multi_broadcast, pvec, validate_providers, BoxOp, IntoArcTensor, Op, OpCost,
+    OpGroup, PVec, RealizedOp, Tensor,
 };
 
 #[derive(Debug, Clone)]
@@ -21,13 +21,14 @@ impl Op for Matmul {
 
     //𝑛𝑚(2𝑝−1)
     fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
+        validate_providers(&providers, 2, 2, &self.name())?;
         let broadcasted_shape = multi_broadcast(
             &providers
                 .iter()
                 .map(|p| p.shape.clone())
                 .collect::<Vec<_>>(),
         )
-        .unwrap();
+        .expect("Matmul: broadcast failed");
         let p0_shape = &broadcasted_shape;
         let p1_shape = &broadcasted_shape;
 

@@ -2,9 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
-
-use smallvec::smallvec;
+use crate::{pvec, validate_providers, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct BatchNormalization {
@@ -30,9 +28,9 @@ impl Op for BatchNormalization {
         Ok(RealizedOp {
             cost: OpCost {
                 flops: mac,
-                parameters,
+                parameters, //TODO: check if this is right,
             },
-            outputs: smallvec![providers[0].clone()],
+            outputs: pvec![providers[0].clone()],
         })
     }
 }

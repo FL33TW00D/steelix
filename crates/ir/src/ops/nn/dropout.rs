@@ -1,9 +1,7 @@
-use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::borrow::Cow;
 
 use crate::{
-    validate_providers, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor,
+    pvec, validate_providers, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor,
 };
 
 pub struct Dropout;
@@ -19,16 +17,11 @@ impl Op for Dropout {
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 2, &self.name())?;
-        let placeholder =
-            Tensor::new(providers[0].dt, providers[0].shape.clone()).into_arc_tensor();
+        let placeholder = Tensor::new(providers[0].dt, providers[0].shape.clone());
 
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
-            outputs: smallvec![placeholder],
+            outputs: pvec![placeholder.into_arc_tensor()],
         })
     }
-}
-
-pub fn build_dropout(_: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    Ok(Box::new(Dropout) as BoxOp)
 }
