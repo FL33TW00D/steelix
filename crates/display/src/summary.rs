@@ -30,6 +30,7 @@ pub fn opcount_table(op_counts: HashMap<String, usize>) -> Table {
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
         .with(Panel::footer(format!("{} nodes", total)))
+        .to_owned()
 }
 
 #[derive(Tabled)]
@@ -54,6 +55,7 @@ pub fn metrics_table(model_summary: ModelSummary) -> Table {
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
+        .to_owned()
 }
 
 #[derive(Tabled)]
@@ -81,4 +83,5 @@ pub fn hardware_table(total_flops: usize) -> Table {
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
+        .to_owned()
 }

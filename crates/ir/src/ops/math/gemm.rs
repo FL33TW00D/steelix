@@ -31,7 +31,7 @@ impl Op for Gemm {
                 .map(|p| p.shape.clone())
                 .collect::<Vec<_>>(),
         )
-        .unwrap();
+        .expect("Failed to broadcast GEMM");
 
         let p0_shape = &broadcasted_shape;
         let p1_shape = &broadcasted_shape;

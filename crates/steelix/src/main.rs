@@ -85,7 +85,8 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
         )))
         .with(Disable::row(Rows::single(1)))
         .with(Style::modern())
-        .with(Modify::new(Rows::new(0..)).with(Alignment::center()));
+        .with(Modify::new(Rows::new(0..)).with(Alignment::center()))
+        .to_owned();
 
     println!("{}", res);
 
