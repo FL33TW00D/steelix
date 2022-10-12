@@ -2,6 +2,7 @@ mod broadcast;
 mod concat;
 mod gather;
 mod reshape;
+#[allow(clippy::module_inception)]
 mod shape;
 mod squeeze;
 mod transpose;

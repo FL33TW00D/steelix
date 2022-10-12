@@ -38,10 +38,10 @@ pub enum ModelError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
-///                        MODEL GRAPH STRUCTURE
-/// --------------------------------------------------------------------
-/// | user inputs | constant initializers | processing nodes | outputs |
-/// --------------------------------------------------------------------
+//                        MODEL GRAPH STRUCTURE
+// --------------------------------------------------------------------
+// | user inputs | constant initializers | processing nodes | outputs |
+// --------------------------------------------------------------------
 #[derive(Debug, Default)]
 pub struct Model {
     pub nodes: Vec<OpNode<BoxOp>>,
