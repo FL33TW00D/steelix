@@ -157,19 +157,23 @@ impl Tensor {
         unsafe { Ok(self.to_array_view_mut_unchecked()) }
     }
 
+    /// # Safety
+    /// Transform the data as a `ndarray::Array`.
     pub unsafe fn to_array_view_unchecked<A: DataType>(&self) -> ArrayViewD<A> {
         if self.len != 0 {
-            ArrayViewD::from_shape_ptr(&*self.shape, self.data.as_ptr() as *const A)
+            ArrayViewD::from_shape_ptr(&*(*self.shape), self.data.as_ptr() as *const A)
         } else {
-            ArrayViewD::from_shape(&*self.shape, &[]).unwrap()
+            ArrayViewD::from_shape(&*(*self.shape), &[]).unwrap()
         }
     }
 
+    /// # Safety
+    /// Transform the data as a `ndarray::Array`.
     pub unsafe fn to_array_view_mut_unchecked<A: DataType>(&mut self) -> ArrayViewMutD<A> {
         if self.len != 0 {
-            ArrayViewMutD::from_shape_ptr(&*self.shape, self.data.as_mut_ptr() as *mut A)
+            ArrayViewMutD::from_shape_ptr(&*(*self.shape), self.data.as_mut_ptr() as *mut A)
         } else {
-            ArrayViewMutD::from_shape(&*self.shape, &mut []).unwrap()
+            ArrayViewMutD::from_shape(&*(*self.shape), &mut []).unwrap()
         }
     }
 
@@ -181,6 +185,7 @@ impl Tensor {
         unsafe { Ok(self.to_scalar_unchecked()) }
     }
 
+    /// # Safety
     /// Access the data as a scalar.
     pub unsafe fn to_scalar_unchecked<D: DataType>(&self) -> &D {
         &*(self.data.as_ptr() as *mut D)
@@ -315,7 +320,7 @@ impl TryFrom<onnx_pb::TensorProto> for Tensor {
 
     fn try_from(tproto: onnx_pb::TensorProto) -> Result<Self, Self::Error> {
         let dt = ProtoDType::from_i32(tproto.data_type).unwrap().try_into()?;
-        let shape: Shape = tproto.dims.iter().map(|&i| i as usize).collect();
+        let shape: Shape = Shape(tproto.dims.iter().map(|&i| i as usize).collect());
 
         let tensor = if !tproto.raw_data.is_empty() {
             let len = shape.iter().cloned().product::<usize>();
@@ -409,7 +414,7 @@ impl<A: DataType, D: ::ndarray::Dimension> From<Array<A, D>> for Tensor {
         let data = unsafe { std::slice::from_raw_parts(Box::into_raw(vec) as *mut u8, byte_count) };
         Tensor {
             dt: A::to_internal(),
-            shape: shape.into(),
+            shape: Shape(shape.into()),
             len,
             data: data.into(),
         }

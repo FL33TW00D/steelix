@@ -1,7 +1,4 @@
-use ir::{
-    ops::shape::{Gather, Unsqueeze},
-    pvec, shape, IntoArcTensor, Op, OpCost, RealizedOp, Tensor,
-};
+use ir::{ops::shape::Gather, pvec, IntoArcTensor, Op, OpCost, RealizedOp};
 use ndarray::array;
 #[test]
 fn test_gather() {

@@ -1,8 +1,9 @@
 use onnx::onnx_pb;
-use smallvec::smallvec;
 use std::borrow::Cow;
 
-use crate::{validate_providers, BoxOp, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Tensor};
+use crate::{
+    pvec, shape, validate_providers, BoxOp, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Tensor,
+};
 #[derive(Debug, Clone)]
 pub struct Shape {
     start: i64,
@@ -32,8 +33,8 @@ impl Op for Shape {
             .map(|i| i as i64)
             .collect::<Vec<i64>>();
 
-        let out = Tensor::from_vec(smallvec![new_shape.len()], new_shape);
-        Ok(RealizedOp::zero_cost(smallvec![out.into_arc_tensor()]))
+        let out = Tensor::from_vec(shape![new_shape.len()], new_shape);
+        Ok(RealizedOp::zero_cost(pvec![out.into_arc_tensor()]))
     }
 }
 

@@ -1,7 +1,6 @@
-use crate::{ModelError, Shape};
+use crate::{shape, ModelError, Shape};
 
 use onnx::onnx_pb;
-use smallvec::SmallVec;
 
 #[derive(Debug, Clone)]
 pub struct ValueInfo {
@@ -20,7 +19,7 @@ impl TryFrom<onnx_pb::ValueInfoProto> for ValueInfo {
                     onnx_pb::type_proto::Value::TensorType(t) => {
                         let pb_dims = t.shape.clone().unwrap().dim;
 
-                        let mut dimensions = SmallVec::new();
+                        let mut dimensions = shape!();
                         pb_dims
                             .into_iter()
                             .for_each(|dim| match dim.value.unwrap() {

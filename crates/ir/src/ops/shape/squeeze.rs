@@ -1,9 +1,8 @@
 use std::borrow::Cow;
 
 use onnx::onnx_pb;
-use smallvec::smallvec;
 
-use crate::{BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Shape, Tensor};
+use crate::{pvec, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Shape, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct Squeeze {
@@ -24,7 +23,7 @@ impl Squeeze {
             shape_iter.filter(|ax| **ax != 1_usize).copied().collect()
         };
 
-        new_shape.into()
+        Shape(new_shape.into())
     }
 }
 
@@ -42,7 +41,7 @@ impl Op for Squeeze {
         let output = Tensor::new(providers[0].dt, new_shape);
         Ok(RealizedOp {
             cost: OpCost::zero_cost(),
-            outputs: smallvec![output.into_arc_tensor()],
+            outputs: pvec![output.into_arc_tensor()],
         })
     }
 }

@@ -4,6 +4,7 @@ use crate::{
     pvec, validate_providers, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor,
 };
 
+#[derive(Debug, Clone)]
 pub struct Dropout;
 
 impl Op for Dropout {

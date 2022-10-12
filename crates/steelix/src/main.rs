@@ -23,10 +23,14 @@ fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
     let output_path = matches
         .get_one::<String>("OUTPUT_PATH")
         .expect("Invalid output path provided.");
+    let infer_shapes = matches.is_present("INFER_SHAPES");
 
-    let plottable: RenderableGraph = parse_model(model_path)
-        .expect("Failed to parse model.")
-        .into();
+    let model = parse_model(model_path)?;
+    let mut model_summary = None;
+    if infer_shapes {
+        model_summary = Some(parse_model(model_path)?.build_traversal_order().run()?);
+    }
+    let plottable: RenderableGraph = RenderableGraph::build_graph(model, model_summary);
 
     let mut f = NamedTempFile::new().unwrap();
     render_to(&mut f, plottable);

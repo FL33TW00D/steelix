@@ -36,13 +36,11 @@ impl Op for Gemm {
         let p0_shape = &broadcasted_shape;
         let p1_shape = &broadcasted_shape;
 
-        let output_shape = vec![p0_shape[0], p1_shape[1]];
-
         let m = p0_shape[0];
         let n = p1_shape[1];
         let p = p0_shape[1];
 
-        let res = Tensor::new(providers[0].dt, output_shape.into());
+        let res = Tensor::new(providers[0].dt, broadcasted_shape);
 
         Ok(RealizedOp {
             cost: OpCost {

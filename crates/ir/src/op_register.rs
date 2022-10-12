@@ -7,7 +7,7 @@ use onnx::onnx_pb;
 use crate::{
     ops::{
         activation, binary,
-        math::Sum,
+        math::{self, Sum},
         nn::{self, Dropout},
         pool, shape,
     },
@@ -32,7 +32,7 @@ impl Default for OpRegister {
         reg.insert("Add", binary::build_add);
         reg.insert("Squeeze", shape::build_squeeze);
         reg.insert("MatMul", binary::build_matmul);
-        reg.insert("Gemm", binary::build_matmul);
+        reg.insert("Gemm", math::build_gemm);
         reg.insert("Mul", binary::build_matmul);
         reg.insert("Unsqueeze", shape::build_unsqueeze);
         reg.insert("LRN", nn::build_lrn);
