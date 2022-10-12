@@ -33,7 +33,7 @@ impl Reshape {
         if let Some(unknown_dim) = unknown_dim {
             shape_data[unknown_dim] =
                 D::from(original_shape.iter().product::<usize>() / product.to_usize().unwrap())
-                    .unwrap();
+                    .expect("Failed to compute unknown dimension in Reshape");
         }
 
         let mut new_shape = shape!();

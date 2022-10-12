@@ -6,8 +6,8 @@ use crate::{
 };
 #[derive(Debug, Clone)]
 pub struct Shape {
-    start: i64,
-    end: i64,
+    pub start: i64,
+    pub end: i64,
 }
 
 impl Op for Shape {
