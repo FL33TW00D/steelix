@@ -2,8 +2,7 @@ use onnx::onnx_pb;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, pvec, validate_providers, BoxOp, DType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp,
-    Shape, Tensor,
+    pvec, validate_providers, BoxOp, IntoArcTensor, Op, OpGroup, PVec, RealizedOp, Shape, Tensor,
 };
 
 #[derive(Debug, Clone)]
@@ -12,7 +11,7 @@ pub struct Transpose {
 }
 
 impl Transpose {
-    fn transpose<D>(&self, input: &Tensor, axes: &[usize]) -> Vec<usize> {
+    fn transpose(&self, input: &Tensor, axes: &[usize]) -> Vec<usize> {
         let mut usage_counts = [0, 0, 0, 0];
         for axis in axes {
             usage_counts[*axis] += 1;
@@ -43,12 +42,7 @@ impl Op for Transpose {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 1, &self.name())?;
 
-        let transposed_shape = as_std!(Transpose::transpose(providers[0].dt)(
-            self,
-            &providers[0],
-            &self.perm
-        ))
-        .into();
+        let transposed_shape = self.transpose(&providers[0], &self.perm).into();
         let result = Tensor::new(providers[0].dt, Shape(transposed_shape)).into_arc_tensor();
 
         Ok(RealizedOp::zero_cost(pvec!(result)))
