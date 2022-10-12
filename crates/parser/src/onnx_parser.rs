@@ -1,4 +1,4 @@
-use ir::{ops::misc::Unimplemented, *};
+use ir::{ops::data::Unimplemented, *};
 use onnx::*;
 use prost::Message;
 use std::collections::{HashMap, HashSet};
@@ -19,7 +19,7 @@ pub fn parse_model(model_path: &std::path::PathBuf) -> Result<Model, anyhow::Err
             .fold(HashMap::new(), |mut acc, (name, tensor)| {
                 acc.insert(
                     name.clone(),
-                    model.add_node(name, ops::misc::build_constant(tensor).unwrap()),
+                    model.add_node(name, ops::data::build_constant(tensor).unwrap()),
                 );
                 acc
             });
@@ -56,13 +56,13 @@ fn parse_graph_inputs(
         if let Some(init) = initializers_map.remove(&*input.name) {
             model.add_node(
                 input.name.to_owned(),
-                ops::misc::build_constant(init).unwrap(), //static constants
+                ops::data::build_constant(init).unwrap(), //static constants
             );
         } else {
             println!("INPUTS: {:?}", inputs);
             let input_node_id = model.add_node(
                 input.name.to_owned(),
-                ops::misc::build_initial((*input).clone().try_into().unwrap()).unwrap(),
+                ops::data::build_initial((*input).clone().try_into().unwrap()).unwrap(),
             );
             model.inputs.push(input_node_id);
             inputs_map.insert(input.name.to_owned(), input_idx);
@@ -140,7 +140,7 @@ fn create_graph_nodes(
     for op_node in graph_nodes.iter() {
         let op = match op_register.get(&op_node.op_type.clone()) {
             Some(builder) => (builder)(op_node).unwrap(),
-            None => ops::misc::build_unimplemented(op_node).unwrap(),
+            None => ops::data::build_unimplemented(op_node).unwrap(),
         };
 
         model.add_node(op_node.op_type.clone(), op);
