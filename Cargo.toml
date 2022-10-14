@@ -1,45 +1,8 @@
-[package]
-name = "steelix"
-version = "0.1.0"
-edition = "2021"
-license = "MIT"
-description = "Your one stop CLI for ONNX model analysis. Featuring graph visualization, FLOP counts, memory metrics and more!"
-readme = "README.md"
-documentation = "https://docs.rs/steelix/"
-homepage = "https://github.com/FL33TW00D/steelix"
-repository = "https://github.com/FL33TW00D/steelix"
-keywords = ["flops", "machine-learning", "onnx"]
-categories = ["command-line-interface", "command-line-utilities"]
-include = ["src/**/*", "LICENSE-*", "README.md"]
-rust-version = "1.60.0"
+[workspace]
+members = [
+    "onnx",
+    "steelix",
+]
 
-[[bin]]
-name = "steelix"
-
-[dependencies]
-clap = { version = "3.2", features = ["derive"] }
-prost = "0.10.4"
-dot = { git = "https://github.com/FL33TW00D/dot-rust", branch = "develop" }
-tempfile = "3.3.0"
-ordered-float = "3.0.0"
-npyz = "0.7.0"
-tabled = { version = "0.9.0" }
-human-repr = "1.0.1"
-serde = { version = "1.0.145", features = ["derive"] } 
-serde_json = "1.0.85"
-bytes = "1.2.0"
-half = "2.1.0"
-lazy_static = "1.4.0"
-ndarray = { version = "0.15.4", features=["approx", "blas", "rayon"]}
-num = "0.4.0"
-num-traits = "0.2.15"
-strum = "0.24"
-strum_macros = "0.24"
-thiserror = "1.0.32"
-byteorder = "1.4.3"
-smallvec = "1.9.0"
-opener = "0.5.0"
-anyhow = "1"
-
-[build-dependencies]
-prost-build = "0.11"
+[profile.release]
+debug = true
