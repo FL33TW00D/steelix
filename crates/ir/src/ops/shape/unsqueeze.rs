@@ -40,7 +40,7 @@ impl Op for Unsqueeze {
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 2, &self.name())?;
         if providers.len() == 1 && self.axes.is_none() {
-            bail!("Invalid parameters for Unsqueeze")
+            bail!("Invalid parameters for Unsqueeze.")
         }
 
         let axes = if let Some(ax) = &self.axes {

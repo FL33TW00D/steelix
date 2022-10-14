@@ -1,6 +1,4 @@
-use smallvec::smallvec;
-
-use crate::{BoxOp, IntoArcTensor, Op, OpGroup, OpNode, PVec, Shape, Tensor};
+use crate::{pvec, BoxOp, IntoArcTensor, Op, OpGroup, OpNode, PVec, Shape, Tensor};
 
 impl<T: Op + ?Sized> Op for Box<T> {
     #[inline]
@@ -34,14 +32,16 @@ impl Debug for dyn Op {
 pub enum ModelError {
     #[error("{0}")]
     ValidationError(String),
+    #[error("{0}")]
+    UnsupportedType(String),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
 
-///                        MODEL GRAPH STRUCTURE
-/// --------------------------------------------------------------------
-/// | user inputs | constant initializers | processing nodes | outputs |
-/// --------------------------------------------------------------------
+//                        MODEL GRAPH STRUCTURE
+// --------------------------------------------------------------------
+// | user inputs | constant initializers | processing nodes | outputs |
+// --------------------------------------------------------------------
 #[derive(Debug, Default)]
 pub struct Model {
     pub nodes: Vec<OpNode<BoxOp>>,
@@ -154,7 +154,7 @@ impl Model {
                         &traversal_state
                             .intermediates
                             .get(id)
-                            .unwrap_or(&smallvec![Tensor::default().into_arc_tensor()])[0],
+                            .unwrap_or(&pvec![Tensor::default().into_arc_tensor()])[0],
                     )
                 })
                 .collect();

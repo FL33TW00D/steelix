@@ -94,6 +94,9 @@ impl Tensor {
 
     pub fn from_vec<T: DataType>(shape: Shape, data: Vec<T>) -> Self {
         let len = shape.iter().product::<usize>();
+        if len != data.len() {
+            panic!("Shape and data length mismatch in vec conversion.");
+        }
         let byte_count = len * T::to_internal().size_of();
         let mut bytes = BytesMut::with_capacity(byte_count);
         bytes.extend_from_slice(unsafe {

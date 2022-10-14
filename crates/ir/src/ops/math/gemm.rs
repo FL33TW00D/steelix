@@ -4,8 +4,8 @@ use onnx::onnx_pb;
 use smallvec::smallvec;
 
 use crate::{
-    ops::shape::multi_broadcast, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp,
-    Tensor,
+    ops::shape::multi_broadcast, validate_providers, BoxOp, IntoArcTensor, Op, OpCost, OpGroup,
+    PVec, RealizedOp, Tensor,
 };
 
 #[derive(Debug, Clone)]
@@ -24,13 +24,14 @@ impl Op for Gemm {
     }
 
     fn realize(&self, providers: PVec) -> anyhow::Result<crate::RealizedOp> {
+        validate_providers(&providers, 2, 3, &self.name())?;
         let broadcasted_shape = multi_broadcast(
             &providers
                 .iter()
                 .map(|p| p.shape.clone())
                 .collect::<Vec<_>>(),
         )
-        .unwrap();
+        .expect("Failed to broadcast GEMM");
 
         let p0_shape = &broadcasted_shape;
         let p1_shape = &broadcasted_shape;

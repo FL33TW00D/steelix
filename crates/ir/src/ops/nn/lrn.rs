@@ -2,9 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{validate_providers, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
-
-use smallvec::smallvec;
+use crate::{pvec, validate_providers, BoxOp, Op, OpCost, OpGroup, PVec, RealizedOp};
 
 #[derive(Debug, Clone)]
 pub struct LRN {
@@ -31,7 +29,7 @@ impl Op for LRN {
                 flops: providers[0].numel(),
                 parameters: 0,
             },
-            outputs: smallvec![providers[0].clone()],
+            outputs: pvec![providers[0].clone()],
         })
     }
 }

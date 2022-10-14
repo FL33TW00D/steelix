@@ -1,7 +1,11 @@
 use std::borrow::Cow;
 
-use crate::{pvec, shape, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor};
 use onnx::onnx_pb;
+
+use crate::{
+    pvec, shape, validate_providers, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp,
+    Tensor,
+};
 
 #[derive(Debug, Clone)]
 pub struct Softmax {
@@ -31,6 +35,7 @@ impl Op for Softmax {
     //   n            -- exp of shifted logits
     //   2*n          -- compute softmax from exp of shifted logits
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
+        validate_providers(&providers, 1, 1, &self.name())?;
         let output_shape = if self.axis == -1 {
             providers[0].shape[providers[0].shape.len() - 1]
         } else {

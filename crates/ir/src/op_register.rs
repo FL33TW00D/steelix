@@ -5,7 +5,12 @@ use std::collections::HashMap;
 use onnx::onnx_pb;
 
 use crate::{
-    ops::{activation, binary, math, nn, pool, shape},
+    ops::{
+        activation, binary,
+        math::{self, Sum},
+        nn::{self, Dropout},
+        pool, shape,
+    },
     Abs, BoxOp, Relu,
 };
 
@@ -33,11 +38,11 @@ impl Default for OpRegister {
         reg.insert("LRN", nn::build_lrn);
         reg.insert("AveragePool", pool::build_avgpool);
         reg.insert("GlobalAveragePool", pool::build_globalavgpool);
-        reg.insert("Dropout", nn::build_dropout);
         reg.insert("Shape", shape::build_shape);
         reg.insert("Gather", shape::build_gather);
-        reg.insert("Sum", math::build_sum);
         reg.insert("MaxPool", pool::build_maxpool);
+        reg.insert("Dropout", |_| Ok(Box::new(Dropout)));
+        reg.insert("Sum", |_| Ok(Box::new(Sum)));
         reg.insert("Abs", |_| Ok(Box::new(Abs)));
         reg.insert("Relu", |_| Ok(Box::new(Relu)));
         reg

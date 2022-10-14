@@ -1,11 +1,7 @@
 use std::borrow::Cow;
 
-use onnx::onnx_pb;
-use smallvec::smallvec;
-
 use crate::{
-    ops::shape::multi_broadcast, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp,
-    Tensor,
+    ops::shape::multi_broadcast, pvec, IntoArcTensor, Op, OpCost, OpGroup, PVec, RealizedOp, Tensor,
 };
 
 #[derive(Debug, Clone)]
@@ -27,7 +23,7 @@ impl Op for Sum {
                 .map(|p| p.shape.clone())
                 .collect::<Vec<_>>(),
         )
-        .unwrap();
+        .expect("Sum: broadcast failed");
 
         let res = Tensor::new(providers[0].dt, broadcasted_shape);
 
@@ -36,11 +32,7 @@ impl Op for Sum {
                 flops: 0, //TODO fix
                 parameters: 0,
             },
-            outputs: smallvec![res.into_arc_tensor()],
+            outputs: pvec![res.into_arc_tensor()],
         })
     }
-}
-
-pub fn build_sum(_proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
-    Ok(Box::new(Sum) as BoxOp)
 }

@@ -20,7 +20,7 @@ impl Squeeze {
                 .map(|tup| to_squeeze.shape[tup.0])
                 .collect()
         } else {
-            shape_iter.filter(|ax| **ax != 1_usize).copied().collect()
+            shape_iter.filter(|ax| **ax != 1).copied().collect()
         };
 
         Shape(new_shape.into())

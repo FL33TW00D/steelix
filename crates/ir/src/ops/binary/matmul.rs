@@ -26,7 +26,6 @@ impl Op for Matmul {
     //If the second argument is 1-D, it is promoted to a matrix by appending a 1 to its dimensions. After matrix multiplication the appended 1 is removed.
     //𝑛𝑚(2𝑝−1)
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
-        println!("MATMUL PROVIDERS: {:?}", providers);
         validate_providers(&providers, 2, 2, &self.name())?;
         let a_shape = &providers[0].shape;
         let b_shape = &providers[1].shape;

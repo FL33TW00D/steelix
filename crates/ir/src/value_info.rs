@@ -27,16 +27,25 @@ impl TryFrom<onnx_pb::ValueInfoProto> for ValueInfo {
                                     dimensions.push(v as usize);
                                 }
                                 onnx_pb::tensor_shape_proto::dimension::Value::DimParam(_) => {
+                                    println!("Parameterized dimension found, using 1");
                                     dimensions.push(1); //Pushing 1 for a N batch
                                 }
                             });
 
                         return Ok(Self { name, dimensions });
                     }
-                    onnx_pb::type_proto::Value::SequenceType(_) => todo!(),
-                    onnx_pb::type_proto::Value::MapType(_) => todo!(),
-                    onnx_pb::type_proto::Value::OptionalType(_) => todo!(),
-                    onnx_pb::type_proto::Value::SparseTensorType(_) => todo!(),
+                    onnx_pb::type_proto::Value::SequenceType(_) => {
+                        return Err(ModelError::UnsupportedType("SequenceType".to_string()));
+                    }
+                    onnx_pb::type_proto::Value::MapType(_) => {
+                        return Err(ModelError::UnsupportedType("MapType".to_string()));
+                    }
+                    onnx_pb::type_proto::Value::OptionalType(_) => {
+                        return Err(ModelError::UnsupportedType("OptionalType".to_string()));
+                    }
+                    onnx_pb::type_proto::Value::SparseTensorType(_) => {
+                        return Err(ModelError::UnsupportedType("SparseTensorType".to_string()));
+                    }
                 }
             }
         }

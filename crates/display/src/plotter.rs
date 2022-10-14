@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io::Write};
 
-use ir::{Model, ModelSummary, OpGroup, COLOUR_MAP};
+use ir::{Model, ModelSummary, OpGroup, COLOUR_MAP, SHAPE_MAP};
 
 type Nd = usize;
 
@@ -55,9 +55,14 @@ impl RenderableGraph {
             }
 
             let renderable_node = g.create_node(op_node.name.clone());
+            //TODO: move below to function
             renderable_node.add_attribute((
                 "fillcolor",
                 COLOUR_MAP.get(&op_node.op.op_group()).unwrap_or(&"white"),
+            ));
+            renderable_node.add_attribute((
+                "shape",
+                SHAPE_MAP.get(&op_node.op.op_group()).unwrap_or(&"ellipse"),
             ));
             op_node.providers.iter().for_each(|provider_id| {
                 if model.nodes[*provider_id].op.op_group() != OpGroup::Constant {
