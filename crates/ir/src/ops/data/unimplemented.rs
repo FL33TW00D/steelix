@@ -20,6 +20,7 @@ impl Op for Unimplemented {
     }
 }
 
-pub fn build_unimplemented(_proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
+pub fn build_unimplemented(proto: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error> {
+    println!("Unimplemented operation found: {:?}", proto.op_type);
     Ok(Box::new(Unimplemented) as BoxOp)
 }

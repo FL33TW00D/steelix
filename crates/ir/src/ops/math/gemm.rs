@@ -44,6 +44,7 @@ impl Op for Gemm {
         OpGroup::Transform
     }
 
+    //TODO: support transpose
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 2, 3, &self.name())?;
 
@@ -65,7 +66,7 @@ impl Op for Gemm {
                 }
             }
             bail!(
-                "No equal dimension found in {:?} and {:?}",
+                "GEMM: No equal dimension found in {:?} and {:?}",
                 a_shape,
                 b_shape
             );

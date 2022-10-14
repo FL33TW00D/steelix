@@ -48,7 +48,7 @@ impl std::fmt::Debug for Tensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Tensor {{\n dt: {:?}, \n shape: {:?}, \n len: {:?}, \n data: {} \n}}",
+            "Tensor {{\n dt: {:?}, \n shape: {}, \n len: {:?}, \n data: {} \n}}",
             self.dt,
             self.shape,
             self.len,

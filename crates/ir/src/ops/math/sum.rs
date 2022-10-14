@@ -29,8 +29,8 @@ impl Op for Sum {
 
         Ok(RealizedOp {
             cost: OpCost {
-                flops: 0, //TODO fix
-                parameters: 0,
+                flops: providers.iter().fold(0, |acc, p| acc + p.numel()),
+                ..OpCost::default()
             },
             outputs: pvec![res.into_arc_tensor()],
         })

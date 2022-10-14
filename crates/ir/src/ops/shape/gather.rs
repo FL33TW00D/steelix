@@ -18,12 +18,12 @@ impl Gather {
         indices_shape: &[D],
     ) -> anyhow::Result<Shape> {
         let mut output_shape = shape!();
-        for (idx, dim) in input_shape.iter().enumerate() {
-            if idx as i64 != self.axis {
+        for (s_idx, dim) in input_shape.iter().enumerate() {
+            if s_idx as i64 != self.axis {
                 output_shape.push(num::cast((*dim).clone()).unwrap());
             } else {
-                for idx2 in indices_shape {
-                    output_shape.push(num::cast((*idx2).clone()).unwrap());
+                for ind_idx in indices_shape {
+                    output_shape.push(num::cast((*ind_idx).clone()).unwrap());
                 }
             }
         }
