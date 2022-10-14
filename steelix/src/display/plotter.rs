@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io::Write};
 
-use ir::{Model, ModelSummary, OpGroup, COLOUR_MAP, SHAPE_MAP};
+use crate::ir::{Model, ModelSummary, OpGroup, COLOUR_MAP, SHAPE_MAP};
 
 type Nd = usize;
 
