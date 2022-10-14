@@ -161,7 +161,6 @@ impl Model {
             let result = node.realize(providers)?;
             total_flops += result.cost.flops;
             total_params += result.cost.parameters;
-            println!("RESULT: {:?}", result);
             output_shapes.insert(node_id, result.outputs[0].shape.clone());
 
             traversal_state

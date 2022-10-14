@@ -40,6 +40,11 @@ pub fn build_cli() -> Command<'static> {
         );
 
     Command::new("steelix")
+        .about("ONNX model analyzer")
+        .long_about(
+            "Steelix is a tool to analyze ONNX models and provide insights into their structure and \
+             performance.",
+        )
         .subcommand(plot_subcommand)
         .subcommand(summary_command)
         .subcommand_required(true)

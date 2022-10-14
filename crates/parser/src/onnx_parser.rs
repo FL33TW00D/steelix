@@ -59,7 +59,6 @@ fn parse_graph_inputs(
                 ops::data::build_constant(init).unwrap(), //static constants
             );
         } else {
-            println!("INPUTS: {:?}", inputs);
             let input_node_id = model.add_node(
                 input.name.to_owned(),
                 ops::data::build_initial((*input).clone().try_into().unwrap()).unwrap(),

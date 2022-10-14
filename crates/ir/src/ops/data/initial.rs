@@ -21,7 +21,6 @@ impl Op for Initial {
 }
 
 pub fn build_initial(value_info: ValueInfo) -> Result<BoxOp, anyhow::Error> {
-    println!("build_initial: {:?}", value_info);
     //TODO: this needs to be dynamic on DTYPE
     Ok(Box::new(Initial(
         Tensor::new(DType::F32, value_info.dimensions).into_arc_tensor(),

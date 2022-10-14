@@ -59,7 +59,6 @@ fn run_summary_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .into();
 
     let summary = parse_model(&model_path)?.build_traversal_order().run()?;
-
     let op_frequencies = summary.op_frequencies.clone();
     let flops = summary.total_flops;
 
