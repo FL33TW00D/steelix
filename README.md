@@ -1,6 +1,7 @@
 <div align="center">
 <img width="400px" height="200px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/images/SteelixLogo.png">
 </div>
+<p align="center">Your one stop CLI for <b>ONNX</b> model analysis. <br></br> Featuring model graph visualization, FLOP counting, Memory metrics and more!</p>
 <p align="center">
     <a href="https://github.com/FL33TW00D/steelix/actions">
         <img alt="Build" src="https://github.com/FL33TW00D/steelix/workflows/ci/badge.svg">
@@ -16,63 +17,37 @@
     </a>
 </p>
 
-Steelix is your one stop shop for ONNX model analysis.
+## ⚡️ Quick start
+First, [download](https://graphviz.org/download/) and install DOT.
+Installation can be done via `cargo`:
 
-## Features
-Steelix has 2 main functions:
-
-1. Model Summarization
-Steelix can produce an output like below for any provided ONNX model.
-
-
-2. Graph Visualization
-Steelix parses your ONNX file and can transpile it to a DOT file for your
-viewing pleasure. This SVG can be embedded in a notebook, website etc. Steelix
-runs a mock forward pass through your network to ensure that every edge will
-have a shape label!
-
-## How to use
-
+```bash
+cargo install steelix
 ```
-steelix plot --model-path ./my-model.onnx --output-path ./my-svg.svg
-steelix summary --model-path ./my-model.onnx
-```
+MacOS users can also install via HomeBrew:
 
-## Why not Netron?
-
-Netron is a great model visualizer and supports a much wider range of formats that we do. However, there are a few usecases where Steelix excels:
-
-1. Composition: As a CLI tool Steelix is perfect for inclusion inside your workflow/pipelines. Now every time you make an alteration to your model, you can generate a new SVG and embed it!
-```
-import subprocess
-result = subprocess.run(
-    ["steelix", "steelix plot --model-path ./my-model.onnx --output-path ./my-svg.svg"], capture_output=True, text=True
-) 
-```
-2. Guaranteed Shapes
-3. Metrics
-
-Steelix not only allows you to visualize your model, but can give you handy stats like:
-- Total FLOPs
-- Total Parameters
-
-4. Guaranteed Shapes
-When working with neural nets, the most common problem is mismatched sizes between operations. As Steelix runs a shape pass through the model - we will always have shapes available - even if they aren't included in the ONNX file.
-
-## Install
-
-### Prerequesties
-Ensure you have DOT installed by following the instructions [here](https://graphviz.org/download/).
-
-### MacOS
-```
+```bash
 brew install steelix
 ```
 
-### If you already have Rust installed 
+## ⚙️ Commands & Options
+Steelix has 2 core functions - Model Summarization and Model Visualization.
+
+### `summary`
+
+CLI command to summarize the core aspects of your model.
+
+```bash
+steelix summary --model-path ./my-model.onnx
 ```
-cargo install steelix
-```
+
+
+
+### `plot`
+
+CLI command to plot your model as an SVG file - complete with inferred shapes.
+
+
 
 ## Supported Operators (ref [ONNX IR](https://github.com/onnx/onnx/blob/master/docs/Operators.md?plain=1)) 
 
@@ -250,3 +225,6 @@ cargo install steelix
 | Softmax                   | ✅                                   |
 | SoftmaxCrossEntropyLoss   |                                      |
 
+
+## Credit
+Most of the good ideas/code in this project are **heavily** inspired by [tract](https://github.com/sonos/tract), [wonnx](https://github.com/webonnx/wonnx) or [netron](https://github.com/lutzroeder/netron).
