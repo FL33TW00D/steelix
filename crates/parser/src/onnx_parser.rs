@@ -124,7 +124,6 @@ fn link_nodes(
             if !target_inp_set.is_disjoint(&output_set) {
                 let producer_id = op_idx + graph_offset;
                 let consumer_id = target_idx + target_offset + graph_offset;
-                //println!("INSERTING EDGE: {:?} -> {:?}", producer_id, consumer_id);
                 model.add_edge(producer_id, consumer_id);
             }
         }

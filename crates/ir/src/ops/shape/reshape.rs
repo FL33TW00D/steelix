@@ -64,8 +64,6 @@ impl Op for Reshape {
 
         let reshaped = Tensor::new(providers[0].dt, new_shape).into_arc_tensor();
 
-        println!("RESHAPE OUTPUT: {:?}", reshaped);
-
         Ok(RealizedOp::zero_cost(pvec![reshaped]))
     }
 }
