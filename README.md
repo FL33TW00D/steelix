@@ -40,8 +40,11 @@ CLI command to summarize the core aspects of your model.
 ```bash
 steelix summary --model-path ./my-model.onnx
 ```
+| Option | Description                                              | Type   | Default | Required? |
+|--------|----------------------------------------------------------|--------|---------|-----------|
+| `--model-path`   | Enables to define custom backend and frontend templates. | `bool` | `false` | No        |
 
-
+![steelix summary](https://github.com/FL33TW00D/steelix/blob/master/.github/images/steelix_summary.gif)
 
 ### `plot`
 
