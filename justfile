@@ -1,7 +1,7 @@
 plot:
     cargo run --release --bin steelix -- plot --model-path ./resources/models/bvlcalexnet-12.onnx --infer-shapes --open 
 summary:
-    cargo run --release --bin steelix -- summary --model-path ./resources/models/mobilenetv2-12-sim.onnx
+    cargo run --release --bin steelix -- summary --model-path ./resources/models/bvlcalexnet-12.onnx
 flamegraph:
     cargo flamegraph --root --bin steelix -- plot --model-path ./resources/models/efficientnet-lite4-11.onnx --output-path ./plot.svg
 

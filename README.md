@@ -1,5 +1,5 @@
 <div align="center">
-<img width="400px" height="200px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/SteelixLogo.png">
+<img width="400px" height="200px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/images/SteelixLogo.png">
 </div>
 <p align="center">
     <a href="https://github.com/FL33TW00D/steelix/actions">
