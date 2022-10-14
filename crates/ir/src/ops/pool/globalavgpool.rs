@@ -25,7 +25,7 @@ impl Op for GlobalAveragePool {
         Ok(RealizedOp {
             cost: OpCost {
                 flops: providers[0].numel(),
-                parameters: 0,
+                ..OpCost::default()
             },
             outputs: pvec![out.into_arc_tensor()],
         })

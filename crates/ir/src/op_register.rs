@@ -11,7 +11,7 @@ use crate::{
         nn::{self, Dropout},
         pool, shape,
     },
-    Abs, BoxOp, Relu,
+    Abs, BoxOp, Erf, LeakyRelu, Not, Relu, Sigmoid,
 };
 
 pub type OpBuilder = fn(node: &onnx_pb::NodeProto) -> Result<BoxOp, anyhow::Error>;
@@ -42,9 +42,13 @@ impl Default for OpRegister {
         reg.insert("Gather", shape::build_gather);
         reg.insert("MaxPool", pool::build_maxpool);
         reg.insert("Dropout", |_| Ok(Box::new(Dropout)));
-        reg.insert("Sum", |_| Ok(Box::new(Sum)));
         reg.insert("Abs", |_| Ok(Box::new(Abs)));
+        reg.insert("Erf", |_| Ok(Box::new(Erf)));
+        reg.insert("Sigmoid", |_| Ok(Box::new(Sigmoid)));
+        reg.insert("LeakyRelu", |_| Ok(Box::new(LeakyRelu)));
         reg.insert("Relu", |_| Ok(Box::new(Relu)));
+        reg.insert("Not", |_| Ok(Box::new(Not)));
+        reg.insert("Sum", |_| Ok(Box::new(Sum)));
         reg
     }
 }

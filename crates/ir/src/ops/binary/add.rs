@@ -32,7 +32,7 @@ impl Op for Add {
         Ok(RealizedOp {
             cost: OpCost {
                 flops: providers[0].numel(),
-                parameters: 0,
+                ..OpCost::default()
             },
             outputs: pvec![res.into_arc_tensor()],
         })

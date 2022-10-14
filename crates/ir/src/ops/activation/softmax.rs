@@ -12,15 +12,6 @@ pub struct Softmax {
     pub axis: i64,
 }
 
-/*
-def calculate_softmax(batch_size, nfeatures):
-    total_exp = nfeatures
-    total_add = nfeatures - 1
-    total_div = nfeatures
-    total_ops = batch_size * (total_exp + total_add + total_div)
-    return torch.DoubleTensor([int(total_ops)])
-*/
-
 impl Op for Softmax {
     fn name(&self) -> Cow<str> {
         "Softmax".into()
@@ -45,7 +36,7 @@ impl Op for Softmax {
         Ok(RealizedOp {
             cost: OpCost {
                 flops: 5 * out.numel(),
-                parameters: 0,
+                ..OpCost::default()
             },
             outputs: pvec![out.into_arc_tensor()],
         })

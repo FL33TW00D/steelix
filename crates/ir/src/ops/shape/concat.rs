@@ -11,10 +11,7 @@ pub struct Concat {
 }
 
 impl Concat {
-    pub fn concat<D: DataType + ndarray::LinalgScalar + num::NumCast>(
-        &self,
-        providers: &PVec,
-    ) -> Result<Shape, OpError> {
+    pub fn concat(&self, providers: &PVec) -> Result<Shape, OpError> {
         Ok(Tensor::stack_tensors(self.axis as usize, providers)?.shape)
     }
 }
@@ -30,8 +27,7 @@ impl Op for Concat {
 
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 1, 2, &self.name())?;
-
-        let new_shape = as_std!(Concat::concat(providers[0].dt)(self, &providers))?;
+        let new_shape = self.concat(&providers)?;
 
         Ok(RealizedOp::zero_cost(pvec!(Tensor::new(
             providers[0].dt,

@@ -17,8 +17,8 @@ impl Op for Constant {
     fn realize(&self, _: PVec) -> anyhow::Result<RealizedOp> {
         Ok(RealizedOp {
             cost: OpCost {
-                flops: 0,
                 parameters: self.0.numel(),
+                ..OpCost::default()
             },
             outputs: pvec![self.0.clone()],
         })

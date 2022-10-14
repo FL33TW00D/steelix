@@ -11,7 +11,7 @@ mod value_info;
 pub mod ops;
 
 use anyhow::bail;
-use smallvec::{smallvec, SmallVec};
+use smallvec::SmallVec;
 use std::{borrow::Cow, sync::Arc};
 
 pub use model::*;
@@ -24,8 +24,8 @@ pub use value_info::*;
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct OpCost {
-    pub flops: usize,      //# Floating Point Operations
-    pub parameters: usize, //# Parameters
+    pub flops: usize,
+    pub parameters: usize,
 }
 
 impl OpCost {
@@ -42,8 +42,6 @@ impl OpCost {
 }
 
 pub type PVec = SmallVec<[Arc<Tensor>; 4]>;
-
-pub type StResult<T> = anyhow::Result<T>;
 
 #[derive(Debug, Default)]
 pub struct RealizedOp {
@@ -105,6 +103,7 @@ pub fn validate_providers(
     }
 }
 
+//Elements that do not transform the shape, and purely cost compute
 elementwise!(Abs, Logic, 1);
 elementwise!(Erf, Logic, 2);
 elementwise!(Sigmoid, Logic, 4);
@@ -127,11 +126,11 @@ macro_rules! elementwise {
                 OpGroup::$group
             }
 
-            fn realize(&self, providers: PVec) -> StResult<RealizedOp> {
+            fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
                 validate_providers(&providers, 1, 1, stringify!($Op))?;
                 Ok(RealizedOp {
                     cost: OpCost::unary_op_flops(&providers[0], $flop),
-                    outputs: smallvec![providers[0].clone()],
+                    outputs: pvec![providers[0].clone()],
                 })
             }
         }

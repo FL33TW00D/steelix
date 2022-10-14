@@ -21,14 +21,10 @@ impl Op for BatchNormalization {
     //[gamma weights, beta weights, moving_mean(non-trainable), moving_variance(non-trainable)]
     fn realize(&self, providers: PVec) -> anyhow::Result<RealizedOp> {
         validate_providers(&providers, 5, 5, &self.name())?;
-        let mac = providers[0].numel();
-        let parameters = providers[1..4]
-            .iter()
-            .fold(0, |total, current| total + current.numel());
         Ok(RealizedOp {
             cost: OpCost {
-                flops: mac,
-                parameters, //TODO: check if this is right,
+                flops: providers[0].numel(),
+                ..OpCost::default()
             },
             outputs: pvec![providers[0].clone()],
         })

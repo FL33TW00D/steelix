@@ -10,6 +10,7 @@ pub struct Reshape {
     pub allow_zero: i64,
 }
 
+//Reshape is a problematic operation, as it depends on the data contents of the tensor
 impl Reshape {
     pub fn reshape<D: DataType + ndarray::LinalgScalar + num::NumCast>(
         original_shape: Shape,

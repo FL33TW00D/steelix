@@ -27,7 +27,7 @@ impl Op for LRN {
         Ok(RealizedOp {
             cost: OpCost {
                 flops: providers[0].numel(),
-                parameters: 0,
+                ..OpCost::default()
             },
             outputs: pvec![providers[0].clone()],
         })

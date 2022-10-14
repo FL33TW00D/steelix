@@ -2,9 +2,7 @@ use std::borrow::Cow;
 
 use onnx::onnx_pb;
 
-use crate::{shape, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, RealizedOp, Tensor};
-
-use smallvec::smallvec;
+use crate::{pvec, shape, BoxOp, IntoArcTensor, Op, OpCost, OpGroup, RealizedOp, Tensor};
 
 #[derive(Debug, Clone)]
 pub struct AvgPool {
@@ -50,7 +48,7 @@ impl Op for AvgPool {
                 flops: providers[0].numel(),
                 parameters: 0,
             },
-            outputs: smallvec![out.into_arc_tensor()],
+            outputs: pvec![out.into_arc_tensor()],
         })
     }
 }
