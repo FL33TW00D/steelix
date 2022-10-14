@@ -1,5 +1,5 @@
-use ir::{ops::data::Unimplemented, *};
-use onnx::*;
+use crate::ir::{ops::data::Unimplemented, *};
+use crate::onnx::*;
 use prost::Message;
 use std::collections::{HashMap, HashSet};
 

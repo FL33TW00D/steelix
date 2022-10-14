@@ -3,8 +3,12 @@ use onnx::onnx_pb;
 use std::borrow::Cow;
 
 use crate::{
-    as_std, pvec, validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec,
-    RealizedOp, Tensor,
+    as_std,
+    ir::{
+        validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpGroup, PVec, RealizedOp,
+        Tensor,
+    },
+    pvec,
 };
 #[derive(Debug, Clone)]
 pub struct Unsqueeze {

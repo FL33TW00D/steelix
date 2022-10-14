@@ -1,4 +1,3 @@
-#![feature(vec_into_raw_parts)]
 //Operator set is defined here: https://github.com/onnx/onnx/blob/main/onnx/defs/operator_sets.h
 mod model;
 mod op_group;
@@ -103,14 +102,6 @@ pub fn validate_providers(
     }
 }
 
-//Elements that do not transform the shape, and purely cost compute
-elementwise!(Abs, Logic, 1);
-elementwise!(Erf, Logic, 2);
-elementwise!(Sigmoid, Logic, 4);
-elementwise!(LeakyRelu, Activation, 2);
-elementwise!(Relu, Activation, 1);
-elementwise!(Not, Logic, 1);
-
 #[macro_export]
 macro_rules! elementwise {
     ($Op:ident, $group:ident, $flop:literal) => {
@@ -136,6 +127,14 @@ macro_rules! elementwise {
         }
     };
 }
+
+//Elements that do not transform the shape, and purely cost compute
+elementwise!(Abs, Logic, 1);
+elementwise!(Erf, Logic, 2);
+elementwise!(Sigmoid, Logic, 4);
+elementwise!(LeakyRelu, Activation, 2);
+elementwise!(Relu, Activation, 1);
+elementwise!(Not, Logic, 1);
 
 #[macro_export]
 macro_rules! shape {
