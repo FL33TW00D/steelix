@@ -13,11 +13,10 @@ pub fn build_cli() -> Command<'static> {
                 .required(true),
         )
         .arg(
-            Arg::new("INFER_SHAPES")
-                .short('s')
-                .long("infer-shapes")
+            Arg::new("DISABLE_SHAPES")
+                .long("disable-shapes")
                 .takes_value(false)
-                .help("Infer shapes of the model."),
+                .help("Disable shapes in the plot."),
         )
         .arg(
             Arg::new("OPEN_IN_BROWSER")

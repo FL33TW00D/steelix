@@ -23,12 +23,12 @@ fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
     let output_path = matches
         .get_one::<String>("OUTPUT_PATH")
         .expect("Invalid output path provided.");
-    let infer_shapes = matches.is_present("INFER_SHAPES");
+    let disable_shapes = matches.is_present("DISABLE_SHAPES");
     let open = matches.is_present("OPEN_IN_BROWSER");
 
     let model = parse_model(model_path)?;
     let mut model_summary = None;
-    if infer_shapes {
+    if !disable_shapes {
         model_summary = Some(parse_model(model_path)?.build_traversal_order().run()?);
     }
     let plottable: RenderableGraph = RenderableGraph::build_graph(model, model_summary);

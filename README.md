@@ -51,6 +51,12 @@ steelix summary --model-path ./my-model.onnx
 
 CLI command to plot your model as an SVG file - complete with inferred shapes.
 
+| Option             | Description                           | Type      | Default       | Required? |
+|--------------------|---------------------------------------|-----------|---------------|-----------|
+| `--model-path`     | Path at which your model is located.  | `string`  | None          | Yes       |
+| `--output-path`    | Path at which your SVG will be saved. | `string`  | `./model.svg` | No        |
+| `--open`           | Open SVG in browser once generated.   | `boolean` | `false`       | No        |
+| `--disable-shapes` | Disable shape inference.              | `boolean` | `false`       | No        |
 
 
 ## Supported Operators (ref [ONNX IR](https://github.com/onnx/onnx/blob/master/docs/Operators.md?plain=1)) 
