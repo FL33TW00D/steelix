@@ -40,8 +40,12 @@ CLI command to summarize the core aspects of your model.
 ```bash
 steelix summary --model-path ./my-model.onnx
 ```
+|     Option       |                       Description                        | Type   | Default | Required? |
+|------------------|----------------------------------------------------------|--------|---------|-----------|
+| `--model-path`   |             Path at which your model is located.         | `bool` | `false` | No        |
 
 
+<img width="700px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/images/steelix_summary.gif">
 
 ### `plot`
 
