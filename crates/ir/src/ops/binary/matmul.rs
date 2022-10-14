@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use anyhow::{bail, format_err};
+use anyhow::format_err;
 use onnx::onnx_pb;
 
 use crate::{

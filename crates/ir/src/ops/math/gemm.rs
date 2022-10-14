@@ -11,7 +11,9 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub struct Gemm {
+    #[allow(dead_code)]
     trans_a: usize,
+    #[allow(dead_code)]
     trans_b: usize,
 }
 
