@@ -20,12 +20,18 @@ pub fn build_cli() -> Command<'static> {
                 .help("Infer shapes of the model."),
         )
         .arg(
+            Arg::new("OPEN_IN_BROWSER")
+                .long("open")
+                .takes_value(false)
+                .help("Open the SVG in the browser."),
+        )
+        .arg(
             Arg::new("OUTPUT_PATH")
                 .short('o')
                 .long("output-path")
                 .help("Path where the SVG will be created")
-                .takes_value(true)
-                .required(true),
+                .default_value("model.svg")
+                .takes_value(true),
         );
 
     let summary_command = Command::new("summary")

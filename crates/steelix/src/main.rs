@@ -24,6 +24,7 @@ fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .get_one::<String>("OUTPUT_PATH")
         .expect("Invalid output path provided.");
     let infer_shapes = matches.is_present("INFER_SHAPES");
+    let open = matches.is_present("OPEN_IN_BROWSER");
 
     let model = parse_model(model_path)?;
     let mut model_summary = None;
@@ -41,6 +42,11 @@ fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
         .arg(output_path)
         .output()
         .expect("Failed to call Dot, is it installed?");
+
+    if open {
+        opener::open(output_path)?;
+    }
+
     Ok(())
 }
 
