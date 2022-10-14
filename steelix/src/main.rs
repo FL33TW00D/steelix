@@ -1,6 +1,9 @@
 use clap::ArgMatches;
-use parser::parse_model;
 use std::process::Command as ProcessCommand;
+use steelix::{
+    build_cli, hardware_table, metrics_table, opcount_table, parse_model, render_to,
+    RenderableGraph,
+};
 use tabled::{object::Rows, Alignment, Disable, Modify, Panel, Style, Table, Tabled};
 use tempfile::NamedTempFile;
 
@@ -31,7 +34,7 @@ fn run_plot_command(matches: &ArgMatches) -> anyhow::Result<()> {
     }
     let plottable: RenderableGraph = RenderableGraph::build_graph(model, model_summary);
 
-    let mut f = NamedTempFile::new().unwrap();
+    let mut f = NamedTempFile::new().expect("Failed to create temp file.");
     render_to(&mut f, plottable);
     ProcessCommand::new("dot")
         .arg("-Tsvg")

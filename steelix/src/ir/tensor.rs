@@ -5,7 +5,7 @@ use crate::ir::OpError;
 use crate::prelude::*;
 use bytes::BytesMut;
 use ndarray::{Array, ArrayViewD, ArrayViewMutD};
-use onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
+use steelix_onnx::onnx_pb::{self, tensor_proto::DataType as ProtoDType};
 
 #[macro_export]
 macro_rules! as_std {

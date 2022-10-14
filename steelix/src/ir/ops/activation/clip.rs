@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use std::borrow::Cow;
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct Clip {

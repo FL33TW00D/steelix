@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use onnx::onnx_pb;
+use steelix_onnx::onnx_pb;
 use std::borrow::Cow;
 
 #[derive(Debug, Clone, Default)]

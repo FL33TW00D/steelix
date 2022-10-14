@@ -1,7 +1,13 @@
 #![feature(vec_into_raw_parts)]
+mod build_cli;
 mod display;
 mod ir;
 mod parser;
+
+pub use build_cli::*;
+pub use display::*;
+pub use ir::*;
+pub use parser::*;
 
 mod prelude {
     pub use crate::ir::{

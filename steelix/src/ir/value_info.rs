@@ -3,7 +3,7 @@ use crate::{
     shape,
 };
 
-use onnx::onnx_pb;
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct ValueInfo {

@@ -1,7 +1,7 @@
 use crate::ir::{ops::data::Unimplemented, *};
-use crate::onnx::*;
 use prost::Message;
 use std::collections::{HashMap, HashSet};
+use steelix_onnx::onnx_pb;
 
 ///Parses a valid ONNX model at the provided path
 pub fn parse_model(model_path: &std::path::PathBuf) -> Result<Model, anyhow::Error> {

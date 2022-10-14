@@ -1,7 +1,7 @@
 use crate::ir::{DType, DataType};
 use crate::prelude::*;
 use anyhow::bail;
-use onnx::onnx_pb;
+use steelix_onnx::onnx_pb;
 use std::borrow::Cow;
 
 #[derive(Debug, Clone)]

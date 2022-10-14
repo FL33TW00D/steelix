@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::prelude::*;
-use onnx::onnx_pb;
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct GlobalAveragePool;

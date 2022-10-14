@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{ir::ops::shape::multi_broadcast, prelude::*};
-use onnx::onnx_pb;
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct Add;

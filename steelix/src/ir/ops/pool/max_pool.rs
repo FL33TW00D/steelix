@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
-use crate::onnx;
 use crate::prelude::*;
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct MaxPool {

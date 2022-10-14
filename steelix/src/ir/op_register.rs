@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use onnx::onnx_pb;
+use steelix_onnx::onnx_pb;
 
 use crate::ir::{
     ops::{

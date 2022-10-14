@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::ir::ops::shape::multi_broadcast;
 use crate::prelude::*;
 use anyhow::format_err;
-use onnx::onnx_pb;
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct Matmul;

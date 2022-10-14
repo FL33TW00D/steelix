@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use ndarray::{Axis, Dimension};
-use onnx::onnx_pb;
+use steelix_onnx::onnx_pb;
 use std::{borrow::Cow, sync::Arc};
 
 #[derive(Debug, Clone)]
