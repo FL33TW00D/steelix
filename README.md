@@ -62,6 +62,8 @@ steelix plot --model-path ./my-model.onnx --open
 | `--open`           | Open SVG in browser once generated.   | `boolean` | `false`       | No        |
 | `--disable-shapes` | Disable shape inference.              | `boolean` | `false`       | No        |
 
+<img width="700px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/images/steelix_plot.gif">
+
 
 ## Supported Operators (ref [ONNX IR](https://github.com/onnx/onnx/blob/master/docs/Operators.md?plain=1)) 
 
