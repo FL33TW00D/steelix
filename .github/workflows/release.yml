@@ -9,57 +9,34 @@ on:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
 jobs:
-  create-release:
-    name: create-release
-    runs-on: ubuntu-22.04
-    outputs:
-      upload_url: ${{ steps.release.outputs.upload_url }}
-      slx_version: ${{ env.SLX_VERSION }}
-    steps:
-      - name: Get the release version from the tag
-        shell: bash
-        if: env.SLX_VERSION == ''
-        run: |
-          echo "SLX_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "version is: ${{ env.SLX_VERSION }}"
-      - name: Create GitHub release
-        id: release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.SLX_VERSION }}
-          release_name: ${{ env.SLX_VERSION }}
-
-  build-release:
-    name: build-release
-    needs: ['create-release']
-    runs-on: ${{ matrix.os }}
-    env:
-      CARGO: cargo
-      TARGET_FLAGS: ""
-      TARGET_DIR: ./target
-      RUST_BACKTRACE: 1
+  build:
+    name: ${{ matrix.job.os }} (${{ matrix.job.target }})
+    runs-on: ${{ matrix.job.os }}
     strategy:
+      fail-fast: false
       matrix:
-        build: [linux, linux-arm, macos]
-        include:
-        - build: linux
-          os: ubuntu-22.04
-          rust: nightly
-          target: x86_64-unknown-linux-musl
-        - build: linux-arm
-          os: ubuntu-22.04
-          rust: nightly
-          target: arm-unknown-linux-gnueabihf
-        - build: macos
-          os: macos-12
-          rust: nightly
-          target: x86_64-apple-darwin
-
+        job:
+          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-gnu    }
+          - { os: macos-10.15  , target: x86_64-apple-darwin         }
     steps:
-    - name: Checkout repository
+    - name: Checkout source code
       uses: actions/checkout@v3
+
+    - name: Install prerequisites
+      shell: bash
+      run: |
+        case ${{ matrix.job.target }} in
+          arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
+          aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
+        esac
+
+    - name: Extract crate information
+      shell: bash
+      run: |
+        echo "PROJECT_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
+        echo "PROJECT_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
+        echo "PROJECT_MAINTAINER=$(sed -n 's/^authors = \["\(.*\)"\]/\1/p' Cargo.toml)" >> $GITHUB_ENV
+        echo "PROJECT_HOMEPAGE=$(sed -n 's/^homepage = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
 
     - name: Setup protoc
       uses: arduino/setup-protoc@v1.1.2
