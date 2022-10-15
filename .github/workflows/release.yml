@@ -59,7 +59,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --locked --release --target=${{ matrix.job.target }}
+        args: --release --target=${{ matrix.job.target }}
 
     - name: Strip debug information from executable
       id: strip
