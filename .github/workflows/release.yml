@@ -46,8 +46,8 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: ${{ matrix.rust }}
-        target: ${{ matrix.target }}
+        toolchain: "nightly"
+        target: ${{ matrix.job.target }}
 
     - name: Show command used for Cargo
       run: |
