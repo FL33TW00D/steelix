@@ -3,9 +3,6 @@
 </div>
 <p align="center">Your one stop CLI for <b>ONNX</b> model analysis. <br></br> Featuring graph visualization, FLOP counts, memory metrics and more!</p>
 <p align="center">
-    <a href="https://github.com/FL33TW00D/steelix/actions">
-        <img alt="Build" src="https://github.com/FL33TW00D/steelix/workflows/ci/badge.svg">
-    </a>
     <a href="https://crates.io/crates/steelix">
         <img alt="GitHub" src="https://img.shields.io/github/license/FL33TW00D/steelix.svg?color=blue">
     </a>
