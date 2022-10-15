@@ -75,6 +75,7 @@ jobs:
         echo "cargo command is: ${{ env.CARGO }}"
         echo "target flag is: ${{ env.TARGET_FLAGS }}"
         echo "target dir is: ${{ env.TARGET_DIR }}"
+
     - name: Build release binary
       run: ${{ env.CARGO }} build --verbose --release ${{ env.TARGET_FLAGS }}
 
@@ -82,25 +83,38 @@ jobs:
       if: matrix.build == 'linux' || matrix.build == 'macos'
       run: strip "target/${{ matrix.target }}/release/steelix"
 
-    - name: Build archive
+    - name: Create tarball
+      id: package
       shell: bash
       run: |
-        outdir="$(ci/cargo-out-dir "${{ env.TARGET_DIR }}")"
-        staging="steelix-${{ needs.create-release.outputs.slx_version }}-${{ matrix.target }}"
-        mkdir -p "$staging"/{complete,doc}
-        cp {README.md,COPYING,UNLICENSE,LICENSE-MIT} "$staging/"
-        cp {CHANGELOG.md,FAQ.md,GUIDE.md} "$staging/doc/"
-        cp complete/_slx "$staging/complete/"
-        cp "$outdir"/slx.1 "$staging/doc/"
-        cp "target/${{ matrix.target }}/release/slx" "$staging/"
-        tar czf "$staging.tar.gz" "$staging"
-        echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+        PKG_suffix=".tar.gz" 
+        PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
+        PKG_NAME=${PKG_BASENAME}${PKG_suffix}
+        echo ::set-output name=PKG_NAME::${PKG_NAME}
+        PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
+        ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
+        mkdir -p "${ARCHIVE_DIR}"
+        mkdir -p "${ARCHIVE_DIR}/completions"
+        # Binary
+        cp "${{ steps.strip.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
+        # README, LICENSE and CHANGELOG files
+        cp "README.md" "LICENSE" "$ARCHIVE_DIR"
+        # base compressed package
+        pushd "${PKG_STAGING}/" >/dev/null
+        tar czf "${PKG_NAME}" "${PKG_BASENAME}"/*
+        popd >/dev/null
+        echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
+
+    - name: "Artifact upload: tarball"
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{ steps.package.outputs.PKG_NAME }}
+        path: ${{ steps.package.outputs.PKG_PATH }}
 
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ${{ env.ASSET }}
+          ${{ steps.package.outputs.PKG_PATH }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
