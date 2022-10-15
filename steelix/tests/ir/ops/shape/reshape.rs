@@ -1,5 +1,6 @@
-use ir::{ops::shape::Reshape, pvec, shape, IntoArcTensor, Op, OpCost, RealizedOp, Tensor};
 use ndarray::array;
+use steelix::ops::shape::Reshape;
+use steelix::prelude::*;
 
 #[test]
 fn test_reshape() {

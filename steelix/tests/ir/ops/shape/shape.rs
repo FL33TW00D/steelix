@@ -1,4 +1,5 @@
-use ir::{ops::shape::Shape, pvec, shape, IntoArcTensor, Op, OpCost, RealizedOp, Tensor};
+use steelix::ops::shape::Shape;
+use steelix::prelude::*;
 
 #[test]
 fn test_shape() {

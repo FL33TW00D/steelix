@@ -9,7 +9,7 @@ pub use display::*;
 pub use ir::*;
 pub use parser::*;
 
-mod prelude {
+pub mod prelude {
     pub use crate::ir::{
         validate_providers, BoxOp, DType, DataType, IntoArcTensor, Op, OpCost, OpGroup, PVec,
         RealizedOp, Shape, Tensor,

@@ -1,5 +1,6 @@
-use ir::{ops::shape::Unsqueeze, pvec, shape, IntoArcTensor, Op, OpCost, RealizedOp, Tensor};
 use ndarray::array;
+use steelix::ops::shape::Unsqueeze;
+use steelix::prelude::*;
 
 #[test]
 fn test_unsqueeze_no_params() {

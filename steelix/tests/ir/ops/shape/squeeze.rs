@@ -1,4 +1,5 @@
-use ir::{ops::shape::Squeeze, pvec, shape, IntoArcTensor, Op, OpCost, RealizedOp, Tensor};
+use steelix::ops::shape::Squeeze;
+use steelix::prelude::*;
 
 #[test]
 fn test_squeeze_no_params() {

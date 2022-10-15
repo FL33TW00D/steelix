@@ -140,9 +140,9 @@ macro_rules! shape {
         let mut vec = smallvec::SmallVec::new();
         if count <= vec.inline_size() {
             $(vec.push($x);)*
-            $crate::ir::Shape(vec)
+            $crate::Shape(vec)
         } else {
-            $crate::ir::Shape(smallvec::SmallVec::from_vec(vec![$($x,)*]))
+            $crate::Shape(smallvec::SmallVec::from_vec(vec![$($x,)*]))
         }
     });
 }
@@ -156,12 +156,12 @@ macro_rules! pvec {
     ($($x:expr),*$(,)*) => ({
         let count = 0usize $(+ pvec!(@one $x))*;
         #[allow(unused_mut)]
-        let mut vec = $crate::ir::PVec::new();
+        let mut vec = $crate::PVec::new();
         if count <= vec.inline_size() {
             $(vec.push($x);)*
             vec
         } else {
-            $crate::ir::PVec::from_vec(vec![$($x,)*])
+            $crate::PVec::from_vec(vec![$($x,)*])
         }
     });
 }

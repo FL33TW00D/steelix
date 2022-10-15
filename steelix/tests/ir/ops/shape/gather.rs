@@ -1,5 +1,6 @@
-use ir::{ops::shape::Gather, pvec, IntoArcTensor, Op, OpCost, RealizedOp};
 use ndarray::array;
+use steelix::ops::shape::Gather;
+use steelix::prelude::*;
 #[test]
 fn test_gather() {
     let data = array![[1.0, 1.2], [2.3, 3.4], [4.5, 5.7]].into_arc_tensor();

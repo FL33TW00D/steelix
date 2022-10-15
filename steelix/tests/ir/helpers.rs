@@ -1,6 +1,6 @@
 use std::path::PathBuf;
+use steelix::{IntoTensor, Tensor};
 
-use ir::{IntoTensor, Tensor};
 use ndarray::Array;
 use npyz::NpyFile;
 
