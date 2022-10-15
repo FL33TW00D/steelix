@@ -69,7 +69,7 @@ steelix plot --model-path ./my-model.onnx --open
 
 | **Operator**              | **Implemented**                      |
 |---------------------------|--------------------------------------|
-| Abs                       |                                      |
+| Abs                       | ✅                                   |
 | Acos                      |                                      |
 | Acosh                     |                                      |
 | Add                       | ✅                                   |
@@ -105,7 +105,7 @@ steelix plot --model-path ./my-model.onnx --open
 | Einsum                    |                                      |
 | Elu                       |                                      |
 | Equal                     |                                      |
-| Erf                       |                                      |
+| Erf                       | ✅                                   |
 | Exp                       |                                      |
 | Expand                    |                                      |
 | EyeLike                   |                                      |
@@ -130,7 +130,7 @@ steelix plot --model-path ./my-model.onnx --open
 | IsNaN                     |                                      |
 | LRN                       |                                      |
 | LSTM                      |                                      |
-| LeakyRelu                 |                                      |
+| LeakyRelu                 | ✅                                   |
 | Less                      |                                      |
 | Log                       |                                      |
 | Loop                      |                                      |
@@ -150,7 +150,7 @@ steelix plot --model-path ./my-model.onnx --open
 | Neg                       |                                      |
 | NonMaxSuppression         |                                      |
 | NonZero                   |                                      |
-| Not                       |                                      |
+| Not                       | ✅                                   |
 | OneHot                    |                                      |
 | Optional                  |                                      |
 | OptionalGetElement        |                                      |
