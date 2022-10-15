@@ -62,12 +62,14 @@ steelix plot --model-path ./my-model.onnx --open
 | `--open`           | Open SVG in browser once generated.   | `boolean` | `false`       | No        |
 | `--disable-shapes` | Disable shape inference.              | `boolean` | `false`       | No        |
 
+<img width="700px" src="https://github.com/FL33TW00D/steelix/raw/master/.github/images/steelix_plot.gif">
+
 
 ## Supported Operators (ref [ONNX IR](https://github.com/onnx/onnx/blob/master/docs/Operators.md?plain=1)) 
 
 | **Operator**              | **Implemented**                      |
 |---------------------------|--------------------------------------|
-| Abs                       |                                      |
+| Abs                       | ✅                                   |
 | Acos                      |                                      |
 | Acosh                     |                                      |
 | Add                       | ✅                                   |
@@ -103,7 +105,7 @@ steelix plot --model-path ./my-model.onnx --open
 | Einsum                    |                                      |
 | Elu                       |                                      |
 | Equal                     |                                      |
-| Erf                       |                                      |
+| Erf                       | ✅                                   |
 | Exp                       |                                      |
 | Expand                    |                                      |
 | EyeLike                   |                                      |
@@ -128,7 +130,7 @@ steelix plot --model-path ./my-model.onnx --open
 | IsNaN                     |                                      |
 | LRN                       |                                      |
 | LSTM                      |                                      |
-| LeakyRelu                 |                                      |
+| LeakyRelu                 | ✅                                   |
 | Less                      |                                      |
 | Log                       |                                      |
 | Loop                      |                                      |
@@ -148,7 +150,7 @@ steelix plot --model-path ./my-model.onnx --open
 | Neg                       |                                      |
 | NonMaxSuppression         |                                      |
 | NonZero                   |                                      |
-| Not                       |                                      |
+| Not                       | ✅                                   |
 | OneHot                    |                                      |
 | Optional                  |                                      |
 | OptionalGetElement        |                                      |
