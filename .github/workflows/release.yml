@@ -82,53 +82,25 @@ jobs:
       if: matrix.build == 'linux' || matrix.build == 'macos'
       run: strip "target/${{ matrix.target }}/release/steelix"
 
-    - name: Create tarball
-      id: package
+    - name: Build archive
       shell: bash
       run: |
-        PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
-        PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
-        PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-        echo ::set-output name=PKG_NAME::${PKG_NAME}
-        PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
-        ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
-        mkdir -p "${ARCHIVE_DIR}"
-        mkdir -p "${ARCHIVE_DIR}/completions"
-        # Binary
-        cp "${{ steps.strip.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
-        # README, LICENSE and CHANGELOG files
-        cp "README.md" "LICENSE" "$ARCHIVE_DIR"
-        # base compressed package
-        pushd "${PKG_STAGING}/" >/dev/null
-        case ${{ matrix.job.target }} in
-          *-pc-windows-*) 7z -y a "${PKG_NAME}" "${PKG_BASENAME}"/* | tail -2 ;;
-          *) tar czf "${PKG_NAME}" "${PKG_BASENAME}"/* ;;
-        esac;
-        popd >/dev/null
-        # Let subsequent steps know where to find the compressed package
-        echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
-
-    - name: "Artifact upload: tarball"
-      uses: actions/upload-artifact@master
-      with:
-        name: ${{ steps.package.outputs.PKG_NAME }}
-        path: ${{ steps.package.outputs.PKG_PATH }}
-
-    - name: Check for release
-      id: is-release
-      shell: bash
-      run: |
-        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
-        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
+        outdir="$(ci/cargo-out-dir "${{ env.TARGET_DIR }}")"
+        staging="steelix-${{ needs.create-release.outputs.slx_version }}-${{ matrix.target }}"
+        mkdir -p "$staging"/{complete,doc}
+        cp {README.md,COPYING,UNLICENSE,LICENSE-MIT} "$staging/"
+        cp {CHANGELOG.md,FAQ.md,GUIDE.md} "$staging/doc/"
+        cp complete/_slx "$staging/complete/"
+        cp "$outdir"/slx.1 "$staging/doc/"
+        cp "target/${{ matrix.target }}/release/slx" "$staging/"
+        tar czf "$staging.tar.gz" "$staging"
+        echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
 
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
-      if: steps.is-release.outputs.IS_RELEASE
       with:
         files: |
-          ${{ steps.package.outputs.PKG_PATH }}
-          ${{ steps.debian-package.outputs.DPKG_PATH }}
+          ${{ env.ASSET }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
