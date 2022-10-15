@@ -101,28 +101,28 @@ impl Node {
 }
 
 pub fn render_to<W: Write>(output: &mut W, graph: RenderableGraph) {
-    dot::render(&graph, output).unwrap()
+    dot3::render(&graph, output).unwrap()
 }
 
-impl<'a> dot::Labeller<'a, Nd, Edge> for RenderableGraph {
-    fn graph_id(&'a self) -> dot::Id<'a> {
-        dot::Id::new("example2").unwrap()
+impl<'a> dot3::Labeller<'a, Nd, Edge> for RenderableGraph {
+    fn graph_id(&'a self) -> dot3::Id<'a> {
+        dot3::Id::new("example2").unwrap()
     }
-    fn node_id(&'a self, n: &Nd) -> dot::Id<'a> {
-        dot::Id::new(format!("N{}", n)).unwrap()
+    fn node_id(&'a self, n: &Nd) -> dot3::Id<'a> {
+        dot3::Id::new(format!("N{}", n)).unwrap()
     }
-    fn node_label<'b>(&'b self, n: &Nd) -> dot::LabelText<'b> {
-        dot::LabelText::LabelStr(self.nodes[*n].label.clone().into())
+    fn node_label<'b>(&'b self, n: &Nd) -> dot3::LabelText<'b> {
+        dot3::LabelText::LabelStr(self.nodes[*n].label.clone().into())
     }
-    fn edge_label<'b>(&'b self, e: &Edge) -> dot::LabelText<'b> {
-        dot::LabelText::LabelStr(e.label.clone().into())
+    fn edge_label<'b>(&'b self, e: &Edge) -> dot3::LabelText<'b> {
+        dot3::LabelText::LabelStr(e.label.clone().into())
     }
-    fn node_color(&'a self, _node: &Nd) -> Option<dot::LabelText<'a>> {
-        Some(dot::LabelText::LabelStr("black".into()))
+    fn node_color(&'a self, _node: &Nd) -> Option<dot3::LabelText<'a>> {
+        Some(dot3::LabelText::LabelStr("black".into()))
     }
 
-    fn node_style(&'a self, _n: &Nd) -> dot::Style {
-        dot::Style::Filled
+    fn node_style(&'a self, _n: &Nd) -> dot3::Style {
+        dot3::Style::Filled
     }
 
     fn node_attrs(&'a self, n: &Nd) -> HashMap<&str, &str> {
@@ -133,11 +133,11 @@ impl<'a> dot::Labeller<'a, Nd, Edge> for RenderableGraph {
     }
 }
 
-impl<'a> dot::GraphWalk<'a, Nd, Edge> for RenderableGraph {
-    fn nodes(&self) -> dot::Nodes<'a, Nd> {
+impl<'a> dot3::GraphWalk<'a, Nd, Edge> for RenderableGraph {
+    fn nodes(&self) -> dot3::Nodes<'a, Nd> {
         (0..self.nodes.len()).collect()
     }
-    fn edges(&'a self) -> dot::Edges<'a, Edge> {
+    fn edges(&'a self) -> dot3::Edges<'a, Edge> {
         self.edges.clone().into_iter().collect()
     }
     fn source(&self, e: &Edge) -> Nd {

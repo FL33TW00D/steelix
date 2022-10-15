@@ -17,7 +17,7 @@ parser = { path = "../parser" }
 ir = { path = "../ir" }
 display = { path = "../display" }
 prost = "0.10.4"
-dot = { git = "https://github.com/FL33TW00D/dot-rust", branch = "develop" }
+dot3 = { version = "0.1.0" }
 tempfile = "3.3.0"
 ordered-float = "3.0.0"
 npyz = "0.7.0"
