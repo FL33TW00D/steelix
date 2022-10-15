@@ -1,10 +1,7 @@
 [workspace]
 members = [
-    "crates/display",
-    "crates/onnx",
-    "crates/ir",
-    "crates/parser",
-    "crates/steelix",
+    "onnx",
+    "steelix",
 ]
 
 [profile.release]
