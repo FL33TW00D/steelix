@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "onnx",
+    "steelix",
+]
+
+[profile.release]
+debug = true
