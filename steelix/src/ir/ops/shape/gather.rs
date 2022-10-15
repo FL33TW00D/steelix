@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use ndarray::{Axis, Dimension};
-use steelix_onnx::onnx_pb;
 use std::{borrow::Cow, sync::Arc};
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct Gather {

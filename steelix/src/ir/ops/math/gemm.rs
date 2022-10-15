@@ -3,8 +3,8 @@ use std::borrow::Cow;
 use crate::ir::ops::shape::multi_broadcast;
 use crate::prelude::*;
 use anyhow::bail;
-use steelix_onnx::onnx_pb;
 use smallvec::smallvec;
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct Gemm {

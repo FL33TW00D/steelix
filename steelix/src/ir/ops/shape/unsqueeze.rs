@@ -1,8 +1,8 @@
 use crate::ir::{DType, DataType};
 use crate::prelude::*;
 use anyhow::bail;
-use steelix_onnx::onnx_pb;
 use std::borrow::Cow;
+use steelix_onnx::onnx_pb;
 
 #[derive(Debug, Clone)]
 pub struct Unsqueeze {
