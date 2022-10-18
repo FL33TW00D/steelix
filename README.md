@@ -24,6 +24,7 @@ cargo install steelix
 MacOS users can also install via HomeBrew:
 
 ```bash
+brew tap FL33TW00D/steelix
 brew install steelix
 ```
 
