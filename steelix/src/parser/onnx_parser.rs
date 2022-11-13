@@ -77,8 +77,12 @@ fn parse_graph_outputs(
     let mut outputs_map = HashMap::new();
     let offset = model.nodes.len();
     for (output_idx, output) in outputs.iter().enumerate() {
-        let output_node_id =
-            model.add_node(output.name.to_owned(), Box::new(Unimplemented) as BoxOp);
+        let output_node_id = model.add_node(
+            output.name.to_owned(),
+            Box::new(Unimplemented {
+                op_type: "Output".into(),
+            }) as BoxOp,
+        );
         model.outputs.push(output_node_id);
         outputs_map.insert(output.name.to_owned(), offset + output_idx);
     }
