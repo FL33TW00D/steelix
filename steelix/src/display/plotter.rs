@@ -1,6 +1,9 @@
 use std::{collections::HashMap, io::Write};
 
-use crate::ir::{Model, ModelSummary, OpGroup, COLOUR_MAP, SHAPE_MAP};
+use crate::{
+    ir::{Model, ModelSummary, OpGroup, COLOUR_MAP, SHAPE_MAP},
+    opcount_table,
+};
 
 type Nd = usize;
 
@@ -48,7 +51,12 @@ impl RenderableGraph {
         let mut g = RenderableGraph::new();
         let mut offset = 0;
 
+        let mut op_counts = HashMap::new();
         for (op_idx, op_node) in model.nodes.iter().enumerate() {
+            op_counts
+                .entry(op_node.op.name().to_string().clone())
+                .and_modify(|e| *e += 1)
+                .or_insert(1);
             if op_node.op.op_group() == OpGroup::Constant {
                 offset += 1;
                 continue;
@@ -79,6 +87,8 @@ impl RenderableGraph {
                 }
             });
         }
+        let opcount_table = opcount_table(op_counts);
+        println!("{}", opcount_table);
         g
     }
 }
